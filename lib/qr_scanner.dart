@@ -4,6 +4,7 @@ import 'package:qr_code_app/components/qr_save.dart';
 import 'package:qr_code_app/components/vcard_view.dart';
 import 'package:qr_code_app/db/db.dart';
 import 'package:qr_code_app/tools.dart';
+import 'package:qr_code_app/vars.dart';
 
 class QRScannerPage extends StatefulWidget {
   const QRScannerPage({super.key});
@@ -62,24 +63,7 @@ class QRResultPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final actions = [
-      {
-        "label": "Menu",
-        "color": Colors.red,
-        "icon": Icons.home,
-        "onPressed": () {
-          Navigator.popUntil(context, (route) => route.isFirst);
-        },
-      },
-      {
-        "label": "Scanner",
-        "color": Colors.blue,
-        "icon": Icons.refresh,
-        "onPressed": () {
-          Navigator.pop(context, true);
-        },
-      },
-    ];
+    final actions = getActionQRCode(context);
 
     return FutureBuilder(
       future: _saveQr(),

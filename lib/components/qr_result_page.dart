@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qr_code_app/home_page.dart';
-import 'package:qr_code_app/tools.dart';
+import 'package:qr_code_app/vars.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class QRResultPage extends StatelessWidget {
@@ -9,24 +8,7 @@ class QRResultPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final actions = [
-      {
-        "label": "Menu",
-        "color": Colors.red,
-        "icon": Icons.home,
-        "onPressed": () {
-          redirect(context, HomePage());
-        },
-      },
-      {
-        "label": "Générer",
-        "color": Colors.blue,
-        "icon": Icons.refresh,
-        "onPressed": () {
-          Navigator.pop(context, true);
-        },
-      },
-    ];
+    final actions = getActionQRCode(context);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Votre QR Code')),
