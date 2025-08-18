@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/home_page.dart';
+import 'package:qr_code_app/tools.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class QRResultPage extends StatelessWidget {
@@ -13,7 +15,7 @@ class QRResultPage extends StatelessWidget {
         "color": Colors.red,
         "icon": Icons.home,
         "onPressed": () {
-          Navigator.popUntil(context, (route) => route.isFirst);
+          redirect(context, HomePage());
         },
       },
       {

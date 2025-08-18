@@ -55,7 +55,6 @@ class HomePageState extends State<HomePage> {
               await importContacts(this);
             },
           ),
-
           const SizedBox(height: 20),
           Expanded(
             child: loading
