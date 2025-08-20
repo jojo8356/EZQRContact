@@ -52,4 +52,8 @@ flutter:
   uses-material-design: true
 
 flutter_native_splash:
-  color: "#CA1616"
+  color: "#ffffff"
+  image: assets/logo_splash.png
+  android_12:
+    color: "#ffffff"
+    image: assets/logo_splash.png
