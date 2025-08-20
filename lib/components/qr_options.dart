@@ -46,7 +46,7 @@ class OptionsQR extends StatelessWidget {
                         0, // left
                         0, // top
                         20, // right
-                        8, // bottom (exemple pour plus d’espace)
+                        8, // bottom
                       ),
                       insetPadding: const EdgeInsets.symmetric(
                         horizontal: 12,
