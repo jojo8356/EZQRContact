@@ -81,7 +81,10 @@ END:VCARD
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Générer VCard QR'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('Générateur VCard QR Code'),
+        centerTitle: true,
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(

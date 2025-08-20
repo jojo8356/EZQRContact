@@ -17,7 +17,10 @@ class GenerateSimpleQRCodeState extends State<GenerateSimpleQRCode> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Flutter + QR code'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('Générateur QR Code simple'),
+        centerTitle: true,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(

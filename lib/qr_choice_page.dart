@@ -24,7 +24,7 @@ class QRChoicePage extends StatelessWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Choisir le type de QR")),
+      appBar: AppBar(title: const Text("Easy QR Contact App")),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

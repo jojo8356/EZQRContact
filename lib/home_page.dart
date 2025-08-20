@@ -44,7 +44,7 @@ class HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("QR App")),
+      appBar: AppBar(title: const Text("Easy QR Contact App")),
       body: Column(
         children: [
           const SizedBox(height: 20),
