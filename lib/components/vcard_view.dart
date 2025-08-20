@@ -24,8 +24,6 @@ class VCardView extends StatelessWidget {
     ];
 
     return Card(
-      elevation: 4,
-      margin: const EdgeInsets.all(0),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(10),

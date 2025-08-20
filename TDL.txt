@@ -1,4 +1,3 @@
-modif mise en page des champs à l'horizontal
 ecran de chargement
 modif title de chaque page
 add logo
@@ -11,3 +10,6 @@ control taille des apk
 alpha 0.11
 Font blanc sous qrcode (ok 12h25 18/08/2025)
 print ts les champs d'une vcard (ok 12h25 18/08/2025)
+
+alpha 0.12
+modif mise en page des champs à l'horizontal (ok 20h30 19/08/2025)

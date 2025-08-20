@@ -42,6 +42,20 @@ class OptionsQR extends StatelessWidget {
                   showDialog(
                     context: context,
                     builder: (_) => AlertDialog(
+                      actionsPadding: const EdgeInsets.fromLTRB(
+                        0, // left
+                        0, // top
+                        20, // right
+                        8, // bottom (exemple pour plus d’espace)
+                      ),
+                      insetPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                      ),
+
                       title: const Text('Infos VCard'),
                       content: SingleChildScrollView(
                         child: SizedBox(
