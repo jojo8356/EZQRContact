@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'home_page.dart'; // si HomePage est dans un fichier séparé
+import 'home_page.dart';
 
 void main() {
   runApp(const MyApp());

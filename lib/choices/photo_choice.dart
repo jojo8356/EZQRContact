@@ -13,6 +13,6 @@ final List<Map<String, dynamic>> photoChoiceButtons = [
     "label": "Import QR Code",
     "icon": Icons.upload_file,
     "color": Colors.green,
-    "builder": () => const FileUploadPage(),
+    "builder": () => QrFromImagePage(),
   },
 ];

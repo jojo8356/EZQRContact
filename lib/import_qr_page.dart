@@ -1,72 +1,42 @@
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:qr_code_tools/qr_code_tools.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:flutter_qrcode_analysis/flutter_qrcode_analysis.dart';
 
-class FileUploadPage extends StatefulWidget {
-  const FileUploadPage({super.key});
+class QrFromImagePage extends StatefulWidget {
+  const QrFromImagePage({super.key});
 
   @override
-  State<FileUploadPage> createState() => _FileUploadPageState();
+  State<QrFromImagePage> createState() => _QrFromImagePageState();
 }
 
-class _FileUploadPageState extends State<FileUploadPage> {
-  String? _fileName;
-  String? _qrText = "Aucun fichier décodé";
+class _QrFromImagePageState extends State<QrFromImagePage> {
+  String? qrResult;
 
-  Future<void> _pickFile() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
-
-    if (result != null && result.files.isNotEmpty) {
-      final path = result.files.first.path;
-      print(path);
-      if (path != null && path.isNotEmpty) {
-        try {
-          String? qrText = await QrCodeToolsPlugin.decodeFrom(path);
-          setState(() {
-            _fileName = path;
-            _qrText = qrText ?? "Aucun QR code trouvé";
-          });
-          print('Texte du QR code : $qrText');
-        } catch (e) {
-          print('Erreur : $e');
-          setState(() {
-            _qrText = 'Erreur lors du décodage';
-          });
-        }
-      }
+  Future<void> pickAndDecodeImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      String? data = await FlutterQrcodeAnalysis.analysisImage(pickedFile.path);
+      setState(() {
+        qrResult = data ?? "QR non trouvé";
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Importer un fichier")),
+      appBar: AppBar(title: const Text("QR → Text")),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton.icon(
-              onPressed: _pickFile,
-              icon: const Icon(Icons.file_upload, size: 25),
-              label: const Text("Importer", style: TextStyle(fontSize: 18)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 40,
-                  vertical: 20,
-                ),
-              ),
+            ElevatedButton(
+              onPressed: pickAndDecodeImage,
+              child: const Text("Choisir une image"),
             ),
-            const SizedBox(height: 30),
-            if (_fileName != null)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  _qrText!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ),
+            const SizedBox(height: 20),
+            Text(qrResult ?? "Résultat ici"),
           ],
         ),
       ),

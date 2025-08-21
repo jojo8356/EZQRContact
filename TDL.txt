@@ -1,7 +1,3 @@
-
-import img et convert en text
-verif les pixels blancs -> transparent dans png
-change txt qr code en qr code du lien github
 faire une pop-up guide apparait qu'une fois apres install
 
 continual verification:
@@ -16,6 +12,10 @@ alpha 0.12
 ecran de chargement (ok 17h46 20/08/2025)
 modif title de chaque page (ok 19h10 20/08/2025)
 add logo (ok 19h18 20/08/2025)
+verif les pixels blancs -> transparent dans png (ok 11h06 21/08/2025)
+change txt qr code en qr code du lien github (ok 19h46 21/08/2025)
 
-alpha 0.13
+alpha 0.22
 pouvoir ré-enregistrer sous dans un dossier perso les qr code (ok 11h06 21/08/2025)
+import img et convert en text (ok 16h49 21/08/2025)
+Regler le bug de dulpiquation de qr code si resté sur l'image (ok 17h07 21/08/2025)
