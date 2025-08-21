@@ -1,28 +1,12 @@
 import 'package:flutter/material.dart';
-import 'qr_generator_simple.dart';
-import 'qr_generator_vcard.dart';
 
 class QRChoicePage extends StatelessWidget {
-  const QRChoicePage({super.key});
+  final List<Map<String, dynamic>> buttons;
+
+  const QRChoicePage({super.key, required this.buttons});
 
   @override
   Widget build(BuildContext context) {
-    // Liste des boutons à afficher
-    final List<Map<String, dynamic>> buttons = [
-      {
-        "label": "Simple QR",
-        "icon": Icons.qr_code,
-        "color": Colors.blue,
-        "builder": () => const GenerateSimpleQRCode(),
-      },
-      {
-        "label": "VCard QR",
-        "icon": Icons.perm_identity,
-        "color": Colors.green,
-        "builder": () => const GenerateVCardQRCode(),
-      },
-    ];
-
     return Scaffold(
       appBar: AppBar(title: const Text("Easy QR Contact App")),
       body: Center(

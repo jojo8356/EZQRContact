@@ -60,7 +60,7 @@ class HomePageState extends State<HomePage> {
             child: loading
                 ? const Center(child: CircularProgressIndicator())
                 : allItems.isEmpty
-                ? const Center(child: Text("Aucun QR trouvé"))
+                ? const Center(child: Text("No QR code found"))
                 : ListView.builder(
                     itemCount: allItems.length,
                     itemBuilder: (context, index) {

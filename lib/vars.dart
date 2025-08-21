@@ -13,7 +13,7 @@ List<Map<String, dynamic>> getActionQRCode(BuildContext context) {
       },
     },
     {
-      "label": "Générer",
+      "label": "Generate",
       "color": Colors.blue,
       "icon": Icons.refresh,
       "onPressed": () {

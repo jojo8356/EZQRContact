@@ -18,7 +18,7 @@ class GenerateSimpleQRCodeState extends State<GenerateSimpleQRCode> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Générateur QR Code simple'),
+        title: const Text('Simple QR Code Generator'),
         centerTitle: true,
       ),
       body: Padding(

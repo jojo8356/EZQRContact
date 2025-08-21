@@ -16,7 +16,7 @@ class _MultiContactPickerPageState extends State<MultiContactPickerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Choisir contacts")),
+      appBar: AppBar(title: const Text("Select contacts")),
       body: ListView.builder(
         itemCount: widget.contacts.length,
         itemBuilder: (context, index) {
@@ -39,7 +39,7 @@ class _MultiContactPickerPageState extends State<MultiContactPickerPage> {
           children: [
             ElevatedButton(
               onPressed: () => Navigator.pop(context, <Contact>[]),
-              child: const Text("Annuler"),
+              child: const Text("Cancel"),
             ),
             const Spacer(),
             ElevatedButton(
@@ -52,7 +52,7 @@ class _MultiContactPickerPageState extends State<MultiContactPickerPage> {
                     .toList();
                 Navigator.pop(context, chosen);
               },
-              child: const Text("Valider"),
+              child: const Text("Validate"),
             ),
           ],
         ),

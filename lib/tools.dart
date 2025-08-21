@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:file_saver/file_saver.dart';
 
 Map<String, TextEditingController> mapToControllers(Map<String, dynamic> data) {
   return {
@@ -144,4 +147,46 @@ Widget buildItemAvatar(bool isVCard, String photo) {
 
 void redirect(BuildContext context, Widget page) {
   Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+}
+
+List<Map<String, dynamic>> buildFields(
+  Map<String, TextEditingController> controllers,
+) {
+  return [
+    {"label": "Name", "controller": controllers["nom"]},
+    {"label": "Surname", "controller": controllers["prenom"]},
+    {"label": "Name2", "controller": controllers["nom2"]},
+    {"label": "Prefix", "controller": controllers["prefixe"]},
+    {"label": "Suffix", "controller": controllers["suffixe"]},
+    {"label": "Incorporation", "controller": controllers["org"]},
+    {"label": "Job", "controller": controllers["job"]},
+    {"label": "Photo URL", "controller": controllers["photo"]},
+    {"label": "Work phone", "controller": controllers["tel_work"]},
+    {"label": "Home phone", "controller": controllers["tel_home"]},
+    {"label": "Work address", "controller": controllers["adr_work"]},
+    {"label": "Home address", "controller": controllers["adr_home"]},
+    {"label": "Email", "controller": controllers["email"]},
+  ];
+}
+
+List<String> getKeys(Map<String, dynamic> dict) {
+  return dict.keys.toList();
+}
+
+Map<String, String> extractValues(
+  Map<String, TextEditingController> controllers,
+) {
+  final keys = getKeys(controllers);
+  return {for (var key in keys) key: controllers[key]!.text};
+}
+
+Future<void> saveFile(String originalPath, String fileName) async {
+  final fileBytes = await File(originalPath).readAsBytes();
+
+  await FileSaver.instance.saveAs(
+    name: fileName,
+    bytes: fileBytes,
+    fileExtension: 'png',
+    mimeType: MimeType.png,
+  );
 }

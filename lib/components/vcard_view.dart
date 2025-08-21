@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/tools.dart';
 
 class VCardView extends StatelessWidget {
   final Map<String, TextEditingController> controllers;
@@ -7,21 +8,7 @@ class VCardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fields = [
-      {"label": "Nom", "controller": controllers["nom"]},
-      {"label": "Prénom", "controller": controllers["prenom"]},
-      {"label": "Nom2", "controller": controllers["nom2"]},
-      {"label": "Préfixe", "controller": controllers["prefixe"]},
-      {"label": "Suffixe", "controller": controllers["suffixe"]},
-      {"label": "Organisation", "controller": controllers["org"]},
-      {"label": "Job/Titre", "controller": controllers["job"]},
-      {"label": "Photo URL", "controller": controllers["photo"]},
-      {"label": "Téléphone travail", "controller": controllers["tel_work"]},
-      {"label": "Téléphone maison", "controller": controllers["tel_home"]},
-      {"label": "Adresse travail", "controller": controllers["adr_work"]},
-      {"label": "Adresse maison", "controller": controllers["adr_home"]},
-      {"label": "Email", "controller": controllers["email"]},
-    ];
+    final fields = buildFields(controllers);
 
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -81,7 +68,7 @@ class VCardView extends StatelessWidget {
             // Infos détaillées
             Column(
               children: fields.map((f) {
-                final field = f as Map<String, dynamic>; // cast
+                final field = f; // cast
                 final controller =
                     field["controller"] as TextEditingController?;
                 final value = controller?.text ?? "";

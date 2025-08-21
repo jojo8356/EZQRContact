@@ -122,6 +122,34 @@ class QRDatabase {
       whereArgs: [id],
     );
   }
+
+  Future<String?> getPathFromSimpleQR(int id) async {
+    final db = await database;
+    final result = await db.query(
+      'SimpleQR',
+      columns: ['path'],
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    if (result.isNotEmpty) {
+      return result.first['path'] as String?;
+    }
+    return null;
+  }
+
+  Future<String?> getPathFromVCard(int id) async {
+    final db = await database;
+    final result = await db.query(
+      'VCard',
+      columns: ['path'],
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    if (result.isNotEmpty) {
+      return result.first['path'] as String?;
+    }
+    return null;
+  }
 }
 
 Future<void> deleteQR(bool isVCard, int id) async {

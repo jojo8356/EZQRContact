@@ -11,7 +11,7 @@ class QRResultPage extends StatelessWidget {
     final actions = getActionQRCode(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Votre QR Code')),
+      appBar: AppBar(title: const Text('Your QR Code')),
       body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

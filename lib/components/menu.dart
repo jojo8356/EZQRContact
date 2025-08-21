@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:qr_code_app/qr_scanner.dart';
+import 'package:qr_code_app/choices/add_choice.dart';
+import 'package:qr_code_app/choices/photo_choice.dart';
 import 'package:qr_code_app/tools.dart';
 import '../qr_choice_page.dart';
 
@@ -20,7 +21,7 @@ class MenuActions extends StatelessWidget {
         "color": Colors.blue,
         "icon": Icons.add,
         "onPressed": () async {
-          redirect(context, QRChoicePage());
+          redirect(context, QRChoicePage(buttons: addChoiceButtons));
           refreshData();
         },
       },
@@ -28,7 +29,7 @@ class MenuActions extends StatelessWidget {
         "color": Colors.red,
         "icon": Icons.camera_alt,
         "onPressed": () async {
-          redirect(context, QRScannerPage());
+          redirect(context, QRChoicePage(buttons: photoChoiceButtons));
           refreshData();
         },
       },

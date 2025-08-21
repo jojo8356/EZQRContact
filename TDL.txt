@@ -1,3 +1,12 @@
+
+import img et convert en text
+verif les pixels blancs -> transparent dans png
+change txt qr code en qr code du lien github
+faire une pop-up guide apparait qu'une fois apres install
+
+continual verification:
+trad les titres et txt en anglais
+
 alpha 0.11
 Font blanc sous qrcode (ok 12h25 18/08/2025)
 print ts les champs d'une vcard (ok 12h25 18/08/2025)
@@ -7,3 +16,6 @@ alpha 0.12
 ecran de chargement (ok 17h46 20/08/2025)
 modif title de chaque page (ok 19h10 20/08/2025)
 add logo (ok 19h18 20/08/2025)
+
+alpha 0.13
+pouvoir ré-enregistrer sous dans un dossier perso les qr code (ok 11h06 21/08/2025)

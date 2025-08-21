@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/vcard_view.dart';
 import 'package:qr_code_app/db/db.dart';
+import 'package:qr_code_app/save_file_page.dart';
 import 'package:qr_code_app/tools.dart';
 
 class OptionsQR extends StatelessWidget {
@@ -21,7 +22,7 @@ class OptionsQR extends StatelessWidget {
   Widget closeButton(BuildContext context) {
     return TextButton(
       onPressed: () => Navigator.pop(context),
-      child: const Text('Fermer'),
+      child: const Text('Close'),
     );
   }
 
@@ -35,7 +36,7 @@ class OptionsQR extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             // Voir bouton
-            ElevatedButton.icon(
+            ElevatedButton(
               onPressed: () {
                 if (isVCard) {
                   final controllers = mapToControllers(data);
@@ -56,7 +57,7 @@ class OptionsQR extends StatelessWidget {
                         horizontal: 12,
                       ),
 
-                      title: const Text('Infos VCard'),
+                      title: const Text('VCard infos'),
                       content: SingleChildScrollView(
                         child: SizedBox(
                           width: double.maxFinite,
@@ -70,19 +71,37 @@ class OptionsQR extends StatelessWidget {
                   showDialog(
                     context: context,
                     builder: (_) => AlertDialog(
-                      title: const Text('Texte QR'),
-                      content: Text(data['text'] ?? ""),
+                      actionsPadding: const EdgeInsets.fromLTRB(0, 0, 16, 8),
+                      insetPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 0,
+                      ),
+                      contentPadding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
+                      title: const Text(
+                        'QR Code Texte',
+                        textAlign: TextAlign.center,
+                      ),
+                      content: Expanded(
+                        child: Text(
+                          data['text'] ?? "",
+                          textAlign: TextAlign
+                              .center, // centre horizontalement le texte
+                        ),
+                      ),
                       actions: [closeButton(context)],
                     ),
                   );
                 }
               },
-              icon: const Icon(Icons.remove_red_eye),
-              label: const Text('Voir'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.all(10),
+                shape: const CircleBorder(),
+              ),
+              child: const Icon(Icons.remove_red_eye),
             ),
 
             // Voir QR bouton
-            ElevatedButton.icon(
+            ElevatedButton(
               onPressed: () {
                 if (data['path'] != null && data['path'].isNotEmpty) {
                   showDialog(
@@ -113,8 +132,11 @@ class OptionsQR extends StatelessWidget {
                   );
                 }
               },
-              icon: const Icon(Icons.qr_code),
-              label: const Text('QR'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.all(10),
+                shape: const CircleBorder(),
+              ),
+              child: const Icon(Icons.qr_code),
             ),
 
             // Supprimer bouton
@@ -129,6 +151,25 @@ class OptionsQR extends StatelessWidget {
                 shape: const CircleBorder(),
               ),
               child: const Icon(Icons.delete, color: Colors.white),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                String? path = '';
+                if (isVCard) {
+                  path = await QRDatabase().getPathFromVCard(data['id']);
+                } else {
+                  path = await QRDatabase().getPathFromSimpleQR(data['id']);
+                }
+                if (!context.mounted) return;
+                await showSaveDialog(context, path!);
+                await onRefresh();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                padding: const EdgeInsets.all(10),
+                shape: const CircleBorder(),
+              ),
+              child: const Icon(Icons.download, color: Colors.white),
             ),
           ],
         ),
