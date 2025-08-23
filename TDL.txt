@@ -1,4 +1,11 @@
 faire une pop-up guide apparait qu'une fois apres install
+add btn add contact in menu opt°
+save auto when scan a VCard
+
+save contact in contacts:
+	if contact in contacts:
+		verif data and for each:
+			verif old data == new else save new data
 
 continual verification:
 trad les titres et txt en anglais

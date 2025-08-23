@@ -150,6 +150,92 @@ class QRDatabase {
     }
     return null;
   }
+
+  Future<Map<String, dynamic>?> getVCardById(int id) async {
+    final db = await database;
+
+    final results = await db.query(
+      'VCard',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+
+    if (results.isNotEmpty) {
+      return results.first;
+    }
+    return null;
+  }
+
+  Future<Map<String, dynamic>?> verifContact({
+    String? nom,
+    String? prenom,
+  }) async {
+    final db = await database;
+
+    if (nom == null && prenom == null) return null;
+
+    String where = '';
+    List<String> whereArgs = [];
+
+    if (nom != null && prenom != null) {
+      where = 'nom = ? AND prenom = ?';
+      whereArgs = [nom, prenom];
+    } else if (nom != null) {
+      where = 'nom = ?';
+      whereArgs = [nom];
+    } else if (prenom != null) {
+      where = 'prenom = ?';
+      whereArgs = [prenom];
+    }
+
+    final results = await db.query(
+      'VCard',
+      where: where,
+      whereArgs: whereArgs,
+      limit: 1,
+    );
+
+    if (results.isNotEmpty) {
+      return results.first;
+    }
+
+    return null;
+  }
+
+  Future<void> saveContact(Map<String, dynamic> newContact) async {
+    final db = await database;
+
+    final nom = newContact['nom'] as String?;
+    final prenom = newContact['prenom'] as String?;
+
+    if (nom == null || prenom == null) {
+      throw Exception("Nom et prénom obligatoires pour sauvegarder un contact");
+    }
+    final existing = await verifContact(nom: nom, prenom: prenom);
+    if (existing != null) {
+      final updatedContact = Map<String, dynamic>.from(existing);
+      newContact.forEach((key, value) {
+        if (value != null && value.toString().isNotEmpty) {
+          final oldValue = existing[key];
+          if (oldValue == null ||
+              oldValue.toString().isEmpty ||
+              oldValue != value) {
+            updatedContact[key] = value;
+          }
+        }
+      });
+
+      await db.update(
+        'VCard',
+        updatedContact,
+        where: 'id = ?',
+        whereArgs: [existing['id']],
+      );
+    } else {
+      await insertVCard(newContact);
+    }
+  }
 }
 
 Future<void> deleteQR(bool isVCard, int id) async {

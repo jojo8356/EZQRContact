@@ -12,7 +12,13 @@ class TextResultPage extends StatelessWidget {
   Future<void> _saveQr() async {
     int id;
     if (isVCard(data)) {
-      id = await createVCard(parseVCard(data));
+      final dictio = parseVCard(data);
+      id = await createVCard(dictio);
+      verifContact();
+      addContact(
+        dictio.entries.where((entry) => entry.key != 'id')
+            as Map<String, String>,
+      );
     } else {
       id = await createSimpleQR(data);
     }

@@ -1,25 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_code_app/contact_app.dart';
 import 'package:qr_code_app/components/qr_save.dart';
 import 'db/db.dart';
 import 'tools.dart';
 
 Future<void> importContacts(State state) async {
-  var status = await Permission.contacts.status;
-  if (!status.isGranted) {
-    await FlutterContacts.requestPermission();
-  }
+  verifContact();
   final contacts = await FlutterContacts.getContacts(withProperties: true);
-  if (contacts.isEmpty) return;
+  if (contacts.isEmpty || !state.mounted) return;
 
-  if (!state.mounted) return;
-  final selectedContacts = await Navigator.push<List<Contact>>(
+  final selectedContacts = await redirect(
     state.context,
-    MaterialPageRoute(
-      builder: (_) => MultiContactPickerPage(contacts: contacts),
-    ),
+    MultiContactPickerPage(contacts: contacts),
   );
 
   if (selectedContacts == null || selectedContacts.isEmpty) return;

@@ -2,6 +2,14 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:file_saver/file_saver.dart';
+import 'package:flutter_contacts/contact.dart';
+import 'package:flutter_contacts/properties/address.dart';
+import 'package:flutter_contacts/properties/email.dart';
+import 'package:flutter_contacts/properties/name.dart';
+import 'package:flutter_contacts/properties/organization.dart';
+import 'package:flutter_contacts/properties/phone.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/services.dart';
 
 Map<String, TextEditingController> mapToControllers(Map<String, dynamic> data) {
   return {
@@ -145,8 +153,8 @@ Widget buildItemAvatar(bool isVCard, String photo) {
   }
 }
 
-void redirect(BuildContext context, Widget page) {
-  Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+Future<dynamic> redirect(BuildContext context, Widget page) {
+  return Navigator.push(context, MaterialPageRoute(builder: (_) => page));
 }
 
 List<Map<String, dynamic>> buildFields(
@@ -189,4 +197,56 @@ Future<void> saveFile(String originalPath, String fileName) async {
     fileExtension: 'png',
     mimeType: MimeType.png,
   );
+}
+
+Future<bool> verifContact() async {
+  var status = await Permission.contacts.status;
+
+  if (!status.isGranted) {
+    status = await Permission.contacts.request();
+  }
+
+  return status.isGranted;
+}
+
+Future<Uint8List> loadAssetImage(String path) async {
+  final ByteData data = await rootBundle.load(path);
+  return data.buffer.asUint8List();
+}
+
+Future<void> addContact(Map<String, String> data) async {
+  verifContact();
+  final contact = Contact(
+    name: Name(
+      first: data['prenom'] ?? '',
+      last: data['nom'] ?? '',
+      middle: data['nom2'] ?? '',
+      prefix: data['prefixe'] ?? '',
+      suffix: data['suffixe'] ?? '',
+    ),
+    organizations: [
+      Organization(company: data['org'] ?? '', title: data['job'] ?? ''),
+    ],
+    phones: [
+      if ((data['tel_work'] ?? '').isNotEmpty)
+        Phone(data['tel_work']!, label: PhoneLabel.work),
+      if ((data['tel_home'] ?? '').isNotEmpty)
+        Phone(data['tel_home']!, label: PhoneLabel.home),
+    ],
+    emails: [
+      if ((data['email'] ?? '').isNotEmpty)
+        Email(data['email']!, label: EmailLabel.home),
+    ],
+    addresses: [
+      if ((data['adr_work'] ?? '').isNotEmpty)
+        Address(data['adr_work']!, label: AddressLabel.work),
+      if ((data['adr_home'] ?? '').isNotEmpty)
+        Address(data['adr_home']!, label: AddressLabel.home),
+    ],
+    photo: (data['photo'] ?? '').isNotEmpty
+        ? await loadAssetImage(data['photo'] ?? '')
+        : null,
+  );
+
+  await contact.insert();
 }

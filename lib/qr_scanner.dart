@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:qr_code_app/text_result_page.dart';
+import 'package:qr_code_app/components/text_result_page.dart';
 import 'package:qr_code_app/tools.dart';
 
 class QRScannerPage extends StatefulWidget {
@@ -16,7 +16,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
 
   @override
   void dispose() {
-    _controller.dispose(); // libère la caméra
+    _controller.dispose();
     super.dispose();
   }
 
@@ -34,14 +34,9 @@ class _QRScannerPageState extends State<QRScannerPage> {
           for (final barcode in barcodes) {
             if (barcode.format == BarcodeFormat.qrCode) {
               final String qrValue = barcode.rawValue ?? "QR invalide";
-
               _navigated = true;
-              _controller.stop(); // stoppe la caméra
-
-              // Navigue vers la page résultat
-              redirect(context, TextResultPage(data: qrValue));
-
-              // Remet _navigated à false si jamais on revient sur ce scanner
+              _controller.stop();
+              await redirect(context, TextResultPage(data: qrValue));
               _navigated = false;
               break;
             }

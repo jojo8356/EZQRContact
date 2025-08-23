@@ -39,9 +39,9 @@ class GenerateSimpleQRCodeState extends State<GenerateSimpleQRCode> {
                 final qrData = controller.text;
                 final int id = await createSimpleQR(qrData);
                 await saveQrCode(qrData, id);
-                if (!mounted) return;
+                if (!context.mounted) return;
 
-                redirect(context, QRResultPage(data: qrData));
+                await redirect(context, QRResultPage(data: qrData));
               },
               child: const Text('GENERATE QR CODE'),
             ),

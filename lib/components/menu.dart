@@ -21,7 +21,7 @@ class MenuActions extends StatelessWidget {
         "color": Colors.blue,
         "icon": Icons.add,
         "onPressed": () async {
-          redirect(context, QRChoicePage(buttons: addChoiceButtons));
+          await redirect(context, QRChoicePage(buttons: addChoiceButtons));
           refreshData();
         },
       },
@@ -29,7 +29,7 @@ class MenuActions extends StatelessWidget {
         "color": Colors.red,
         "icon": Icons.camera_alt,
         "onPressed": () async {
-          redirect(context, QRChoicePage(buttons: photoChoiceButtons));
+          await redirect(context, QRChoicePage(buttons: photoChoiceButtons));
           refreshData();
         },
       },

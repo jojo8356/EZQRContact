@@ -8,8 +8,8 @@ List<Map<String, dynamic>> getActionQRCode(BuildContext context) {
       "label": "Menu",
       "color": Colors.red,
       "icon": Icons.home,
-      "onPressed": () {
-        redirect(context, HomePage());
+      "onPressed": () async {
+        await redirect(context, HomePage());
       },
     },
     {

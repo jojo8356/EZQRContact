@@ -1,7 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:qr_code_app/components/qr_options.dart';
 import 'package:qr_code_app/import_contact.dart';
 import 'package:qr_code_app/components/menu.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'db/db.dart';
 import 'tools.dart';
 
@@ -21,6 +25,54 @@ class HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _refreshData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showGuidePopup(); // 👈 affiche le guide après le build
+    });
+  }
+
+  Future<void> showGuidePopup() async {
+    final prefs = await SharedPreferences.getInstance();
+    bool seen = prefs.getBool('seenGuide') ?? false;
+
+    if (kDebugMode) seen = false; // toujours montrer en debug
+
+    if (!seen) {
+      final data = await rootBundle.loadString('assets/GUIDEME.md');
+      if (!mounted) return;
+
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          content: SizedBox(
+            width: 300,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 400),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Markdown(data: data),
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () async {
+                          if (!context.mounted) return;
+                          Navigator.of(context).pop();
+                          await prefs.setBool('seenGuide', true);
+                        },
+                        child: const Text('Fermer'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> _refreshData() async {

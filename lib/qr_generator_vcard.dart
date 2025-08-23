@@ -29,7 +29,6 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
     "email",
   ];
 
-  // Fix : map final de contrôleurs
   late final Map<String, TextEditingController> controllers = {
     for (var key in fieldKeys) key: TextEditingController(),
   };
@@ -70,10 +69,15 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                 final vcard = generateVCardFromData(data);
                 int id = createVCard(data) as int;
                 await saveQrCode(vcard, id);
+                verifContact();
+                addContact(
+                  data.entries.where((entry) => entry.key != 'id')
+                      as Map<String, String>,
+                );
 
-                if (!mounted) return;
+                if (!context.mounted) return;
 
-                redirect(context, QRResultPage(data: vcard));
+                await redirect(context, QRResultPage(data: vcard));
               },
               child: const Text('GÉNÉRER QR CODE VCard'),
             ),

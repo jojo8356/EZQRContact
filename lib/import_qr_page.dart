@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_qrcode_analysis/flutter_qrcode_analysis.dart';
+import 'package:qr_code_app/components/text_result_page.dart';
 
 class QrFromImagePage extends StatefulWidget {
   const QrFromImagePage({super.key});
@@ -36,7 +37,7 @@ class _QrFromImagePageState extends State<QrFromImagePage> {
               child: const Text("Choisir une image"),
             ),
             const SizedBox(height: 20),
-            Text(qrResult ?? "Résultat ici"),
+            TextResultPage(data: qrResult ?? "Résultat ici"),
           ],
         ),
       ),
