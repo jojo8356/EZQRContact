@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'home_page.dart';
-import 'guide_popup.dart'; // ton widget GuidePopup
 
 void main() {
   runApp(const MyApp());

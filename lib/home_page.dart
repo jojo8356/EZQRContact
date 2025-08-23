@@ -30,6 +30,11 @@ class HomePageState extends State<HomePage> {
     });
   }
 
+  Widget closeButton(BuildContext context) => TextButton(
+    onPressed: () => Navigator.pop(context),
+    child: const Text('Close'),
+  );
+
   Future<void> showGuidePopup() async {
     final prefs = await SharedPreferences.getInstance();
     bool seen = prefs.getBool('seenGuide') ?? false;
@@ -43,33 +48,9 @@ class HomePageState extends State<HomePage> {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          content: SizedBox(
-            width: 300,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 400),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Markdown(data: data),
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () async {
-                          if (!context.mounted) return;
-                          Navigator.of(context).pop();
-                          await prefs.setBool('seenGuide', true);
-                        },
-                        child: const Text('Fermer'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          title: const Text('QR Code Texte'),
+          content: Markdown(data: data, shrinkWrap: true),
+          actions: [closeButton(context)],
         ),
       );
     }
