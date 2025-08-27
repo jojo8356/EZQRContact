@@ -6,8 +6,8 @@ import 'package:qr_code_app/components/qr_options.dart';
 import 'package:qr_code_app/import_contact.dart';
 import 'package:qr_code_app/components/menu.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'db/db.dart';
-import 'tools.dart';
+import 'tools/db/db.dart';
+import 'tools/tools.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/qr_save.dart';
 import 'package:qr_code_app/components/vcard_view.dart';
-import 'package:qr_code_app/db/db.dart';
-import 'package:qr_code_app/tools.dart';
+import 'package:qr_code_app/tools/db/db.dart';
+import 'package:qr_code_app/tools/tools.dart';
 import 'package:qr_code_app/vars.dart';
 
 class TextResultPage extends StatelessWidget {
@@ -15,10 +15,7 @@ class TextResultPage extends StatelessWidget {
       final dictio = parseVCard(data);
       id = await createVCard(dictio);
       verifContact();
-      addContact(
-        dictio.entries.where((entry) => entry.key != 'id')
-            as Map<String, String>,
-      );
+      await createContact(dictio);
     } else {
       id = await createSimpleQR(data);
     }

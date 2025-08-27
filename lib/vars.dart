@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/home_page.dart';
-import 'package:qr_code_app/tools.dart';
+import 'package:qr_code_app/tools/tools.dart';
 
 List<Map<String, dynamic>> getActionQRCode(BuildContext context) {
   return [

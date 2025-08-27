@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_code_app/components/text_result_page.dart';
-import 'package:qr_code_app/tools.dart';
+import 'package:qr_code_app/tools/tools.dart';
 
 class QRScannerPage extends StatefulWidget {
   const QRScannerPage({super.key});

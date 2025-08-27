@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qr_code_app/tools.dart';
+import 'package:qr_code_app/tools/tools.dart';
 
 Future<void> showSaveDialog(BuildContext context, String originalPath) async {
   final TextEditingController nameController = TextEditingController(

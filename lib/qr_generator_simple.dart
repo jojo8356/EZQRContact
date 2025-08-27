@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/qr_save.dart';
-import 'package:qr_code_app/tools.dart';
+import 'package:qr_code_app/tools/tools.dart';
 import 'components/qr_result_page.dart';
-import 'db/db.dart';
+import 'tools/db/db.dart';
 
 class GenerateSimpleQRCode extends StatefulWidget {
   const GenerateSimpleQRCode({super.key});

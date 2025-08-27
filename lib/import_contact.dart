@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:qr_code_app/contact_app.dart';
 import 'package:qr_code_app/components/qr_save.dart';
-import 'db/db.dart';
-import 'tools.dart';
+import 'tools/db/db.dart';
+import 'tools/tools.dart';
 
 Future<void> importContacts(State state) async {
   verifContact();

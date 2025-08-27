@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qr_code_app/tools.dart';
+import 'package:qr_code_app/tools/tools.dart';
 
 class QRChoicePage extends StatelessWidget {
   final List<Map<String, dynamic>> buttons;
@@ -19,7 +19,11 @@ class QRChoicePage extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 30),
                   child: ElevatedButton.icon(
                     onPressed: () async {
-                      await redirect(context, btn["builder"]());
+                      final args = btn["args"] ?? []; // args optionnels
+                      await redirect(
+                        context,
+                        Function.apply(btn["builder"], args),
+                      );
                     },
                     icon: Icon(btn["icon"], color: Colors.white, size: 25),
                     label: Text(

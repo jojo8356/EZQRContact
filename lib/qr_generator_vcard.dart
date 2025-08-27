@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:qr_code_app/tools.dart';
+import 'package:qr_code_app/tools/db/db.dart';
+import 'package:qr_code_app/tools/tools.dart';
 import 'components/qr_result_page.dart';
-import 'db/db.dart';
 import 'components/qr_save.dart';
 
 class GenerateVCardQRCode extends StatefulWidget {
@@ -70,13 +70,8 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                 int id = createVCard(data) as int;
                 await saveQrCode(vcard, id);
                 verifContact();
-                addContact(
-                  data.entries.where((entry) => entry.key != 'id')
-                      as Map<String, String>,
-                );
-
+                await createContact(data);
                 if (!context.mounted) return;
-
                 await redirect(context, QRResultPage(data: vcard));
               },
               child: const Text('GÉNÉRER QR CODE VCard'),

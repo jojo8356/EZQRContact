@@ -2,8 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:qr_code_app/tools/contacts.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:collection/collection.dart';
 
 class QRDatabase {
   // Singleton
@@ -203,7 +205,7 @@ class QRDatabase {
     return null;
   }
 
-  Future<void> saveContact(Map<String, dynamic> newContact) async {
+  Future<void> modifContact(Map<String, dynamic> newContact) async {
     final db = await database;
 
     final nom = newContact['nom'] as String?;
@@ -232,8 +234,6 @@ class QRDatabase {
         where: 'id = ?',
         whereArgs: [existing['id']],
       );
-    } else {
-      await insertVCard(newContact);
     }
   }
 }
@@ -260,4 +260,16 @@ Future<int> createVCard(vcardData) async {
   final path = '${directory.path}/$id.png';
   await QRDatabase().updateVCardPath(id, path);
   return id;
+}
+
+Future<int> createContact(vcardData) async {
+  await addContactToPhone(vcardData);
+  if (vcardData.containsKey('id')) {
+    return vcardData['id'];
+  }
+  return await createVCard(vcardData);
+}
+
+Future<bool> compare2VCard(dynamic vcard1, dynamic vcard2) async {
+  return const MapEquality().equals(vcard1, vcard2);
 }
