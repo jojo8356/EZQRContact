@@ -220,9 +220,7 @@ class QRDatabase {
       newContact.forEach((key, value) {
         if (value != null && value.toString().isNotEmpty) {
           final oldValue = existing[key];
-          if (oldValue == null ||
-              oldValue.toString().isEmpty ||
-              oldValue != value) {
+          if (oldValue == null || oldValue.toString().isEmpty) {
             updatedContact[key] = value;
           }
         }
@@ -271,5 +269,8 @@ Future<int> createContact(vcardData) async {
 }
 
 Future<bool> compare2VCard(dynamic vcard1, dynamic vcard2) async {
-  return const MapEquality().equals(vcard1, vcard2);
+  final map1 = Map<String, dynamic>.from(vcard1)..remove('id');
+  final map2 = Map<String, dynamic>.from(vcard2)..remove('id');
+
+  return const MapEquality().equals(map1, map2);
 }

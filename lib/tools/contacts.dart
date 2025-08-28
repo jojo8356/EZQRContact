@@ -145,7 +145,10 @@ Future<void> updateContactOnPhone(Map<String, dynamic> contactData) async {
 
   final contact = await FlutterContacts.getContact(
     await getContactId(nom: nom, prenom: prenom) ?? '',
+    withProperties: true,
+    withAccounts: true,
   );
+
   if (contact == null) return;
 
   contact.name.first = prenom ?? contact.name.first;
