@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/tools/contacts.dart';
 import 'package:qr_code_app/tools/db/db.dart';
+import 'package:qr_code_app/tools/tools.dart';
 
 Future<void> showVCardPopup(
   BuildContext context,
@@ -57,12 +58,7 @@ Future<void> showVCardPopup(
     builder: (_) => AlertDialog(
       title: const Text('Info Contact'),
       content: Text(message),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Fermer'),
-        ),
-      ],
+      actions: [closeButton(context)],
     ),
   );
 }

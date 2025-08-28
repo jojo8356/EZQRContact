@@ -48,7 +48,8 @@ class HomePageState extends State<HomePage> {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
-          title: const Text('QR Code Texte'),
+          actionsPadding: const EdgeInsets.fromLTRB(0, 0, 20, 8),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12),
           content: Markdown(data: data, shrinkWrap: true),
           actions: [closeButton(context)],
         ),

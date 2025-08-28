@@ -20,18 +20,24 @@ Future<void> showSaveDialog(BuildContext context, String originalPath) async {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            Navigator.pop(context); // Annuler
+          },
           child: const Text("Cancel"),
         ),
         ElevatedButton(
           onPressed: () {
             fileName = nameController.text.trim();
-            Navigator.pop(context);
+            Navigator.pop(context); // Sauver
           },
           child: const Text("Save"),
         ),
       ],
     ),
   );
-  saveFile(originalPath, fileName!);
+
+  // Sauvegarder seulement si on a choisi un nom
+  if (fileName != null && fileName!.isNotEmpty) {
+    saveFile(originalPath, fileName!);
+  }
 }

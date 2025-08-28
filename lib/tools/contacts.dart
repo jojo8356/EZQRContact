@@ -1,130 +1,201 @@
-import 'package:contacts_service/contacts_service.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
-Future<void> addContactToPhone(Map<String, dynamic> contactData) async {
-  // Demander permission
+Future<List<Contact>> getAllContacts() async {
   verifContact();
 
-  // Créer contact
-  final newContact = Contact(
-    givenName: contactData['prenom'] ?? '',
-    familyName: contactData['nom'] ?? '',
-    middleName: contactData['nom2'],
-    prefix: contactData['prefixe'],
-    suffix: contactData['suffixe'],
-    company: contactData['org'],
-    jobTitle: contactData['job'],
-    emails: contactData['email'] != null
-        ? [Item(label: 'email', value: contactData['email'])]
-        : [],
-    phones: [
-      if (contactData['tel_work'] != null)
-        Item(label: 'work', value: contactData['tel_work']),
-      if (contactData['tel_home'] != null)
-        Item(label: 'home', value: contactData['tel_home']),
-    ],
-    postalAddresses: [
-      if (contactData['adr_work'] != null)
-        PostalAddress(label: 'work', street: contactData['adr_work']),
-      if (contactData['adr_home'] != null)
-        PostalAddress(label: 'home', street: contactData['adr_home']),
-    ],
+  // Récupérer tous les contacts avec propriétés et comptes
+  final contacts = await FlutterContacts.getContacts(
+    withProperties: true,
+    withAccounts: true,
   );
 
-  await ContactsService.addContact(newContact);
+  return contacts;
+}
+
+Future<String?> getContactId({String? prenom, String? nom}) async {
+  verifContact();
+  final contacts = await getAllContacts();
+
+  for (var contact in contacts) {
+    final first = contact.name.first;
+    final last = contact.name.last;
+
+    bool match = (prenom != null && nom != null)
+        ? (first == prenom && last == nom)
+        : prenom != null
+        ? first == prenom
+        : last == nom;
+
+    if (match) return contact.id;
+  }
+
+  return null;
+}
+
+Future<void> addContactToPhone(Map<String, dynamic> contactData) async {
+  verifContact();
+
+  final newContact = Contact()
+    ..name.first = contactData['prenom'] ?? ''
+    ..name.last = contactData['nom'] ?? ''
+    ..name.middle = contactData['nom2']
+    ..name.prefix = contactData['prefixe']
+    ..name.suffix = contactData['suffixe']
+    ..organizations = [
+      if (contactData['org'] != null || contactData['job'] != null)
+        Organization(
+          company: contactData['org'] ?? '',
+          title: contactData['job'] ?? '',
+        ),
+    ]
+    ..emails = [
+      if (contactData['email'] != null)
+        Email(contactData['email'], label: EmailLabel.home),
+    ]
+    ..phones = [
+      if (contactData['tel_work'] != null)
+        Phone(contactData['tel_work'], label: PhoneLabel.work),
+      if (contactData['tel_home'] != null)
+        Phone(contactData['tel_home'], label: PhoneLabel.home),
+    ]
+    ..addresses = [
+      if (contactData['adr_work'] != null)
+        Address(contactData['adr_work'], label: AddressLabel.work),
+      if (contactData['adr_home'] != null)
+        Address(contactData['adr_home'], label: AddressLabel.home),
+    ];
+
+  await newContact.insert();
 }
 
 Future<bool> contactExists({String? prenom, String? nom}) async {
-  verifContact();
-  if ((prenom == null || prenom.trim().isEmpty) &&
-      (nom == null || nom.trim().isEmpty)) {
-    throw Exception("Donner au moins prénom ou nom");
-  }
-
-  final contacts = await ContactsService.getContacts();
-  final prenomLower = prenom;
-  final nomLower = nom;
-
-  return contacts.any((c) {
-    final givenName = c.givenName ?? '';
-    final familyName = c.familyName ?? '';
-    final matchPrenom = prenomLower != null && givenName == prenomLower;
-    final matchNom = nomLower != null && familyName == nomLower;
-    return matchPrenom && matchNom;
-  });
-}
-
-Future<List<Contact>> getContactByName({String? prenom, String? nom}) async {
-  // Vérifier qu'au moins un paramètre est donné
   if ((prenom == null || prenom.isEmpty) && (nom == null || nom.isEmpty)) {
     throw Exception("Donner au moins prénom ou nom");
   }
 
   verifContact();
 
-  final contacts = await ContactsService.getContacts();
-  return contacts
-      .where(
-        (c) => (prenom != null && nom != null)
-            ? (c.givenName ?? '') == prenom && (c.familyName ?? '') == nom
-            : (prenom != null
-                  ? (c.givenName ?? '') == prenom
-                  : (c.familyName ?? '') == nom),
-      )
-      .toList();
+  final contacts = await getAllContacts();
+  return contacts.any((c) {
+    final first = c.name.first;
+    final last = c.name.last;
+    final matchFirst = prenom != null && first == prenom;
+    final matchLast = nom != null && last == nom;
+    return (prenom != null && nom != null)
+        ? matchFirst && matchLast
+        : matchFirst || matchLast;
+  });
+}
+
+Future<Map<String, dynamic>?> getContactByName({
+  String? prenom,
+  String? nom,
+}) async {
+  if ((prenom == null || prenom.isEmpty) && (nom == null || nom.isEmpty)) {
+    throw Exception("Donner au moins prénom ou nom");
+  }
+
+  verifContact();
+  final contacts = await getAllContacts();
+  final contact = contacts.firstWhere((c) {
+    final first = c.name.first;
+    final last = c.name.last;
+    return (prenom != null && nom != null)
+        ? first == prenom && last == nom
+        : prenom != null
+        ? first == prenom
+        : last == nom;
+  });
+
+  return {
+    "prenom": contact.name.first,
+    "nom": contact.name.last,
+    "phones": contact.phones
+        .map((p) => {"label": p.label.name, "number": p.number})
+        .toList(),
+    "emails": contact.emails
+        .map((e) => {"label": e.label.name, "email": e.address})
+        .toList(),
+    "addresses": contact.addresses
+        .map((a) => {"label": a.label.name, "address": a.address})
+        .toList(),
+    "company": contact.organizations.isNotEmpty
+        ? contact.organizations.first.company
+        : null,
+    "job": contact.organizations.isNotEmpty
+        ? contact.organizations.first.title
+        : null,
+  };
 }
 
 Future<void> updateContactOnPhone(Map<String, dynamic> contactData) async {
-  final prenom = contactData['prenom'] as String?;
-  final nom = contactData['nom'] as String?;
+  final prenom = contactData['prenom']?.toString();
+  final nom = contactData['nom']?.toString();
 
   if ((prenom == null || prenom.isEmpty) && (nom == null || nom.isEmpty)) {
     throw Exception("Donner au moins prénom ou nom pour modifier un contact");
   }
 
   verifContact();
-
-  final existingContacts = await getContactByName(prenom: prenom, nom: nom);
-  if (existingContacts.isEmpty) {
+  final existingContact = await getContactByName(prenom: prenom, nom: nom);
+  if (existingContact == null || existingContact.isEmpty) {
     throw Exception("Aucun contact trouvé pour modification");
   }
-  for (var contact in existingContacts) {
-    contact.givenName = prenom ?? contact.givenName;
-    contact.familyName = nom ?? contact.familyName;
-    contact.middleName = contactData['nom2'] ?? contact.middleName;
-    contact.prefix = contactData['prefixe'] ?? contact.prefix;
-    contact.suffix = contactData['suffixe'] ?? contact.suffix;
-    contact.company = contactData['org'] ?? contact.company;
-    contact.jobTitle = contactData['job'] ?? contact.jobTitle;
 
-    // Emails
-    if (contactData['email'] != null) {
-      contact.emails = [Item(label: 'email', value: contactData['email'])];
-    }
+  final contact = await FlutterContacts.getContact(
+    await getContactId(nom: nom, prenom: prenom) ?? '',
+  );
+  if (contact == null) return;
 
-    // Téléphones
-    final phones = <Item>[];
-    if (contactData['tel_work'] != null) {
-      phones.add(Item(label: 'work', value: contactData['tel_work']));
-    }
-    if (contactData['tel_home'] != null) {
-      phones.add(Item(label: 'home', value: contactData['tel_home']));
-    }
-    if (phones.isNotEmpty) contact.phones = phones;
+  contact.name.first = prenom ?? contact.name.first;
+  contact.name.last = nom ?? contact.name.last;
+  contact.name.middle = contactData['nom2']?.toString() ?? contact.name.middle;
+  contact.name.prefix =
+      contactData['prefixe']?.toString() ?? contact.name.prefix;
+  contact.name.suffix =
+      contactData['suffixe']?.toString() ?? contact.name.suffix;
 
-    // Adresses
-    final addresses = <PostalAddress>[];
-    if (contactData['adr_work'] != null) {
-      addresses.add(
-        PostalAddress(label: 'work', street: contactData['adr_work']),
-      );
-    }
-    if (contactData['adr_home'] != null) {
-      addresses.add(
-        PostalAddress(label: 'home', street: contactData['adr_home']),
-      );
-    }
-    if (addresses.isNotEmpty) contact.postalAddresses = addresses;
-    await ContactsService.updateContact(contact);
+  contact.organizations = [
+    Organization(
+      company: contactData['org']?.toString() ?? '',
+      title: contactData['job']?.toString() ?? '',
+    ),
+  ];
+
+  // Emails
+  if (contactData['email'] != null) {
+    contact.emails = [
+      Email(contactData['email'].toString(), label: EmailLabel.home),
+    ];
   }
+
+  // Phones
+  final phones = <Phone>[];
+  if (contactData['tel_work'] != null) {
+    phones.add(
+      Phone(contactData['tel_work'].toString(), label: PhoneLabel.work),
+    );
+  }
+  if (contactData['tel_home'] != null) {
+    phones.add(
+      Phone(contactData['tel_home'].toString(), label: PhoneLabel.home),
+    );
+  }
+  if (phones.isNotEmpty) contact.phones = phones;
+
+  // Addresses
+  final addresses = <Address>[];
+  if (contactData['adr_work'] != null) {
+    addresses.add(
+      Address(contactData['adr_work'].toString(), label: AddressLabel.work),
+    );
+  }
+  if (contactData['adr_home'] != null) {
+    addresses.add(
+      Address(contactData['adr_home'].toString(), label: AddressLabel.home),
+    );
+  }
+  if (addresses.isNotEmpty) contact.addresses = addresses;
+  await contact.update();
 }

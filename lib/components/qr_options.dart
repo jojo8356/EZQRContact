@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:qr_code_app/popups/card_view.dart';
-import 'package:qr_code_app/popups/contact_add.dart';
-import 'package:qr_code_app/popups/qr_view.dart';
+import 'package:qr_code_app/modals/card_view.dart';
+import 'package:qr_code_app/modals/contact_add.dart';
+import 'package:qr_code_app/modals/qr_view.dart';
 import 'package:qr_code_app/tools/db/db.dart';
-import 'package:qr_code_app/popups/save.dart';
+import 'package:qr_code_app/modals/save.dart';
 
 class OptionsQR extends StatelessWidget {
   final bool isVCard;
@@ -73,14 +73,17 @@ class OptionsQR extends StatelessWidget {
       firstChild: Container(),
       secondChild: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+        child: GridView.count(
+          shrinkWrap: true,
+          crossAxisCount: actions.length > 4 ? 4 : actions.length,
+          mainAxisSpacing: 10,
+          crossAxisSpacing: 40,
           children: actions.map((a) {
             return ElevatedButton(
               onPressed: a["onPressed"] as VoidCallback,
               style: ElevatedButton.styleFrom(
                 backgroundColor: a["color"] as Color?,
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(2),
                 shape: const CircleBorder(),
               ),
               child: Icon(

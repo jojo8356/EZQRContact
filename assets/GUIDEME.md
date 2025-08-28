@@ -1,7 +1,5 @@
 # Welcome
 
-## Menu
-
 1. **More: Generate QR Code**
    - Simple
    - VCard: Virtual Identity Card

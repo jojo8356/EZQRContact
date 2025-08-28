@@ -6,6 +6,7 @@ save contact in contacts:
 	if contact in contacts:
 		verif data and for each:
 			verif old data empty, data == new else save new data
+historique
 
 continual verification:
 trad les titres et txt en anglais
