@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:qr_code_app/providers/toast.dart';
+import 'package:qr_code_app/home_page.dart';
+import 'package:qr_code_app/modals/alert.dart';
 import 'package:qr_code_app/tools/contacts.dart';
 import 'package:qr_code_app/tools/db/db.dart';
 import 'package:qr_code_app/tools/tools.dart';
@@ -58,13 +58,24 @@ Future<void> showVCardPopup(
                 onPressed: () async {
                   final action = button['action'] as Future<void> Function();
                   await action();
+
                   if (!dialogContext.mounted) return;
-                  Provider.of<ToastProvider>(
-                    context,
-                    listen: false,
-                  ).show('${button['title']} successful');
-                  Navigator.of(dialogContext).pop();
+
+                  Navigator.pushReplacement(
+                    dialogContext,
+                    MaterialPageRoute(builder: (context) => const HomePage()),
+                  );
+                  AppAlerts.of(context)?.add(
+                    Alert.success(
+                      message: Text(
+                        "${button['title']} successful",
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      duration: const Duration(seconds: 5),
+                    ),
+                  );
                 },
+
                 child: Text(button['title'] as String),
               );
             }),

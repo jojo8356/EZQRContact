@@ -2,12 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:flutter_toast_plus/flutter_toast_plus.dart';
-import 'package:provider/provider.dart';
 import 'package:qr_code_app/components/qr_options.dart';
 import 'package:qr_code_app/import_contact.dart';
 import 'package:qr_code_app/components/menu.dart';
-import 'package:qr_code_app/providers/toast.dart' show ToastProvider;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'tools/db/db.dart';
 import 'tools/tools.dart';
@@ -30,7 +27,6 @@ class HomePageState extends State<HomePage> {
     _refreshData();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showGuidePopup();
-      ToastService.init(context);
     });
   }
 
@@ -43,7 +39,7 @@ class HomePageState extends State<HomePage> {
     final prefs = await SharedPreferences.getInstance();
     bool seen = prefs.getBool('seenGuide') ?? false;
 
-    if (kDebugMode) seen = false; // toujours montrer en debug
+    // if (kDebugMode) seen = false;
 
     if (!seen) {
       final data = await rootBundle.loadString('assets/GUIDEME.md');
@@ -58,6 +54,8 @@ class HomePageState extends State<HomePage> {
           actions: [closeButton(context)],
         ),
       );
+
+      await prefs.setBool('seenGuide', true);
     }
   }
 
@@ -145,28 +143,6 @@ class HomePageState extends State<HomePage> {
                       ),
               ),
             ],
-          ),
-          Consumer<ToastProvider>(
-            builder: (context, toast, child) {
-              if (toast.message.isEmpty) return const SizedBox();
-
-              ToastService.show(
-                message: toast.message,
-                style: ToastStyle(
-                  backgroundColor: Colors.purple,
-                  textColor: Colors.white,
-                  icon: Icons.star,
-                  iconColor: Colors.yellow,
-                  borderRadius: 12,
-                  padding: EdgeInsets.all(16),
-                  duration: Duration(seconds: 1),
-                  showProgressIndicator: true,
-                ),
-              );
-
-              toast.clear();
-              return const SizedBox();
-            },
           ),
         ],
       ),
