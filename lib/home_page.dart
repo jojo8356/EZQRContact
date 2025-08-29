@@ -2,9 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_toast_plus/flutter_toast_plus.dart';
+import 'package:provider/provider.dart';
 import 'package:qr_code_app/components/qr_options.dart';
 import 'package:qr_code_app/import_contact.dart';
 import 'package:qr_code_app/components/menu.dart';
+import 'package:qr_code_app/providers/toast.dart' show ToastProvider;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'tools/db/db.dart';
 import 'tools/tools.dart';
@@ -26,7 +29,8 @@ class HomePageState extends State<HomePage> {
     super.initState();
     _refreshData();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      showGuidePopup(); // 👈 affiche le guide après le build
+      showGuidePopup();
+      ToastService.init(context);
     });
   }
 
@@ -79,64 +83,90 @@ class HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Easy QR Contact App")),
-      body: Column(
+      body: Stack(
         children: [
-          const SizedBox(height: 20),
+          Column(
+            children: [
+              const SizedBox(height: 20),
+              MenuActions(
+                refreshData: _refreshData,
+                importContacts: (ctx) async {
+                  await importContacts(this);
+                },
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: loading
+                    ? const Center(child: CircularProgressIndicator())
+                    : allItems.isEmpty
+                    ? const Center(child: Text("No QR code found"))
+                    : ListView.builder(
+                        itemCount: allItems.length,
+                        itemBuilder: (context, index) {
+                          final item = allItems[index];
+                          final titleText = getTitleAndPhoto(item);
+                          final data = item['data'] as Map<String, dynamic>;
+                          final isVCard = item['type'] == 'vcard';
+                          String photo = data['photo'] ?? '';
 
-          MenuActions(
-            refreshData: _refreshData,
-            importContacts: (ctx) async {
-              await importContacts(this);
-            },
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: loading
-                ? const Center(child: CircularProgressIndicator())
-                : allItems.isEmpty
-                ? const Center(child: Text("No QR code found"))
-                : ListView.builder(
-                    itemCount: allItems.length,
-                    itemBuilder: (context, index) {
-                      final item = allItems[index];
-                      final titleText = getTitleAndPhoto(item);
-                      final data = item['data'] as Map<String, dynamic>;
-                      final isVCard = item['type'] == 'vcard';
-                      String photo = data['photo'] ?? '';
-
-                      return Card(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        elevation: 3,
-                        child: Column(
-                          children: [
-                            ListTile(
-                              leading: buildItemAvatar(isVCard, photo),
-                              title: Text(
-                                titleText,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
+                          return Card(
+                            margin: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            elevation: 3,
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  leading: buildItemAvatar(isVCard, photo),
+                                  title: Text(
+                                    titleText,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  onTap: () {
+                                    setState(() {
+                                      expandedList[index] =
+                                          !expandedList[index];
+                                    });
+                                  },
                                 ),
-                              ),
-                              onTap: () {
-                                setState(() {
-                                  expandedList[index] = !expandedList[index];
-                                });
-                              },
+                                OptionsQR(
+                                  isVCard: isVCard,
+                                  data: data,
+                                  expanded: expandedList[index],
+                                  onRefresh: _refreshData,
+                                ),
+                              ],
                             ),
-                            OptionsQR(
-                              isVCard: isVCard,
-                              data: data,
-                              expanded: expandedList[index],
-                              onRefresh: _refreshData,
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+          Consumer<ToastProvider>(
+            builder: (context, toast, child) {
+              if (toast.message.isEmpty) return const SizedBox();
+
+              ToastService.show(
+                message: toast.message,
+                style: ToastStyle(
+                  backgroundColor: Colors.purple,
+                  textColor: Colors.white,
+                  icon: Icons.star,
+                  iconColor: Colors.yellow,
+                  borderRadius: 12,
+                  padding: EdgeInsets.all(16),
+                  duration: Duration(seconds: 1),
+                  showProgressIndicator: true,
+                ),
+              );
+
+              toast.clear();
+              return const SizedBox();
+            },
           ),
         ],
       ),

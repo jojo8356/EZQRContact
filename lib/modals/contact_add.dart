@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:qr_code_app/providers/toast.dart';
 import 'package:qr_code_app/tools/contacts.dart';
 import 'package:qr_code_app/tools/db/db.dart';
 import 'package:qr_code_app/tools/tools.dart';
@@ -17,71 +19,63 @@ Future<void> showVCardPopup(
   final vcard = await db.getVCardById(data['id']) ?? {};
 
   if (!context.mounted) return;
+  final buttons = [
+    {
+      "title": "Replace contact",
+      "action": () async {
+        await updateContactOnPhone(vcard);
+        await db.modifContact(vcard);
+      },
+    },
+    {
+      "title": "Clone Contact",
+      "action": () async {
+        final cloned = Map<String, dynamic>.from(vcard);
+        cloned.remove("id");
+        await createContact(cloned);
+      },
+    },
+    {
+      "title": "Input empty completed",
+      "action": () async {
+        await updateOnlyEmptyFields(vcard);
+        await db.modifContact(vcard);
+      },
+    },
+  ];
 
   // Affichage du dialog
   showDialog(
     context: context,
     builder: (dialogContext) {
       return AlertDialog(
-        title: const Text('detect contact'),
+        title: const Text("Options Contact"),
         content: SingleChildScrollView(
-          child: ListBody(children: const [Text('What do you want ?')]),
+          child: Column(
+            children: List.generate(buttons.length, (index) {
+              final button = buttons[index];
+              return TextButton(
+                onPressed: () async {
+                  final action = button['action'] as Future<void> Function();
+                  await action();
+                  if (!dialogContext.mounted) return;
+                  Provider.of<ToastProvider>(
+                    context,
+                    listen: false,
+                  ).show('${button['title']} successful');
+                  Navigator.of(dialogContext).pop();
+                },
+                child: Text(button['title'] as String),
+              );
+            }),
+          ),
         ),
-        actions: [
-          // 🔥 Remplacer
-          TextButton(
-            onPressed: () async {
-              // SnackBar avant pop
-              scaffoldMessengerKey.currentState?.showSnackBar(
-                const SnackBar(content: Text("Replace Contact")),
-              );
-
-              await updateContactOnPhone(vcard);
-              await db.modifContact(vcard);
-              Navigator.of(dialogContext).pop();
-            },
-            child: const Text("Replace contact"),
-          ),
-
-          // ✏️ Compléter champs vides
-          TextButton(
-            onPressed: () async {
-              scaffoldMessengerKey.currentState?.showSnackBar(
-                const SnackBar(content: Text("Input empty completed")),
-              );
-
-              await updateOnlyEmptyFields(vcard);
-              await db.modifContact(vcard);
-              Navigator.of(dialogContext).pop();
-            },
-            child: const Text("complete input empty"),
-          ),
-
-          // 🆕 Cloner
-          TextButton(
-            onPressed: () async {
-              scaffoldMessengerKey.currentState?.showSnackBar(
-                const SnackBar(content: Text("clone contact")),
-              );
-
-              final cloned = Map<String, dynamic>.from(vcard);
-              cloned["nom"] = "${vcard["nom"] ?? ""} (Clone)";
-              cloned.remove("id");
-              await addContactToPhone(cloned);
-              await createVCard(cloned);
-              Navigator.of(dialogContext).pop();
-            },
-            child: const Text("clone contact"),
-          ),
-
-          closeButton(dialogContext),
-        ],
+        actions: [closeButton(context)],
       );
     },
   );
 }
 
-/// Mettre à jour uniquement les champs vides
 Future<void> updateOnlyEmptyFields(Map<String, dynamic> vcard) async {
   final contact = await getContactByName(
     nom: vcard["nom"],
