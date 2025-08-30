@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:toastification/toastification.dart';
 import 'home_page.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
 
 void main() {
-  runApp(const MyApp());
+  runApp(ToastificationWrapper(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {

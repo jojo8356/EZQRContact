@@ -2,7 +2,7 @@ import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
 Future<List<Contact>> getAllContacts() async {
-  verifContact();
+  await verifContact();
 
   // Récupérer tous les contacts avec propriétés et comptes
   final contacts = await FlutterContacts.getContacts(
@@ -14,7 +14,7 @@ Future<List<Contact>> getAllContacts() async {
 }
 
 Future<String?> getContactId({String? prenom, String? nom}) async {
-  verifContact();
+  await verifContact();
   final contacts = await getAllContacts();
 
   for (var contact in contacts) {
@@ -34,7 +34,7 @@ Future<String?> getContactId({String? prenom, String? nom}) async {
 }
 
 Future<void> addContactToPhone(Map<String, dynamic> contactData) async {
-  verifContact();
+  await verifContact();
 
   final newContact = Contact()
     ..name.first = contactData['prenom'] ?? ''
@@ -74,7 +74,7 @@ Future<bool> contactExists({String? prenom, String? nom}) async {
     throw Exception("Donner au moins prénom ou nom");
   }
 
-  verifContact();
+  await verifContact();
 
   final contacts = await getAllContacts();
   return contacts.any((c) {
@@ -88,7 +88,7 @@ Future<bool> contactExists({String? prenom, String? nom}) async {
   });
 }
 
-Future<Map<String, dynamic>?> getContactByName({
+Future<Map<String, String>?> getContactByName({
   String? prenom,
   String? nom,
 }) async {
@@ -96,7 +96,6 @@ Future<Map<String, dynamic>?> getContactByName({
     throw Exception("Donner au moins prénom ou nom");
   }
 
-  verifContact();
   final contacts = await getAllContacts();
   final contact = contacts.firstWhere((c) {
     final first = c.name.first;
@@ -109,23 +108,28 @@ Future<Map<String, dynamic>?> getContactByName({
   });
 
   return {
-    "prenom": contact.name.first,
-    "nom": contact.name.last,
-    "phones": contact.phones
-        .map((p) => {"label": p.label.name, "number": p.number})
-        .toList(),
-    "emails": contact.emails
-        .map((e) => {"label": e.label.name, "email": e.address})
-        .toList(),
-    "addresses": contact.addresses
-        .map((a) => {"label": a.label.name, "address": a.address})
-        .toList(),
-    "company": contact.organizations.isNotEmpty
+    'nom': contact.name.last,
+    'prenom': contact.name.first,
+    'nom2': '',
+    'prefixe': '',
+    'suffixe': '',
+    'org': contact.organizations.isNotEmpty
         ? contact.organizations.first.company
-        : null,
-    "job": contact.organizations.isNotEmpty
+        : '',
+    'job': contact.organizations.isNotEmpty
         ? contact.organizations.first.title
-        : null,
+        : '',
+    'photo': '',
+    'tel_work': contact.phones.firstWhere((p) => p.label.name == 'work').number,
+    'tel_home': contact.phones.firstWhere((p) => p.label.name == 'home').number,
+    'adr_work': contact.addresses
+        .firstWhere((a) => a.label.name == 'work')
+        .address,
+    'adr_home': contact.addresses
+        .firstWhere((a) => a.label.name == 'home')
+        .address,
+    'email': contact.emails.isNotEmpty ? contact.emails.first.address : '',
+    'rev': '',
   };
 }
 
@@ -137,7 +141,7 @@ Future<void> updateContactOnPhone(Map<String, dynamic> contactData) async {
     throw Exception("Donner au moins prénom ou nom pour modifier un contact");
   }
 
-  verifContact();
+  await verifContact();
   final existingContact = await getContactByName(prenom: prenom, nom: nom);
   if (existingContact == null || existingContact.isEmpty) {
     throw Exception("Aucun contact trouvé pour modification");
@@ -201,4 +205,46 @@ Future<void> updateContactOnPhone(Map<String, dynamic> contactData) async {
   }
   if (addresses.isNotEmpty) contact.addresses = addresses;
   await contact.update();
+}
+
+List<Map<String, dynamic>> contactsToMapList(List<Contact> contacts) {
+  return contacts.map((c) {
+    return {
+      'id': c.id,
+      'prenom': c.name.first,
+      'nom': c.name.last,
+      'nom2': c.name.middle,
+      'prefixe': c.name.prefix,
+      'suffixe': c.name.suffix,
+      'org': c.organizations.isNotEmpty ? c.organizations.first.company : '',
+      'job': c.organizations.isNotEmpty ? c.organizations.first.title : '',
+      'photo': '', // à gérer si tu veux les images
+      'tel_work': c.phones
+          .firstWhere(
+            (p) => p.label == PhoneLabel.work,
+            orElse: () => Phone('', label: PhoneLabel.work),
+          )
+          .number,
+      'tel_home': c.phones
+          .firstWhere(
+            (p) => p.label == PhoneLabel.home,
+            orElse: () => Phone('', label: PhoneLabel.home),
+          )
+          .number,
+      'adr_work': c.addresses
+          .firstWhere(
+            (a) => a.label == AddressLabel.work,
+            orElse: () => Address('', label: AddressLabel.work),
+          )
+          .address,
+      'adr_home': c.addresses
+          .firstWhere(
+            (a) => a.label == AddressLabel.home,
+            orElse: () => Address('', label: AddressLabel.home),
+          )
+          .address,
+      'email': c.emails.isNotEmpty ? c.emails.first.address : '',
+      'rev': '',
+    };
+  }).toList();
 }

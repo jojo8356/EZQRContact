@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/tools/contacts.dart';
 import 'package:qr_code_app/tools/db/db.dart';
 import 'package:qr_code_app/tools/tools.dart';
 import 'components/qr_result_page.dart';
@@ -67,10 +68,10 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
               onPressed: () async {
                 final data = extractValues(controllers);
                 final vcard = generateVCardFromData(data);
-                int id = createVCard(data) as int;
+                int id = await createVCard(data);
                 await saveQrCode(vcard, id);
-                verifContact();
-                await createContact(data);
+                await verifContact();
+                await addContactToPhone(data);
                 if (!context.mounted) return;
                 await redirect(context, QRResultPage(data: vcard));
               },

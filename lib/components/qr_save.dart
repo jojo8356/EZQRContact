@@ -1,8 +1,9 @@
 import 'dart:io';
 import 'dart:ui';
+import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:flutter/material.dart';
+import 'package:image/image.dart' as img;
 
 Future<String> saveQrCode(String data, int id) async {
   final qrValidationResult = QrValidator.validate(
@@ -16,33 +17,38 @@ Future<String> saveQrCode(String data, int id) async {
     final painter = QrPainter.withQr(
       qr: qrCode!,
       gapless: true,
-      dataModuleStyle: QrDataModuleStyle(
-        color: Colors.black, // carrés de données
-      ),
-      eyeStyle: QrEyeStyle(
-        eyeShape: QrEyeShape.square, // forme des yeux
-        color: Colors.black, // couleur des yeux
-      ),
+      dataModuleStyle: QrDataModuleStyle(color: Colors.black),
+      eyeStyle: QrEyeStyle(eyeShape: QrEyeShape.square, color: Colors.black),
     );
 
-    // Pour générer le PNG avec fond blanc
+    // Générer le QR code sur un canvas
     final pictureRecorder = PictureRecorder();
     final canvas = Canvas(pictureRecorder);
     final size = const Size(2048, 2048);
 
-    // Dessine un fond blanc
+    // Fond blanc
     final paint = Paint()..color = Colors.white;
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
 
-    // Dessine le QR code dessus
+    // Dessiner QR code
     painter.paint(canvas, size);
 
     final picture = pictureRecorder.endRecording();
-    final img = await picture.toImage(size.width.toInt(), size.height.toInt());
-    final byteData = await img.toByteData(format: ImageByteFormat.png);
+    final imageFlutter = await picture.toImage(
+      size.width.toInt(),
+      size.height.toInt(),
+    );
+    final byteData = await imageFlutter.toByteData(format: ImageByteFormat.png);
+
+    // Convertir PNG en JPG
+    final pngBytes = byteData!.buffer.asUint8List();
+    final decodedImage = img.decodeImage(pngBytes)!;
+    final jpgBytes = img.encodeJpg(decodedImage);
+
+    // Sauvegarder
     final directory = await getApplicationDocumentsDirectory();
-    final path = '${directory.path}/$id.png';
-    await File(path).writeAsBytes(byteData!.buffer.asUint8List());
+    final path = '${directory.path}/$id.jpg';
+    await File(path).writeAsBytes(jpgBytes);
 
     return path;
   } else {

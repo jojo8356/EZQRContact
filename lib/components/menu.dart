@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/choices/add_choice.dart';
 import 'package:qr_code_app/choices/photo_choice.dart';
+import 'package:qr_code_app/import_contact.dart';
 import 'package:qr_code_app/tools/tools.dart';
 import '../qr_choice_page.dart';
 
 class MenuActions extends StatelessWidget {
   final VoidCallback refreshData;
-  final Future<void> Function(BuildContext) importContacts;
 
-  const MenuActions({
-    super.key,
-    required this.refreshData,
-    required this.importContacts,
-  });
+  const MenuActions({super.key, required this.refreshData});
 
   @override
   Widget build(BuildContext context) {

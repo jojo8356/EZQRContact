@@ -19,7 +19,7 @@ class QRChoicePage extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 30),
                   child: ElevatedButton.icon(
                     onPressed: () async {
-                      final args = btn["args"] ?? []; // args optionnels
+                      final args = btn["args"] ?? [];
                       await redirect(
                         context,
                         Function.apply(btn["builder"], args),

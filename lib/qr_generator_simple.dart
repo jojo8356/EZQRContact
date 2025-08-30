@@ -29,7 +29,7 @@ class GenerateSimpleQRCodeState extends State<GenerateSimpleQRCode> {
               controller: controller,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
-                labelText: 'Enter your URL',
+                labelText: 'Enter your Text',
               ),
             ),
             const SizedBox(height: 20),

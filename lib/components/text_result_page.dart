@@ -14,7 +14,7 @@ class TextResultPage extends StatelessWidget {
     if (isVCard(data)) {
       final dictio = parseVCard(data);
       id = await createVCard(dictio);
-      verifContact();
+      await verifContact();
       await createContact(dictio);
     } else {
       id = await createSimpleQR(data);

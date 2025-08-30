@@ -53,7 +53,8 @@ class QRDatabase {
             adr_home TEXT,
             email TEXT,
             rev TEXT,
-            path TEXT
+            path TEXT,
+            clone INTEGER
           )
         ''');
       },
@@ -98,13 +99,36 @@ class QRDatabase {
   Future<void> deleteVCard(int id) async {
     final db = await database;
     final result = await db.query('VCard', where: 'id = ?', whereArgs: [id]);
+
     if (result.isNotEmpty) {
       final path = result.first['path'] as String?;
-      if (path != null && File(path).existsSync()) {
-        File(path).deleteSync(); // supprime le fichier QR
+      final isCloned = await isClone(id); // ✅ Appel sur QRDatabase
+
+      if (path != null && File(path).existsSync() && !isCloned) {
+        File(path).deleteSync(); // Supprime le fichier uniquement si pas clone
       }
     }
+
     await db.delete('VCard', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<bool> isClone(int id) async {
+    final db = await database;
+
+    final result = await db.query(
+      'VCard',
+      columns: ['clone'],
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+
+    if (result.isNotEmpty) {
+      final cloneValue = result.first['clone'];
+      return cloneValue == 1;
+    }
+
+    throw Exception("VCard avec id $id introuvable");
   }
 
   Future<int> updateVCardPath(int id, String path) async {
@@ -205,7 +229,7 @@ class QRDatabase {
     return null;
   }
 
-  Future<void> modifContact(Map<String, dynamic> newContact) async {
+  Future<void> modifContact(newContact) async {
     final db = await database;
 
     final nom = newContact['nom'] as String?;
@@ -217,6 +241,7 @@ class QRDatabase {
     final existing = await verifContact(nom: nom, prenom: prenom);
     if (existing != null) {
       final updatedContact = Map<String, dynamic>.from(existing);
+      updatedContact['id']++;
       newContact.forEach((key, value) {
         if (value != null && value.toString().isNotEmpty) {
           final oldValue = existing[key];
@@ -234,6 +259,41 @@ class QRDatabase {
       );
     }
   }
+
+  Future<int?> getLastVCardId() async {
+    final db = await database;
+    final result = await db.rawQuery(
+      'SELECT id FROM VCard ORDER BY id DESC LIMIT 1',
+    );
+    if (result.isNotEmpty) {
+      return result.first['id'] as int?;
+    }
+    return 0;
+  }
+
+  Future<int> cloneVCard(int id) async {
+    final db = QRDatabase();
+
+    // Récupérer la VCard existante
+    final original = await db.getVCardById(id);
+    if (original == null) {
+      throw Exception("VCard avec id $id introuvable");
+    }
+
+    final cloned = Map<String, dynamic>.from(original);
+    cloned.remove('id');
+    cloned['clone'] = 1; // 🔥 Spécial clone
+
+    // Insérer la copie
+    final newId = await db.insertVCard(cloned);
+
+    // Générer le chemin
+    final directory = await getApplicationDocumentsDirectory();
+    final path = '${directory.path}/$newId.jpg';
+    await db.updateVCardPath(newId, path);
+
+    return newId;
+  }
 }
 
 Future<void> deleteQR(bool isVCard, int id) async {
@@ -245,26 +305,26 @@ Future<void> deleteQR(bool isVCard, int id) async {
 }
 
 Future<int> createSimpleQR(String txt) async {
-  final id = await QRDatabase().insertSimpleQR(txt, null);
+  final db = QRDatabase();
+  final id = await db.insertSimpleQR(txt, null);
   final directory = await getApplicationDocumentsDirectory();
-  final path = '${directory.path}/$id.png';
-  await QRDatabase().updateSimpleQRPath(id, path);
+  final path = '${directory.path}/$id.jpg';
+  await db.updateSimpleQRPath(id, path);
   return id;
 }
 
-Future<int> createVCard(vcardData) async {
-  final id = await QRDatabase().insertVCard(vcardData);
+Future<int> createVCard(Map<String, dynamic> vcardData) async {
+  final db = QRDatabase();
+  vcardData['clone'] = '0';
+  final id = await db.insertVCard(vcardData);
   final directory = await getApplicationDocumentsDirectory();
-  final path = '${directory.path}/$id.png';
-  await QRDatabase().updateVCardPath(id, path);
+  final path = '${directory.path}/$id.jpg';
+  await db.updateVCardPath(id, path);
   return id;
 }
 
 Future<int> createContact(vcardData) async {
   await addContactToPhone(vcardData);
-  if (vcardData.containsKey('id')) {
-    return vcardData['id'];
-  }
   return await createVCard(vcardData);
 }
 

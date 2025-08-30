@@ -1,9 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:qr_code_app/components/qr_options.dart';
-import 'package:qr_code_app/import_contact.dart';
 import 'package:qr_code_app/components/menu.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'tools/db/db.dart';
@@ -86,12 +84,7 @@ class HomePageState extends State<HomePage> {
           Column(
             children: [
               const SizedBox(height: 20),
-              MenuActions(
-                refreshData: _refreshData,
-                importContacts: (ctx) async {
-                  await importContacts(this);
-                },
-              ),
+              MenuActions(refreshData: _refreshData),
               const SizedBox(height: 20),
               Expanded(
                 child: loading
