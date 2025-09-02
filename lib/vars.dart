@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/home_page.dart';
+import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
 List<Map<String, dynamic>> getActionQRCode(BuildContext context) {
+  final actions = LangProvider.get('pages')['QR']['result']['actions'];
   return [
     {
-      "label": "Menu",
+      "label": actions['menu'],
       "color": Colors.red,
       "icon": Icons.home,
       "onPressed": () async {
@@ -13,7 +15,7 @@ List<Map<String, dynamic>> getActionQRCode(BuildContext context) {
       },
     },
     {
-      "label": "Generate",
+      "label": actions['generate'],
       "color": Colors.blue,
       "icon": Icons.refresh,
       "onPressed": () {

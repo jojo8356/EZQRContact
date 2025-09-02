@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
 Future<void> showSaveDialog(BuildContext context, String originalPath) async {
@@ -6,31 +7,27 @@ Future<void> showSaveDialog(BuildContext context, String originalPath) async {
     text: 'QR_${DateTime.now().millisecondsSinceEpoch}',
   );
   String? fileName;
+  final lang = LangProvider.get('pages')['QR']['save'];
 
   await showDialog(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text("Save QR Code"),
+      title: Text(lang['title']),
       content: TextField(
         controller: nameController,
-        decoration: const InputDecoration(
-          labelText: "File name",
-          border: OutlineInputBorder(),
+        decoration: InputDecoration(
+          labelText: lang['input deco'],
+          border: const OutlineInputBorder(),
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context); // Annuler
-          },
-          child: const Text("Cancel"),
-        ),
+        closeButton(context),
         ElevatedButton(
           onPressed: () {
             fileName = nameController.text.trim();
-            Navigator.pop(context); // Sauver
+            Navigator.pop(context);
           },
-          child: const Text("Save"),
+          child: Text(lang['button']),
         ),
       ],
     ),

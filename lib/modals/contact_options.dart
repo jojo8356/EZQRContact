@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/home_page.dart';
+import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/tools/contacts.dart';
 import 'package:qr_code_app/tools/db/db.dart';
 import 'package:qr_code_app/tools/tools.dart';
@@ -17,24 +18,26 @@ Future<void> showVCardPopup(
   if (!isVCard) return;
 
   if (!context.mounted) return;
+  final lang = LangProvider.get("pages")['contact']['options'];
+  final buttonsLang = lang['buttons'];
   final buttons = [
     {
-      "title": "Replace contact",
-      "icon": Icons.sync, // icône pour cette action
+      "title": buttonsLang['replace'],
+      "icon": Icons.sync,
       "action": () async {
         final vcard = await db.getVCardById(data['id']) ?? {};
         await updateContactOnPhone(vcard);
       },
     },
     {
-      "title": "Clone Contact",
-      "icon": Icons.copy, // icône pour cloner
+      "title": buttonsLang['clone'],
+      "icon": Icons.copy,
       "action": () async {
         await db.cloneVCard(data['id']);
       },
     },
     {
-      "title": "Input empty completed",
+      "title": buttonsLang['empty input'],
       "icon": Icons.edit,
       "action": () async {
         final vcard = await getContactByName(
@@ -54,7 +57,7 @@ Future<void> showVCardPopup(
         actionsPadding: const EdgeInsets.fromLTRB(0, 0, 16, 8),
         insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
         contentPadding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
-        title: const Text("Options Contact"),
+        title: Text(lang['title']),
         content: SingleChildScrollView(
           child: Column(
             children: List.generate(buttons.length, (index) {

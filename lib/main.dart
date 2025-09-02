@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:toastification/toastification.dart';
-import 'home_page.dart';
+import 'package:qr_code_app/bottom_nav.dart';
+import 'package:qr_code_app/providers/lang.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
 
-void main() {
-  runApp(ToastificationWrapper(child: MyApp()));
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await LangProvider.init();
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -15,11 +17,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      scaffoldMessengerKey: scaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
-      title: 'QR App',
+      title: LangProvider.get('title'),
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: const HomePage(),
+      home: const MainNavigation(),
     );
   }
 }

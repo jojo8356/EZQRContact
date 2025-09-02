@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/modals/card_view.dart';
-import 'package:qr_code_app/modals/contact_add.dart';
+import 'package:qr_code_app/modals/contact_options.dart';
 import 'package:qr_code_app/modals/qr_view.dart';
 import 'package:qr_code_app/tools/db/db.dart';
 import 'package:qr_code_app/modals/save.dart';
@@ -38,14 +38,15 @@ class OptionsQR extends StatelessWidget {
           }
         },
       },
-      {
-        "icon": Icons.delete,
-        "color": Colors.red,
-        "onPressed": () async {
-          await deleteQR(isVCard, data['id']);
-          await onRefresh();
+      if (data['deleted'] != 1)
+        {
+          "icon": Icons.delete,
+          "color": Colors.red,
+          "onPressed": () async {
+            await deleteQR(isVCard, data['id']);
+            await onRefresh();
+          },
         },
-      },
       {
         "icon": Icons.download,
         "color": Colors.blue,

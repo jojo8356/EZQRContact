@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/contact.dart';
+import 'package:qr_code_app/providers/lang.dart';
 
 class MultiContactPickerPage extends StatefulWidget {
   final List<Contact> contacts;
@@ -12,11 +13,12 @@ class MultiContactPickerPage extends StatefulWidget {
 
 class _MultiContactPickerPageState extends State<MultiContactPickerPage> {
   final Map<int, bool> selectedMap = {};
+  final lang = LangProvider.get('pages')['contact']['import'];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Select contacts")),
+      appBar: AppBar(title: Text(lang['title'])),
       body: ListView.builder(
         itemCount: widget.contacts.length,
         itemBuilder: (context, index) {
@@ -39,7 +41,7 @@ class _MultiContactPickerPageState extends State<MultiContactPickerPage> {
           children: [
             ElevatedButton(
               onPressed: () => Navigator.pop(context, <Contact>[]),
-              child: const Text("Cancel"),
+              child: Text(lang['buttons']['cancel']),
             ),
             const Spacer(),
             ElevatedButton(
@@ -52,7 +54,7 @@ class _MultiContactPickerPageState extends State<MultiContactPickerPage> {
                     .toList();
                 Navigator.pop(context, chosen);
               },
-              child: const Text("Validate"),
+              child: Text(lang['buttons']['validate']),
             ),
           ],
         ),

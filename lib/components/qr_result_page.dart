@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/vars.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -9,9 +10,10 @@ class QRResultPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final actions = getActionQRCode(context);
+    final result = LangProvider.get('pages');
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Your QR Code')),
+      appBar: AppBar(title: Text(result['QR']['result']['title'])),
       body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

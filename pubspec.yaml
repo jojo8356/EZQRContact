@@ -51,6 +51,8 @@ flutter:
     - assets/GUIDEME.md
     - assets/icon/icon.png
     - assets/logo_splash.png
+    - assets/langs/fr.json
+    - assets/langs/en.json
 
 flutter_native_splash:
   color: "#ffffff"

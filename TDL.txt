@@ -1,15 +1,5 @@
-faire une pop-up guide apparait qu'une fois apres install
-add btn add contact in menu opt°
-save auto when scan a VCard
-
-save contact in contacts:
-	if contact in contacts:
-		verif data and for each:
-			verif old data empty, data == new else save new data
+json generalised US FR
 historique
-
-continual verification:
-trad les titres et txt en anglais
 
 alpha 0.11
 Font blanc sous qrcode (ok 12h25 18/08/2025)
@@ -27,3 +17,20 @@ alpha 0.22
 pouvoir ré-enregistrer sous dans un dossier perso les qr code (ok 11h06 21/08/2025)
 import img et convert en text (ok 16h49 21/08/2025)
 Regler le bug de dulpiquation de qr code si resté sur l'image (ok 17h07 21/08/2025)
+
+alpha 0.23
+faire une pop-up guide apparait qu'une fois apres install (ok 20h00 30/08/2025)
+
+alpha 0.24
+add btn add contact in menu opt° (ok 20h00 30/08/2025)
+save auto when scan a VCard (ok 20h00 30/08/2025)
+
+alpha 0.34
+save contact in contacts: (ok 20h00 30/08/2025)
+	if contact in contacts:
+		verif data and for each:
+			verif old data empty, data == new else save new data
+dashborad with 3 options: Replace contact, Clone Contact, Input empty completed (ok 20h00 30/08/2025)
+
+alpha 0.35
+upgrade UI dashborad with 3 options (ok 20h00 30/08/2025)

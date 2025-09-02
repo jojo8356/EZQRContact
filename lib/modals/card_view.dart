@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/vcard_view.dart';
+import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
 Future<void> showDataDialog(
@@ -7,6 +8,7 @@ Future<void> showDataDialog(
   Map<String, dynamic> data, {
   required bool isVCard,
 }) async {
+  final cardView = LangProvider.get('pages')['QR']['card view'];
   if (!context.mounted) return;
 
   if (isVCard) {
@@ -18,7 +20,7 @@ Future<void> showDataDialog(
         insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12),
 
-        title: const Text('Infos VCard'),
+        title: Text(cardView['vcard']),
         content: SingleChildScrollView(
           child: SizedBox(
             width: double.maxFinite,
@@ -35,7 +37,7 @@ Future<void> showDataDialog(
         actionsPadding: const EdgeInsets.fromLTRB(0, 0, 16, 8),
         insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
         contentPadding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
-        title: const Text('QR Code Texte', textAlign: TextAlign.center),
+        title: Text(cardView['simple'], textAlign: TextAlign.center),
         content: SingleChildScrollView(
           child: SizedBox(
             width: double.maxFinite,

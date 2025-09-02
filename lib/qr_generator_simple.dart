@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/qr_save.dart';
+import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/tools/tools.dart';
 import 'components/qr_result_page.dart';
 import 'tools/db/db.dart';
@@ -16,20 +17,18 @@ class GenerateSimpleQRCodeState extends State<GenerateSimpleQRCode> {
 
   @override
   Widget build(BuildContext context) {
+    final lang = LangProvider.get('pages')['QR']['generator']['simple'];
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Simple QR Code Generator'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: Text(lang['title']), centerTitle: true),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
             TextField(
               controller: controller,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 border: OutlineInputBorder(),
-                labelText: 'Enter your Text',
+                labelText: lang['input'],
               ),
             ),
             const SizedBox(height: 20),
@@ -43,7 +42,9 @@ class GenerateSimpleQRCodeState extends State<GenerateSimpleQRCode> {
 
                 await redirect(context, QRResultPage(data: qrData));
               },
-              child: const Text('GENERATE QR CODE'),
+              child: Text(
+                LangProvider.get('pages')['QR']['generator']['submit button'],
+              ),
             ),
           ],
         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/qr_save.dart';
 import 'package:qr_code_app/components/vcard_view.dart';
+import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/tools/db/db.dart';
 import 'package:qr_code_app/tools/tools.dart';
 import 'package:qr_code_app/vars.dart';
@@ -25,6 +26,7 @@ class TextResultPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final actions = getActionQRCode(context);
+    final result = LangProvider.get('pages')['QR']['result'];
 
     return FutureBuilder(
       future: _saveQr(),
@@ -36,7 +38,7 @@ class TextResultPage extends StatelessWidget {
         }
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Your QR Code')),
+          appBar: AppBar(title: Text(result['title'])),
           body: SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

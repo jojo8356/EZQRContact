@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:image/image.dart' as img;
 
@@ -25,12 +26,8 @@ Future<String> saveQrCode(String data, int id) async {
     final pictureRecorder = PictureRecorder();
     final canvas = Canvas(pictureRecorder);
     final size = const Size(2048, 2048);
-
-    // Fond blanc
     final paint = Paint()..color = Colors.white;
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
-
-    // Dessiner QR code
     painter.paint(canvas, size);
 
     final picture = pictureRecorder.endRecording();
@@ -52,6 +49,6 @@ Future<String> saveQrCode(String data, int id) async {
 
     return path;
   } else {
-    throw Exception('QR invalide');
+    throw Exception(LangProvider.get('pages')['QR']['scanner']['invalid qr']);
   }
 }

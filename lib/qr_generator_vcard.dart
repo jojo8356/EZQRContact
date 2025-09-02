@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/tools/contacts.dart';
 import 'package:qr_code_app/tools/db/db.dart';
 import 'package:qr_code_app/tools/tools.dart';
@@ -47,12 +48,10 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
   @override
   Widget build(BuildContext context) {
     final fields = buildFields(controllers);
+    final lang = LangProvider.get('pages')['QR']['generator'];
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('VCard QR Code Generator'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: Text(lang['vcard']), centerTitle: true),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -75,7 +74,7 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                 if (!context.mounted) return;
                 await redirect(context, QRResultPage(data: vcard));
               },
-              child: const Text('GÉNÉRER QR CODE VCard'),
+              child: Text(lang['submit button']),
             ),
           ],
         ),

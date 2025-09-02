@@ -1,8 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_code_app/tools/contacts.dart';
+import 'package:qr_code_app/tools/tools.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:collection/collection.dart';
@@ -29,12 +28,14 @@ class QRDatabase {
       onCreate: (db, version) async {
         // Table SimpleQR
         await db.execute('''
-          CREATE TABLE SimpleQR(
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            text TEXT NOT NULL,
-            path TEXT
-          )
-        ''');
+  CREATE TABLE SimpleQR(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    text TEXT NOT NULL,
+    path TEXT,
+    deleted INTEGER DEFAULT 0,
+    date_deleted TEXT
+  )
+''');
 
         await db.execute('''
           CREATE TABLE VCard(
@@ -54,7 +55,9 @@ class QRDatabase {
             email TEXT,
             rev TEXT,
             path TEXT,
-            clone INTEGER
+            clone INTEGER,
+            deleted INTEGER DEFAULT 0,
+            date_deleted TEXT
           )
         ''');
       },
@@ -69,47 +72,53 @@ class QRDatabase {
 
   // Exemple d'insert dans VCard
   Future<int> insertVCard(Map<String, dynamic> data) async {
+    data.remove('id');
     final db = await database;
     return db.insert('VCard', data);
   }
 
   Future<List<Map<String, dynamic>>> getAllSimpleQR() async {
     final db = await database;
-    return db.query('SimpleQR', orderBy: 'id DESC');
+    return db.query('SimpleQR', where: 'deleted = 0', orderBy: 'id DESC');
   }
 
   Future<List<Map<String, dynamic>>> getAllVCards() async {
     final db = await database;
-    return db.query('VCard', orderBy: 'id DESC');
+    return db.query('VCard', where: 'deleted = 0', orderBy: 'id DESC');
   }
 
   Future<void> deleteSimpleQR(int id) async {
     final db = await database;
+
+    // Récupérer l'entrée
     final result = await db.query('SimpleQR', where: 'id = ?', whereArgs: [id]);
+
     if (result.isNotEmpty) {
-      final path = result.first['path'] as String?;
-      if (path != null && File(path).existsSync()) {
-        File(path).deleteSync(); // supprime le fichier QR
-      }
+      // Marquer comme supprimé et ajouter la date
+      await db.update(
+        'SimpleQR',
+        {'deleted': 1, 'date_deleted': getDateDays()},
+        where: 'id = ?',
+        whereArgs: [id],
+      );
     }
-    await db.delete('SimpleQR', where: 'id = ?', whereArgs: [id]);
   }
 
   // Supprimer VCard
   Future<void> deleteVCard(int id) async {
     final db = await database;
+
+    // Récupérer la VCard
     final result = await db.query('VCard', where: 'id = ?', whereArgs: [id]);
 
     if (result.isNotEmpty) {
-      final path = result.first['path'] as String?;
-      final isCloned = await isClone(id); // ✅ Appel sur QRDatabase
-
-      if (path != null && File(path).existsSync() && !isCloned) {
-        File(path).deleteSync(); // Supprime le fichier uniquement si pas clone
-      }
+      await db.update(
+        'VCard',
+        {'deleted': 1, 'date_deleted': getDateDays()},
+        where: 'id = ?',
+        whereArgs: [id],
+      );
     }
-
-    await db.delete('VCard', where: 'id = ?', whereArgs: [id]);
   }
 
   Future<bool> isClone(int id) async {
@@ -294,6 +303,57 @@ class QRDatabase {
 
     return newId;
   }
+
+  Future<List<Map<String, dynamic>>> getDeletedSimpleQR() async {
+    final db = await database;
+    return db.query(
+      'SimpleQR',
+      where: 'deleted = 1',
+      orderBy: 'date_deleted DESC',
+    );
+  }
+
+  // Récupérer toutes les VCards supprimées
+  Future<List<Map<String, dynamic>>> getDeletedVCards() async {
+    final db = await database;
+    return db.query(
+      'VCard',
+      where: 'deleted = 1',
+      orderBy: 'date_deleted DESC',
+    );
+  }
+
+  Future<bool> isDeletedVCard(int id) async {
+    final db = await database;
+    final result = await db.query(
+      'VCard',
+      columns: ['deleted'],
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+
+    if (result.isNotEmpty) {
+      return (result.first['deleted'] as int) == 1;
+    }
+    throw Exception("VCard avec id $id introuvable");
+  }
+
+  Future<bool> isDeletedSimpleQR(int id) async {
+    final db = await database;
+    final result = await db.query(
+      'SimpleQR',
+      columns: ['deleted'],
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+
+    if (result.isNotEmpty) {
+      return (result.first['deleted'] as int) == 1;
+    }
+    throw Exception("SimpleQR avec id $id introuvable");
+  }
 }
 
 Future<void> deleteQR(bool isVCard, int id) async {
@@ -333,4 +393,15 @@ Future<bool> compare2VCard(dynamic vcard1, dynamic vcard2) async {
   final map2 = Map<String, dynamic>.from(vcard2)..remove('id');
 
   return const MapEquality().equals(map1, map2);
+}
+
+Future<List<Map<String, dynamic>>> getAllDeletedQRs() async {
+  final db = QRDatabase();
+  final deletedSimple = await db.getDeletedSimpleQR();
+  final deletedVCard = await db.getDeletedVCards();
+
+  return [
+    ...deletedSimple.map((e) => {'type': 'simple', 'data': e}),
+    ...deletedVCard.map((e) => {'type': 'vcard', 'data': e}),
+  ];
 }

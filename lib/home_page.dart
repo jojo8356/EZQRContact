@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
-import 'package:qr_code_app/components/qr_options.dart';
 import 'package:qr_code_app/components/menu.dart';
+import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/qr_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'tools/db/db.dart';
 import 'tools/tools.dart';
@@ -27,11 +28,6 @@ class HomePageState extends State<HomePage> {
       showGuidePopup();
     });
   }
-
-  Widget closeButton(BuildContext context) => TextButton(
-    onPressed: () => Navigator.pop(context),
-    child: const Text('Close'),
-  );
 
   Future<void> showGuidePopup() async {
     final prefs = await SharedPreferences.getInstance();
@@ -78,7 +74,7 @@ class HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Easy QR Contact App")),
+      appBar: AppBar(title: Text(LangProvider.get('title'))),
       body: Stack(
         children: [
           Column(
@@ -90,47 +86,18 @@ class HomePageState extends State<HomePage> {
                 child: loading
                     ? const Center(child: CircularProgressIndicator())
                     : allItems.isEmpty
-                    ? const Center(child: Text("No QR code found"))
+                    ? Center(child: Text(LangProvider.get('QR Not Found')))
                     : ListView.builder(
                         itemCount: allItems.length,
                         itemBuilder: (context, index) {
                           final item = allItems[index];
-                          final titleText = getTitleAndPhoto(item);
                           final data = item['data'] as Map<String, dynamic>;
                           final isVCard = item['type'] == 'vcard';
-                          String photo = data['photo'] ?? '';
 
-                          return Card(
-                            margin: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            elevation: 3,
-                            child: Column(
-                              children: [
-                                ListTile(
-                                  leading: buildItemAvatar(isVCard, photo),
-                                  title: Text(
-                                    titleText,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  onTap: () {
-                                    setState(() {
-                                      expandedList[index] =
-                                          !expandedList[index];
-                                    });
-                                  },
-                                ),
-                                OptionsQR(
-                                  isVCard: isVCard,
-                                  data: data,
-                                  expanded: expandedList[index],
-                                  onRefresh: _refreshData,
-                                ),
-                              ],
-                            ),
+                          return QRCard(
+                            data: data,
+                            isVCard: isVCard,
+                            onRefresh: _refreshData,
                           );
                         },
                       ),

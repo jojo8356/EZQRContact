@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
 class QRChoicePage extends StatelessWidget {
@@ -9,7 +10,7 @@ class QRChoicePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Easy QR Contact App")),
+      appBar: AppBar(title: Text(LangProvider.get('title'))),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
