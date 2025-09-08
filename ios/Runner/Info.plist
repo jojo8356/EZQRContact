@@ -47,5 +47,14 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<false/>
+
+				<!-- 📷 Permission Caméra -->
+		<key>NSCameraUsageDescription</key>
+		<string>Cette application a besoin d'accéder à la caméra pour scanner des QR codes.</string>
+
+		<!-- 📇 Permission Contacts -->
+		<key>NSContactsUsageDescription</key>
+		<string>Cette application a besoin d'accéder à vos contacts pour lire et ajouter des informations.</string>
+
 	</dict>
 </plist>

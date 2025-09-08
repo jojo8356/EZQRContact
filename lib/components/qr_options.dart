@@ -10,7 +10,6 @@ class OptionsQR extends StatelessWidget {
   final Map<String, dynamic> data;
   final bool expanded;
   final Future<void> Function() onRefresh;
-
   const OptionsQR({
     super.key,
     required this.isVCard,
@@ -18,7 +17,6 @@ class OptionsQR extends StatelessWidget {
     required this.expanded,
     required this.onRefresh,
   });
-
   @override
   Widget build(BuildContext context) {
     final actions = [
@@ -69,7 +67,6 @@ class OptionsQR extends StatelessWidget {
           },
         },
     ];
-
     return AnimatedCrossFade(
       firstChild: Container(),
       secondChild: Padding(
@@ -84,8 +81,7 @@ class OptionsQR extends StatelessWidget {
               onPressed: a["onPressed"] as VoidCallback,
               style: ElevatedButton.styleFrom(
                 backgroundColor: a["color"] as Color?,
-                padding: const EdgeInsets.all(2),
-                shape: const CircleBorder(),
+                padding: EdgeInsets.zero,
               ),
               child: Icon(
                 a["icon"] as IconData,

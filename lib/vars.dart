@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qr_code_app/home_page.dart';
+import 'package:qr_code_app/bottom_nav.dart';
 import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
@@ -11,7 +11,7 @@ List<Map<String, dynamic>> getActionQRCode(BuildContext context) {
       "color": Colors.red,
       "icon": Icons.home,
       "onPressed": () async {
-        await redirect(context, HomePage());
+        await redirect(context, MainNavigation());
       },
     },
     {

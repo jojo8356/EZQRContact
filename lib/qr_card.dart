@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/qr_options.dart';
-import 'package:qr_code_app/tools/db/db.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
 class QRCard extends StatefulWidget {
