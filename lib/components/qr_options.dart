@@ -73,7 +73,10 @@ class OptionsQR extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: GridView.count(
           shrinkWrap: true,
-          crossAxisCount: actions.length > 4 ? 4 : actions.length,
+          crossAxisCount:
+              MediaQuery.of(context).orientation == Orientation.portrait
+              ? 4
+              : 8,
           mainAxisSpacing: 10,
           crossAxisSpacing: 40,
           children: actions.map((a) {
@@ -82,6 +85,7 @@ class OptionsQR extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: a["color"] as Color?,
                 padding: EdgeInsets.zero,
+                fixedSize: const Size(60, 60),
               ),
               child: Icon(
                 a["icon"] as IconData,

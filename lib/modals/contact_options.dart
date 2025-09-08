@@ -81,8 +81,7 @@ Future<void> showVCardPopup(
 
                   if (!dialogContext.mounted) return;
                   toastification.show(
-                    context:
-                        context, // optional if you use ToastificationWrapper
+                    context: context,
                     type: ToastificationType.success,
                     style: ToastificationStyle.fillColored,
                     autoCloseDuration: const Duration(seconds: 3),
