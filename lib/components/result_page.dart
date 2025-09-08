@@ -41,7 +41,7 @@ class TextResultPage extends StatelessWidget {
           appBar: AppBar(title: Text(result['title'])),
           body: SingleChildScrollView(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 20),
@@ -67,7 +67,8 @@ class TextResultPage extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: actions.map((action) {
-                      return Expanded(
+                      return Flexible(
+                        fit: FlexFit.tight,
                         child: Container(
                           margin: const EdgeInsets.symmetric(horizontal: 5),
                           child: ElevatedButton.icon(

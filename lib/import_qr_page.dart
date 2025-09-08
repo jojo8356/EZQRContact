@@ -15,12 +15,20 @@ class _QrFromImagePageState extends State<QrFromImagePage> {
   String? qrResult;
 
   Future<void> pickAndDecodeImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      String? data = await FlutterQrcodeAnalysis.analysisImage(pickedFile.path);
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+      if (pickedFile != null) {
+        final data = await FlutterQrcodeAnalysis.analysisImage(pickedFile.path);
+        setState(() {
+          qrResult = data ?? LangProvider.get('QR Not Found');
+        });
+      }
+    } catch (e) {
+      debugPrint('Erreur lors du scan image: $e');
       setState(() {
-        qrResult = data ?? LangProvider.get('QR Not Found');
+        qrResult = 'Erreur: $e';
       });
     }
   }
@@ -39,7 +47,7 @@ class _QrFromImagePageState extends State<QrFromImagePage> {
               child: Text(lang['pick']),
             ),
             const SizedBox(height: 20),
-            TextResultPage(data: qrResult ?? lang['default here']),
+            TextResultPage(data: qrResult ?? (lang['default here']) ?? 'test'),
           ],
         ),
       ),

@@ -7,3 +7,5 @@
    - By scan
    - By upload local image
 3. **Contact logo: Convert and share your contacts by QR Code Generation**
+
+You have a submenu options when you click in card.

@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:qr_code_app/components/menu.dart';
+import 'package:qr_code_app/modals/guide.dart';
 import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/qr_card.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'tools/db/db.dart';
-import 'tools/tools.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -25,32 +22,8 @@ class HomePageState extends State<HomePage> {
     super.initState();
     _refreshData();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      showGuidePopup();
+      showGuidePopup(context);
     });
-  }
-
-  Future<void> showGuidePopup() async {
-    final prefs = await SharedPreferences.getInstance();
-    bool seen = prefs.getBool('seenGuide') ?? false;
-
-    // if (kDebugMode) seen = false;
-
-    if (!seen) {
-      final data = await rootBundle.loadString('assets/GUIDEME.md');
-      if (!mounted) return;
-
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          actionsPadding: const EdgeInsets.fromLTRB(0, 0, 20, 8),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-          content: Markdown(data: data, shrinkWrap: true),
-          actions: [closeButton(context)],
-        ),
-      );
-
-      await prefs.setBool('seenGuide', true);
-    }
   }
 
   Future<void> _refreshData() async {
