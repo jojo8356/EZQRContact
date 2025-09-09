@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
+import 'package:qr_code_app/providers/lang.dart';
 
 Map<String, TextEditingController> mapToControllers(Map<String, dynamic> data) {
   return {
@@ -154,20 +155,21 @@ Future<dynamic> redirect(BuildContext context, Widget page) {
 List<Map<String, dynamic>> buildFields(
   Map<String, TextEditingController> controllers,
 ) {
+  final lang = LangProvider.get('VCard Input');
   return [
-    {"label": "Name", "controller": controllers["nom"]},
-    {"label": "Surname", "controller": controllers["prenom"]},
-    {"label": "Name2", "controller": controllers["nom2"]},
-    {"label": "Prefix", "controller": controllers["prefixe"]},
-    {"label": "Suffix", "controller": controllers["suffixe"]},
-    {"label": "Incorporation", "controller": controllers["org"]},
-    {"label": "Job", "controller": controllers["job"]},
-    {"label": "Photo URL", "controller": controllers["photo"]},
-    {"label": "Work phone", "controller": controllers["tel_work"]},
-    {"label": "Home phone", "controller": controllers["tel_home"]},
-    {"label": "Work address", "controller": controllers["adr_work"]},
-    {"label": "Home address", "controller": controllers["adr_home"]},
-    {"label": "Email", "controller": controllers["email"]},
+    {"label": lang['nom'], "controller": controllers["nom"]},
+    {"label": lang['prenom'], "controller": controllers["prenom"]},
+    {"label": lang['nom2'], "controller": controllers["nom2"]},
+    {"label": lang['prefixe'], "controller": controllers["prefixe"]},
+    {"label": lang['suffixe'], "controller": controllers["suffixe"]},
+    {"label": lang['org'], "controller": controllers["org"]},
+    {"label": lang['job'], "controller": controllers["job"]},
+    {"label": lang['photo'], "controller": controllers["photo"]},
+    {"label": lang['tel_work'], "controller": controllers["tel_work"]},
+    {"label": lang['tel_home'], "controller": controllers["tel_home"]},
+    {"label": lang['adr_work'], "controller": controllers["adr_work"]},
+    {"label": lang['adr_home'], "controller": controllers["adr_home"]},
+    {"label": lang['email'], "controller": controllers["email"]},
   ];
 }
 

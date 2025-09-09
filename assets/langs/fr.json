@@ -65,5 +65,20 @@
         "simple": "Code QR Texte"
       }
     }
+  },
+  "VCard Input": {
+    "nom": "Nom",
+    "prenom": "Prénom",
+    "nom2": "Deuxième nom",
+    "prefixe": "Préfixe",
+    "suffixe": "Suffixe",
+    "org": "Organisation",
+    "job": "Poste",
+    "photo": "URL de la photo",
+    "tel_work": "Téléphone professionnel",
+    "tel_home": "Téléphone personnel",
+    "adr_work": "Adresse professionnelle",
+    "adr_home": "Adresse personnelle",
+    "email": "E-mail"
   }
 }

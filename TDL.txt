@@ -40,3 +40,9 @@ historique (ok 19h44 7/09/2025)
 
 alpha 0.47
 Taille des boutons adaptés
+
+alpha 0.48
+Problème de page d'importation (ok 19h16 9/09/2025)
+
+alpha 0.49
+fr in generator card (ok 19h34 9/09/2025)

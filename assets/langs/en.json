@@ -65,5 +65,20 @@
         "simple": "Text QR Code"
       }
     }
+  },
+  "VCard Input": {
+    "nom": "Name",
+    "prenom": "Surname",
+    "nom2": "Name2",
+    "prefixe": "Prefix",
+    "suffixe": "Suffix",
+    "org": "Incorporation",
+    "job": "Job",
+    "photo": "Photo URL",
+    "tel_work": "Work phone",
+    "tel_home": "Home phone",
+    "adr_work": "Work address",
+    "adr_home": "Home address",
+    "email": "Email"
   }
 }
