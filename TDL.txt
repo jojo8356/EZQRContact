@@ -1,4 +1,6 @@
 Ajouter un tuto consultable
+Ajout d'un mode sombre
+
 
 alpha 0.11
 Font blanc sous qrcode (ok 12h25 18/08/2025)
@@ -46,3 +48,6 @@ Problème de page d'importation (ok 19h16 9/09/2025)
 
 alpha 0.49
 fr in generator card (ok 19h34 9/09/2025)
+
+alpha 0.50
+import contact view qr code bug fix (19h53 9/09/2025)

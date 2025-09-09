@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:qr_code_app/components/qr_save.dart';
 import 'package:qr_code_app/tools/contacts.dart';
 import 'package:qr_code_app/tools/tools.dart';
 import 'package:sqflite/sqflite.dart';
@@ -379,6 +380,7 @@ Future<int> createVCard(Map<String, dynamic> vcardData) async {
   final id = await db.insertVCard(vcardData);
   final directory = await getApplicationDocumentsDirectory();
   final path = '${directory.path}/$id.jpg';
+  await saveQrCode(path, id);
   await db.updateVCardPath(id, path);
   return id;
 }
