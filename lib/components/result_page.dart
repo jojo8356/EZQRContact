@@ -67,8 +67,7 @@ class TextResultPage extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: actions.map((action) {
-                      return Flexible(
-                        fit: FlexFit.tight,
+                      return Expanded(
                         child: Container(
                           margin: const EdgeInsets.symmetric(horizontal: 5),
                           child: ElevatedButton.icon(
