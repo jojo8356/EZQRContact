@@ -80,5 +80,9 @@
     "adr_work": "Adresse professionnelle",
     "adr_home": "Adresse personnelle",
     "email": "E-mail"
+  },
+  "bottom menu": {
+    "home": "Menu",
+    "history": "Historique"
   }
 }

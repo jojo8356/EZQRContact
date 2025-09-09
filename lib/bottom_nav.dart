@@ -23,6 +23,7 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
+    final lang = LangProvider.get('bottom menu');
     return Scaffold(
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
@@ -31,11 +32,11 @@ class _MainNavigationState extends State<MainNavigation> {
         items: [
           BottomNavigationBarItem(
             icon: const Icon(Icons.home),
-            label: LangProvider.get('home') ?? 'Home',
+            label: lang['home'],
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.history),
-            label: LangProvider.get('history') ?? 'Historique',
+            label: lang['history'],
           ),
         ],
       ),

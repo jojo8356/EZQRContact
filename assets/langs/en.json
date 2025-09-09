@@ -80,5 +80,9 @@
     "adr_work": "Work address",
     "adr_home": "Home address",
     "email": "Email"
+  },
+  "bottom menu": {
+    "home": "Home",
+    "history": "History"
   }
 }
