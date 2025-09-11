@@ -5,6 +5,7 @@ import 'package:file_saver/file_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/vars.dart';
 
 Map<String, TextEditingController> mapToControllers(Map<String, dynamic> data) {
   return {
@@ -222,4 +223,10 @@ String getDateDays() {
   final year = now.year.toString();
 
   return '$day/$month/$year';
+}
+
+Future<void> updateThemeMode(setState) async {
+  setState(() {
+    isDarkMode = !isDarkMode;
+  });
 }

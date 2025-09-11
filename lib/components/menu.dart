@@ -3,6 +3,7 @@ import 'package:qr_code_app/choices/add_choice.dart';
 import 'package:qr_code_app/choices/photo_choice.dart';
 import 'package:qr_code_app/import_contact.dart';
 import 'package:qr_code_app/tools/tools.dart';
+import 'package:qr_code_app/vars.dart';
 import '../qr_choice_page.dart';
 
 class MenuActions extends StatelessWidget {
@@ -68,7 +69,11 @@ class MenuActions extends StatelessWidget {
         shape: const CircleBorder(),
         backgroundColor: color,
       ),
-      child: Icon(icon, size: 30, color: Colors.white),
+      child: Icon(
+        icon,
+        size: 30,
+        color: isDarkMode ? Colors.black : Colors.white,
+      ),
     );
   }
 }

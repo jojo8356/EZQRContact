@@ -1,7 +1,6 @@
-Ajout d'un mode sombre
 Tests d'intégration
 Tests unitaires
-Hide btn modif contact in hystorique
+convert colors white to black
 
 alpha 0.11
 Font blanc sous qrcode (ok 12h25 18/08/2025)
@@ -59,3 +58,7 @@ fr bottom menu fix (20h01 9/09/2025)
 alpha 0.52
 Ajouter un tuto consultable (ok 11/09/2025 19h25)
 Ajouter les réseaux-sociaux (ok 11/09/2025 19h25)
+
+alpha 0.53
+Hide btn modif contact in hystorique (ok 11/09/2025 21h00)
+Ajout d'un mode sombre (ok 11/09/2025 21h00)

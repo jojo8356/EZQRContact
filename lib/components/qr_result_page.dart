@@ -44,13 +44,13 @@ class QRResultPage extends StatelessWidget {
                         ),
                         icon: Icon(
                           action["icon"] as IconData,
-                          color: Colors.white,
+                          color: isDarkMode ? Colors.black : Colors.white,
                           size: 25,
                         ),
                         label: Text(
                           action["label"] as String,
-                          style: const TextStyle(
-                            color: Colors.white,
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.black : Colors.white,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),

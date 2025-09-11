@@ -4,6 +4,7 @@ import 'package:qr_code_app/modals/contact_options.dart';
 import 'package:qr_code_app/modals/qr_view.dart';
 import 'package:qr_code_app/tools/db/db.dart';
 import 'package:qr_code_app/modals/save.dart';
+import 'package:qr_code_app/vars.dart';
 
 class OptionsQR extends StatelessWidget {
   final bool isVCard;
@@ -39,7 +40,7 @@ class OptionsQR extends StatelessWidget {
       if (data['deleted'] != 1)
         {
           "icon": Icons.delete,
-          "color": Colors.red,
+          "color": isDarkMode ? Colors.red : Colors.redAccent,
           "onPressed": () async {
             await deleteQR(isVCard, data['id']);
             await onRefresh();
@@ -47,7 +48,7 @@ class OptionsQR extends StatelessWidget {
         },
       {
         "icon": Icons.download,
-        "color": Colors.blue,
+        "color": isDarkMode ? Colors.indigo : Colors.blue,
         "onPressed": () async {
           String? path = isVCard
               ? await QRDatabase().getPathFromVCard(data['id'])
@@ -57,10 +58,10 @@ class OptionsQR extends StatelessWidget {
           await onRefresh();
         },
       },
-      if (isVCard)
+      if (isVCard && data['deleted'] != 1)
         {
           "icon": Icons.contact_emergency,
-          "color": Colors.green,
+          "color": isDarkMode ? Colors.green : Colors.lightGreen,
           "onPressed": () async {
             await showVCardPopup(context, data, isVCard: true);
             await onRefresh();
@@ -89,7 +90,11 @@ class OptionsQR extends StatelessWidget {
               ),
               child: Icon(
                 a["icon"] as IconData,
-                color: a["color"] != null ? Colors.white : null,
+                color: a["color"] != null
+                    ? isDarkMode
+                          ? Colors.black
+                          : Colors.white
+                    : null,
               ),
             );
           }).toList(),

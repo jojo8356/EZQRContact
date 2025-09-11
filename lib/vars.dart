@@ -8,7 +8,7 @@ List<Map<String, dynamic>> getActionQRCode(BuildContext context) {
   return [
     {
       "label": actions['menu'],
-      "color": Colors.red,
+      "color": isDarkMode ? Colors.red : Colors.redAccent,
       "icon": Icons.home,
       "onPressed": () async {
         await redirect(context, MainNavigation());
@@ -16,7 +16,7 @@ List<Map<String, dynamic>> getActionQRCode(BuildContext context) {
     },
     {
       "label": actions['generate'],
-      "color": Colors.blue,
+      "color": isDarkMode ? Colors.cyan : Colors.blue,
       "icon": Icons.refresh,
       "onPressed": () {
         Navigator.pop(context, true);
@@ -24,3 +24,5 @@ List<Map<String, dynamic>> getActionQRCode(BuildContext context) {
     },
   ];
 }
+
+bool isDarkMode = false;

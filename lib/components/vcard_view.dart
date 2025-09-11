@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/tools/tools.dart';
+import 'package:qr_code_app/vars.dart';
 
 class VCardView extends StatelessWidget {
   final Map<String, TextEditingController> controllers;
@@ -46,17 +47,17 @@ class VCardView extends StatelessWidget {
                       if (controllers["job"]?.text.isNotEmpty ?? false)
                         Text(
                           controllers["job"]!.text,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
-                            color: Colors.black54,
+                            color: isDarkMode ? Colors.white : Colors.black54,
                           ),
                         ),
                       if (controllers["org"]?.text.isNotEmpty ?? false)
                         Text(
                           controllers["org"]!.text,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
-                            color: Colors.black45,
+                            color: isDarkMode ? Colors.white : Colors.black45,
                           ),
                         ),
                     ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/qr_options.dart';
 import 'package:qr_code_app/tools/tools.dart';
+import 'package:qr_code_app/vars.dart';
 
 class QRCard extends StatefulWidget {
   final Map<String, dynamic> data;
@@ -46,9 +47,9 @@ class _QRCardState extends State<QRCard> {
                 if (widget.data['date_deleted'] != null)
                   Text(
                     "Supprimé le : ${widget.data['date_deleted']}",
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: Colors.redAccent,
+                      color: isDarkMode ? Colors.redAccent : Colors.pinkAccent,
                     ),
                   ),
               ],

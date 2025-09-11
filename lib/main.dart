@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/bottom_nav.dart';
 import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/vars.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: LangProvider.get('title'),
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: ThemeData(primarySwatch: isDarkMode ? Colors.indigo : Colors.blue),
       home: const MainNavigation(),
     );
   }

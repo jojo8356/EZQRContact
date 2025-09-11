@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/vars.dart';
 
 Future<void> showImageDialog(BuildContext context, String? path) async {
   if (path == null || path.isEmpty) return;
@@ -24,7 +25,7 @@ Future<void> showImageDialog(BuildContext context, String? path) async {
               child: Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: isDarkMode ? Colors.black : Colors.white,
                   borderRadius: BorderRadius.circular(40),
                 ),
                 child: Image.file(File(path), fit: BoxFit.contain),

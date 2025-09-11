@@ -4,6 +4,7 @@ import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/tools/contacts.dart';
 import 'package:qr_code_app/tools/db/db.dart';
 import 'package:qr_code_app/tools/tools.dart';
+import 'package:qr_code_app/vars.dart';
 import 'package:toastification/toastification.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
@@ -66,14 +67,16 @@ Future<void> showVCardPopup(
                 style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.all<Color>(Colors.blue),
                   foregroundColor: WidgetStateProperty.all<Color>(
-                    Colors.white,
+                    isDarkMode ? Colors.black : Colors.white,
                   ), // texte et icône
                 ),
 
                 icon: Icon(button['icon'] as IconData),
                 label: Text(
                   button['title'] as String,
-                  style: TextStyle(color: Colors.white),
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.black : Colors.white,
+                  ),
                 ),
                 onPressed: () async {
                   final action = button['action'] as Future<void> Function();
@@ -95,7 +98,7 @@ Future<void> showVCardPopup(
                     icon: const Icon(Icons.check_circle, size: 30),
                     showIcon: true,
                     primaryColor: Colors.green,
-                    backgroundColor: Colors.white,
+                    backgroundColor: isDarkMode ? Colors.black : Colors.white,
                     foregroundColor: Colors.black,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,

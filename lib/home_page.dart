@@ -4,6 +4,8 @@ import 'package:qr_code_app/modals/guide.dart';
 import 'package:qr_code_app/modals/networks.dart';
 import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/qr_card.dart';
+import 'package:qr_code_app/tools/tools.dart';
+import 'package:qr_code_app/vars.dart';
 import 'tools/db/db.dart';
 
 class HomePage extends StatefulWidget {
@@ -89,8 +91,12 @@ class HomePageState extends State<HomePage> {
                             showGuidePopup(context, fromButton: true);
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.pinkAccent,
-                            foregroundColor: Colors.white,
+                            backgroundColor: isDarkMode
+                                ? Colors.purpleAccent
+                                : Colors.pinkAccent,
+                            foregroundColor: isDarkMode
+                                ? Colors.black
+                                : Colors.white,
                             padding: const EdgeInsets.all(
                               12,
                             ), // padding interne
@@ -114,8 +120,30 @@ class HomePageState extends State<HomePage> {
                             onPressed: () {
                               showSharePopup(context);
                             },
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.contact_mail,
+                              color: isDarkMode ? Colors.black : Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    Align(
+                      alignment: Alignment(0.0, 1.0),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 20),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isDarkMode ? Colors.amber : Colors.black,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: IconButton(
+                            onPressed: () {
+                              updateThemeMode(setState);
+                            },
+                            icon: Icon(
+                              isDarkMode ? Icons.light_mode : Icons.dark_mode,
                               color: Colors.white,
                             ),
                           ),
