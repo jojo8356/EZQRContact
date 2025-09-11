@@ -1,5 +1,7 @@
-Ajouter un tuto consultable
 Ajout d'un mode sombre
+Tests d'intégration
+Tests unitaires
+Hide btn modif contact in hystorique
 
 alpha 0.11
 Font blanc sous qrcode (ok 12h25 18/08/2025)
@@ -53,3 +55,7 @@ import contact view qr code bug fix (19h53 9/09/2025)
 
 alphe 0.51
 fr bottom menu fix (20h01 9/09/2025)
+
+alpha 0.52
+Ajouter un tuto consultable (ok 11/09/2025 19h25)
+Ajouter les réseaux-sociaux (ok 11/09/2025 19h25)

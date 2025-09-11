@@ -4,11 +4,14 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:qr_code_app/tools/tools.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-Future<void> showGuidePopup(context) async {
+Future<void> showGuidePopup(
+  BuildContext context, {
+  bool fromButton = false,
+}) async {
   final prefs = await SharedPreferences.getInstance();
   bool seen = prefs.getBool('seenGuide') ?? false;
 
-  if (!seen) {
+  if (!seen || fromButton) {
     final data = await rootBundle.loadString('assets/GUIDEME.md');
     if (!context.mounted) return;
 
@@ -22,6 +25,9 @@ Future<void> showGuidePopup(context) async {
       ),
     );
 
-    await prefs.setBool('seenGuide', true);
+    // 👉 ne marque comme vu que si ce n’est pas un clic bouton
+    if (!fromButton) {
+      await prefs.setBool('seenGuide', true);
+    }
   }
 }

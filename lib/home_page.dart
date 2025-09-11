@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/menu.dart';
 import 'package:qr_code_app/modals/guide.dart';
+import 'package:qr_code_app/modals/networks.dart';
 import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/qr_card.dart';
 import 'tools/db/db.dart';
@@ -56,24 +57,73 @@ class HomePageState extends State<HomePage> {
               MenuActions(refreshData: _refreshData),
               const SizedBox(height: 20),
               Expanded(
-                child: loading
-                    ? const Center(child: CircularProgressIndicator())
-                    : allItems.isEmpty
-                    ? Center(child: Text(LangProvider.get('QR Not Found')))
-                    : ListView.builder(
-                        itemCount: allItems.length,
-                        itemBuilder: (context, index) {
-                          final item = allItems[index];
-                          final data = item['data'] as Map<String, dynamic>;
-                          final isVCard = item['type'] == 'vcard';
+                child: Stack(
+                  children: [
+                    // contenu principal
+                    loading
+                        ? const Center(child: CircularProgressIndicator())
+                        : allItems.isEmpty
+                        ? Center(child: Text(LangProvider.get('QR Not Found')))
+                        : ListView.builder(
+                            itemCount: allItems.length,
+                            itemBuilder: (context, index) {
+                              final item = allItems[index];
+                              final data = item['data'] as Map<String, dynamic>;
+                              final isVCard = item['type'] == 'vcard';
 
-                          return QRCard(
-                            data: data,
-                            isVCard: isVCard,
-                            onRefresh: _refreshData,
-                          );
-                        },
+                              return QRCard(
+                                data: data,
+                                isVCard: isVCard,
+                                onRefresh: _refreshData,
+                              );
+                            },
+                          ),
+
+                    // bouton gauche (Aide)
+                    Align(
+                      alignment: Alignment.bottomLeft,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 20, bottom: 20),
+                        child: IconButton(
+                          onPressed: () {
+                            showGuidePopup(context, fromButton: true);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.pinkAccent,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.all(
+                              12,
+                            ), // padding interne
+                          ),
+                          icon: const Icon(Icons.help_outline),
+                        ),
                       ),
+                    ),
+
+                    // bouton droit (Contact)
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 20, bottom: 20),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: IconButton(
+                            onPressed: () {
+                              showSharePopup(context);
+                            },
+                            icon: const Icon(
+                              Icons.contact_mail,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
