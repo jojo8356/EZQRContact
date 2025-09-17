@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:qr_code_app/components/result_page.dart';
+import 'package:qr_code_app/components/app_bar_custom.dart';
+import 'package:qr_code_app/components/text_result_page.dart';
 import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
@@ -25,7 +26,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
   Widget build(BuildContext context) {
     final lang = LangProvider.get('pages')['QR']['scanner'];
     return Scaffold(
-      appBar: AppBar(title: Text(lang['title'])),
+      appBar: AppBarCustom(lang['title']),
       body: MobileScanner(
         controller: _controller,
         fit: BoxFit.cover,

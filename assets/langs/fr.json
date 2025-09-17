@@ -1,15 +1,15 @@
 {
   "buttons": { "close": "Fermer" },
   "title": "Easy QR Contact App",
-  "QR Not Found": "Aucun code QR trouvé",
+  "QR Not Found": "Aucun QR code trouvé",
   "choices": {
     "add": {
-      "simple": "Code QR Simple",
-      "vcard": "Code QR VCard"
+      "simple": "QR code Simple",
+      "vcard": "QR code VCard"
     },
     "photo": {
-      "scanner": "Scanner un Code QR",
-      "import": "Importer un Code QR"
+      "scanner": "Scanner un QR code",
+      "import": "Importer un QR code"
     }
   },
   "pages": {
@@ -32,29 +32,29 @@
     },
     "QR": {
       "save": {
-        "title": "Enregistrer le Code QR",
+        "title": "Enregistrer le QR code",
         "input deco": "Nom du Fichier",
         "button": "Enregistrer"
       },
       "import": {
-        "title": "Convertir un QR en Texte",
+        "title": "Convertir un QR code en Texte",
         "pick": "Choisir une Image",
-        "default result": "Résultat Ici"
+        "default result": "Résultat"
       },
       "generator": {
         "simple": {
-          "title": "Générateur de Code QR Simple",
+          "title": "Générateur de QR code simple",
           "input": "Entrez Votre Texte"
         },
-        "vcard": "Générateur de Code QR VCard",
-        "submit button": "GÉNÉRER LE CODE QR"
+        "vcard": "Générateur de QR code type VCard",
+        "submit button": "Générer QR code"
       },
       "scanner": {
-        "title": "Scanner de Code QR",
-        "invalid qr": "Code QR Invalide"
+        "title": "Scanner de QR code",
+        "invalid qr": "QR code Invalide"
       },
       "result": {
-        "title": "Votre Code QR",
+        "title": "Votre QR code",
         "actions": {
           "menu": "Menu",
           "generate": "Générer"
@@ -62,19 +62,19 @@
       },
       "card view": {
         "vcard": "Informations VCard",
-        "simple": "Code QR Texte"
+        "simple": "QR code Texte"
       }
     }
   },
   "VCard Input": {
     "nom": "Nom",
     "prenom": "Prénom",
-    "nom2": "Deuxième nom",
+    "nom2": "Surnom",
     "prefixe": "Préfixe",
     "suffixe": "Suffixe",
     "org": "Organisation",
     "job": "Poste",
-    "photo": "URL de la photo",
+    "photo": "Lien (URL) de photo",
     "tel_work": "Téléphone professionnel",
     "tel_home": "Téléphone personnel",
     "adr_work": "Adresse professionnelle",

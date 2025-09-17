@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_qrcode_analysis/flutter_qrcode_analysis.dart';
-import 'package:qr_code_app/components/result_page.dart';
+import 'package:qr_code_app/components/app_bar_custom.dart';
+import 'package:qr_code_app/components/btn.animated.dart';
+import 'package:qr_code_app/components/text_result_page.dart';
+import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
@@ -38,13 +41,17 @@ class _QrFromImagePageState extends State<QrFromImagePage> {
 
   @override
   Widget build(BuildContext context) {
+    final darkProv = DarkModeProvider();
     final lang = LangProvider.get('pages')['QR']['import'];
+
     return Scaffold(
-      appBar: AppBar(title: Text(lang['title'])),
+      backgroundColor: Colors.black, // fond noir
+      appBar: AppBarCustom(lang['title']),
       body: Center(
-        child: ElevatedButton(
+        child: AnimatedSubmitButton(
+          isDark: darkProv.isDarkMode,
           onPressed: pickAndDecodeImage,
-          child: Text(lang['pick']),
+          label: lang['pick'],
         ),
       ),
     );

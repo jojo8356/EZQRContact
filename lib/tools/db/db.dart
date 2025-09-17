@@ -369,7 +369,7 @@ Future<int> createSimpleQR(String txt) async {
   final db = QRDatabase();
   final id = await db.insertSimpleQR(txt, null);
   final directory = await getApplicationDocumentsDirectory();
-  final path = '${directory.path}/$id.jpg';
+  final path = '${directory.path}/$id.png';
   await db.updateSimpleQRPath(id, path);
   return id;
 }
@@ -379,7 +379,7 @@ Future<int> createVCard(Map<String, dynamic> vcardData) async {
   vcardData['clone'] = '0';
   final id = await db.insertVCard(vcardData);
   final directory = await getApplicationDocumentsDirectory();
-  final path = '${directory.path}/$id.jpg';
+  final path = '${directory.path}/$id.png';
   await saveQrCode(path, id);
   await db.updateVCardPath(id, path);
   return id;

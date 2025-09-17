@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/qr_save.dart';
 import 'package:qr_code_app/components/vcard_view.dart';
+import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/tools/db/db.dart';
 import 'package:qr_code_app/tools/tools.dart';
@@ -27,18 +29,21 @@ class TextResultPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final actions = getActionQRCode(context);
     final result = LangProvider.get('pages')['QR']['result'];
+    final darkMode = DarkModeProvider();
 
     return FutureBuilder(
       future: _saveQr(),
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+          return Scaffold(
+            backgroundColor: darkMode.isDarkMode ? Colors.black : Colors.white,
+            body: Center(child: CircularProgressIndicator(color: Colors.white)),
           );
         }
 
         return Scaffold(
-          appBar: AppBar(title: Text(result['title'])),
+          backgroundColor: darkMode.isDarkMode ? Colors.black : Colors.white,
+          appBar: AppBarCustom(result['title']),
           body: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -52,8 +57,10 @@ class TextResultPage extends StatelessWidget {
                         )
                       : Text(
                           data,
-                          style: const TextStyle(
-                            color: Colors.black,
+                          style: TextStyle(
+                            color: darkMode.isDarkMode
+                                ? Colors.white
+                                : Colors.black,
                             fontSize: 25,
                             fontWeight: FontWeight.bold,
                           ),
@@ -78,13 +85,13 @@ class TextResultPage extends StatelessWidget {
                             ),
                             icon: Icon(
                               action["icon"] as IconData,
-                              color: isDarkMode ? Colors.black : Colors.white,
+                              color: Colors.white,
                               size: 25,
                             ),
                             label: Text(
                               action["label"] as String,
-                              style: TextStyle(
-                                color: isDarkMode ? Colors.black : Colors.white,
+                              style: const TextStyle(
+                                color: Colors.white,
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),

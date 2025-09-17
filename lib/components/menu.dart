@@ -3,13 +3,17 @@ import 'package:qr_code_app/choices/add_choice.dart';
 import 'package:qr_code_app/choices/photo_choice.dart';
 import 'package:qr_code_app/import_contact.dart';
 import 'package:qr_code_app/tools/tools.dart';
-import 'package:qr_code_app/vars.dart';
 import '../qr_choice_page.dart';
 
 class MenuActions extends StatelessWidget {
   final VoidCallback refreshData;
+  final bool isDarkMode;
 
-  const MenuActions({super.key, required this.refreshData});
+  const MenuActions({
+    super.key,
+    required this.refreshData,
+    required this.isDarkMode,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +22,10 @@ class MenuActions extends StatelessWidget {
         "color": Colors.blue,
         "icon": Icons.add,
         "onPressed": () async {
-          await redirect(context, QRChoicePage(buttons: addChoiceButtons));
+          await redirect(
+            context,
+            QRChoicePage(buttons: getAddChoiceButtons(context)),
+          );
           refreshData();
         },
       },
@@ -26,7 +33,10 @@ class MenuActions extends StatelessWidget {
         "color": Colors.red,
         "icon": Icons.camera_alt,
         "onPressed": () async {
-          await redirect(context, QRChoicePage(buttons: photoChoiceButtons));
+          await redirect(
+            context,
+            QRChoicePage(buttons: getPhotoChoiceButtons(context)),
+          );
           refreshData();
         },
       },
@@ -45,7 +55,7 @@ class MenuActions extends StatelessWidget {
       children: [
         for (int i = 0; i < buttons.length; i++) ...[
           _buildCircleButton(
-            context: context,
+            isDarkMode: isDarkMode,
             color: buttons[i]["color"] as Color,
             icon: buttons[i]["icon"] as IconData,
             onPressed: buttons[i]["onPressed"] as VoidCallback,
@@ -57,7 +67,7 @@ class MenuActions extends StatelessWidget {
   }
 
   Widget _buildCircleButton({
-    required BuildContext context,
+    required bool isDarkMode,
     required Color color,
     required IconData icon,
     required VoidCallback onPressed,
@@ -69,11 +79,7 @@ class MenuActions extends StatelessWidget {
         shape: const CircleBorder(),
         backgroundColor: color,
       ),
-      child: Icon(
-        icon,
-        size: 30,
-        color: isDarkMode ? Colors.black : Colors.white,
-      ),
+      child: Icon(icon, size: 30, color: Colors.white),
     );
   }
 }

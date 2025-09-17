@@ -38,6 +38,7 @@ dependencies:
   toastification: ^3.0.3
   url_launcher: ^6.3.2
   font_awesome_flutter: ^10.10.0
+  provider: ^6.1.5+1
 
 dev_dependencies:
   flutter_test:
@@ -50,7 +51,8 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/GUIDEME.md
+    - assets/GUIDEME.fr.md
+    - assets/GUIDEME.en.md
     - assets/icon/icon.png
     - assets/logo_splash.png
     - assets/langs/fr.json

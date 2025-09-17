@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:qr_code_app/modals/card_view.dart';
 import 'package:qr_code_app/modals/contact_options.dart';
 import 'package:qr_code_app/modals/qr_view.dart';
+import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/tools/db/db.dart';
 import 'package:qr_code_app/modals/save.dart';
-import 'package:qr_code_app/vars.dart';
 
 class OptionsQR extends StatelessWidget {
   final bool isVCard;
@@ -20,6 +20,7 @@ class OptionsQR extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
+    final darkMode = DarkModeProvider();
     final actions = [
       {
         "icon": Icons.remove_red_eye,
@@ -40,7 +41,7 @@ class OptionsQR extends StatelessWidget {
       if (data['deleted'] != 1)
         {
           "icon": Icons.delete,
-          "color": isDarkMode ? Colors.red : Colors.redAccent,
+          "color": darkMode.isDarkMode ? Colors.red : Colors.redAccent,
           "onPressed": () async {
             await deleteQR(isVCard, data['id']);
             await onRefresh();
@@ -48,7 +49,7 @@ class OptionsQR extends StatelessWidget {
         },
       {
         "icon": Icons.download,
-        "color": isDarkMode ? Colors.indigo : Colors.blue,
+        "color": darkMode.isDarkMode ? Colors.indigo : Colors.blue,
         "onPressed": () async {
           String? path = isVCard
               ? await QRDatabase().getPathFromVCard(data['id'])
@@ -61,7 +62,7 @@ class OptionsQR extends StatelessWidget {
       if (isVCard && data['deleted'] != 1)
         {
           "icon": Icons.contact_emergency,
-          "color": isDarkMode ? Colors.green : Colors.lightGreen,
+          "color": darkMode.isDarkMode ? Colors.green : Colors.lightGreen,
           "onPressed": () async {
             await showVCardPopup(context, data, isVCard: true);
             await onRefresh();
@@ -90,11 +91,7 @@ class OptionsQR extends StatelessWidget {
               ),
               child: Icon(
                 a["icon"] as IconData,
-                color: a["color"] != null
-                    ? isDarkMode
-                          ? Colors.black
-                          : Colors.white
-                    : null,
+                color: a["color"] != null ? Colors.white : null,
               ),
             );
           }).toList(),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/qr_options.dart';
+import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/tools/tools.dart';
-import 'package:qr_code_app/vars.dart';
 
 class QRCard extends StatefulWidget {
   final Map<String, dynamic> data;
@@ -24,6 +24,7 @@ class _QRCardState extends State<QRCard> {
 
   @override
   Widget build(BuildContext context) {
+    final darkMode = DarkModeProvider();
     final titleText = getTitleAndPhoto({
       'type': widget.isVCard ? 'vcard' : 'simple',
       'data': widget.data,
@@ -31,6 +32,7 @@ class _QRCardState extends State<QRCard> {
     final photo = widget.data['photo'] ?? '';
 
     return Card(
+      color: darkMode.isDarkMode ? Colors.white30 : Colors.white,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 3,
       child: Column(
@@ -42,19 +44,27 @@ class _QRCardState extends State<QRCard> {
               children: [
                 Text(
                   titleText,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: darkMode.isDarkMode ? Colors.white70 : Colors.black,
+                  ),
                 ),
                 if (widget.data['date_deleted'] != null)
                   Text(
                     "Supprimé le : ${widget.data['date_deleted']}",
                     style: TextStyle(
                       fontSize: 12,
-                      color: isDarkMode ? Colors.redAccent : Colors.pinkAccent,
+                      color: darkMode.isDarkMode
+                          ? Colors.redAccent
+                          : Colors.pinkAccent,
                     ),
                   ),
               ],
             ),
-            trailing: Icon(expanded ? Icons.expand_less : Icons.expand_more),
+            trailing: Icon(
+              expanded ? Icons.expand_less : Icons.expand_more,
+              color: darkMode.isDarkMode ? Colors.white : Colors.black,
+            ),
             onTap: () {
               setState(() => expanded = !expanded);
             },

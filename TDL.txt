@@ -1,6 +1,5 @@
-Tests d'intégration
-Tests unitaires
-convert colors white to black
+Tests d'intégration (att pro)
+Tests unitaires (att pro)
 
 alpha 0.11
 Font blanc sous qrcode (ok 12h25 18/08/2025)
@@ -62,3 +61,13 @@ Ajouter les réseaux-sociaux (ok 11/09/2025 19h25)
 alpha 0.53
 Hide btn modif contact in hystorique (ok 11/09/2025 21h00)
 Ajout d'un mode sombre (ok 11/09/2025 21h00)
+
+alpha 0.54
+convert colors white to black (ok 16/09/2024 21h00)
+
+alpha 0.55
+creer GUIDEME.md englais (ok 16/09/2024 21h00)
+Finir GUIDEME.md (ok 16/09/2024 21h00)
+
+alpha 0.60
+charger seulement les 8 premiers éléments actifs au fur et à mesure du scroll pour ne pas att et 2 en bas cachés pour faire charger le moins posisble

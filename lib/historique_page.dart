@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/qr_card.dart';
 import 'tools/db/db.dart';
@@ -33,8 +34,18 @@ class _HistoryPageState extends State<HistoryPage> {
 
   @override
   Widget build(BuildContext context) {
+    final darkMode = DarkModeProvider();
     return Scaffold(
-      appBar: AppBar(title: Text(LangProvider.get('Historique'))),
+      backgroundColor: darkMode.isDarkMode ? Colors.black : Colors.white,
+      appBar: AppBar(
+        title: Text(
+          LangProvider.get('Historique'),
+          style: TextStyle(
+            color: darkMode.isDarkMode ? Colors.white : Colors.black,
+          ),
+        ),
+        backgroundColor: darkMode.isDarkMode ? Colors.black : Colors.white,
+      ),
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : deletedItems.isEmpty

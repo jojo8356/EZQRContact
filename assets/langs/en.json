@@ -5,7 +5,7 @@
   "choices": {
     "add": {
       "simple": "Simple QR Code",
-      "vcard": "VCard QR Code"
+      "vcard": "VCard type QR Code"
     },
     "photo": {
       "scanner": "Scan QR Code",
@@ -37,17 +37,17 @@
         "button": "Save"
       },
       "import": {
-        "title": "Convert QR to Text",
+        "title": "Convert QR code to Text",
         "pick": "Pick an Image",
-        "default result": "Result Here"
+        "default result": "Result"
       },
       "generator": {
         "simple": {
           "title": "Simple QR Code Generator",
           "input": "Enter Your Text"
         },
-        "vcard": "VCard QR Code Generator",
-        "submit button": "GENERATE QR CODE"
+        "vcard": "VCard type QR Code Generator",
+        "submit button": "Create QR Code"
       },
       "scanner": {
         "title": "QR Code Scanner",
@@ -57,7 +57,7 @@
         "title": "Your QR Code",
         "actions": {
           "menu": "Menu",
-          "generate": "Generate"
+          "generate": "Create"
         }
       },
       "card view": {
@@ -67,19 +67,19 @@
     }
   },
   "VCard Input": {
-    "nom": "Name",
-    "prenom": "Surname",
-    "nom2": "Name2",
+    "nom": "Last name",
+    "prenom": "First name",
+    "nom2": "Nick name",
     "prefixe": "Prefix",
     "suffixe": "Suffix",
-    "org": "Incorporation",
+    "org": "Company",
     "job": "Job",
-    "photo": "Photo URL",
+    "photo": "Photo link (URL)",
     "tel_work": "Work phone",
     "tel_home": "Home phone",
     "adr_work": "Work address",
     "adr_home": "Home address",
-    "email": "Email"
+    "email": "E-mail"
   },
   "bottom menu": {
     "home": "Home",
