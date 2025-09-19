@@ -1,5 +1,7 @@
 Tests d'intégration (att pro)
 Tests unitaires (att pro)
+publish on play store
+qr code for download app in share app tab
 
 alpha 0.11
 Font blanc sous qrcode (ok 12h25 18/08/2025)
