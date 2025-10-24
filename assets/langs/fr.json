@@ -2,15 +2,17 @@
   "buttons": { "close": "Fermer" },
   "title": "Easy QR Contact App",
   "QR Not Found": "Aucun QR code trouvé",
-  "choices": {
-    "add": {
-      "simple": "QR code Simple",
-      "vcard": "QR code VCard"
-    },
-    "photo": {
-      "scanner": "Scanner un QR code",
-      "import": "Importer un QR code"
-    }
+  "menu": {
+    "simple": "QR code Simple",
+    "vcard": "QR code VCard",
+    "scanner": "Scanner un QR code",
+    "import": "Importer un QR code",
+    "import_contact": "Importer contact"
+  },
+  "options": {
+    "guide": "Lire guide",
+    "about": "À Propos de nous",
+    "mode": "Changer de mode"
   },
   "pages": {
     "contact": {
@@ -20,7 +22,10 @@
           "clone": "Cloner le Contact",
           "empty input": "Champ Vide Rempli"
         },
-        "title": "Options du Contact"
+        "title": "Options du Contact",
+        "empty": "Aucune personne enregistrée",
+        "name_unknown": "Nom inconnu",
+        "email_uknown": "Pas d'email"
       },
       "import": {
         "title": "Sélectionner des Contacts",
@@ -64,6 +69,9 @@
         "vcard": "Informations VCard",
         "simple": "QR code Texte"
       }
+    },
+    "history": {
+      "title": "Historique"
     }
   },
   "VCard Input": {
@@ -75,14 +83,17 @@
     "org": "Organisation",
     "job": "Poste",
     "photo": "Lien (URL) de photo",
-    "tel_work": "Téléphone professionnel",
-    "tel_home": "Téléphone personnel",
+    "tel_work": "Téléphone",
+    "tel_home": "Téléphone 2",
     "adr_work": "Adresse professionnelle",
     "adr_home": "Adresse personnelle",
     "email": "E-mail"
   },
   "bottom menu": {
     "home": "Menu",
-    "history": "Historique"
-  }
+    "collection": "Collection",
+    "history": "Historique",
+    "settings": "Options"
+  },
+  "empty": "Aucuns QR code trouvés"
 }

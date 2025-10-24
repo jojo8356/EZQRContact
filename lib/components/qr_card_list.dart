@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qr_code_app/qr_card.dart';
+import 'package:qr_code_app/components/qr_card.dart';
 
 class QRCardListView extends StatefulWidget {
   final List<Map<String, dynamic>> allItems;

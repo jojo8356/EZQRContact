@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -9,7 +10,7 @@ Future<void> showSharePopup(BuildContext context) async {
   showDialog(
     context: context,
     builder: (_) => AnimatedBuilder(
-      animation: darkMode, // 👈 écoute le mode
+      animation: darkMode,
       builder: (context, _) {
         final isDark = darkMode.isDarkMode;
         return AlertDialog(
@@ -26,23 +27,18 @@ Future<void> showSharePopup(BuildContext context) async {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _shareIcon(
-                "https://discord.com/invite/xxxx",
+                "https://discord.gg/gz25QVbS",
                 FontAwesomeIcons.discord,
                 isDark,
               ),
               _shareIcon(
-                "https://instagram.com/xxxx",
+                "https://www.instagram.com/dev_jojokes/",
                 FontAwesomeIcons.instagram,
                 isDark,
               ),
               _shareIcon(
-                "https://x.com/xxxx",
+                "https://x.com/HazroF3",
                 FontAwesomeIcons.xTwitter,
-                isDark,
-              ),
-              _shareIcon(
-                "https://facebook.com/xxxx",
-                FontAwesomeIcons.facebook,
                 isDark,
               ),
             ],
@@ -66,10 +62,18 @@ Widget _shareIcon(String url, IconData icon, bool isDark) {
   return InkWell(
     onTap: () async {
       final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      try {
+        final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+        if (kDebugMode) {
+          print("launchUrl renvoie: $ok");
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print("Erreur: $e");
+        }
       }
     },
+
     child: Icon(icon, size: 40, color: isDark ? Colors.white : Colors.black),
   );
 }

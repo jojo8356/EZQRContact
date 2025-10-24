@@ -1,8 +1,8 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:file_saver/file_saver.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_code_app/providers/lang.dart';
 
@@ -22,118 +22,6 @@ Map<String, TextEditingController> mapToControllers(Map<String, dynamic> data) {
     "adr_home": TextEditingController(text: data['adr_home'] ?? ""),
     "email": TextEditingController(text: data['email'] ?? ""),
   };
-}
-
-String generateVCardFromData(Map<String, dynamic> data) {
-  final now = DateTime.now().toUtc();
-  final rev =
-      '${now.toIso8601String().replaceAll('-', '').replaceAll(':', '').split('.').first}Z';
-
-  return '''
-BEGIN:VCARD
-VERSION:4.0
-N:${data['nom'] ?? ''};${data['prenom'] ?? ''};${data['nom2'] ?? ''};${data['prefixe'] ?? ''};${data['suffixe'] ?? ''}
-FN:${data['prefixe'] ?? ''} ${data['prenom'] ?? ''} ${data['nom'] ?? ''} ${data['suffixe'] ?? ''}
-ORG:${data['org'] ?? ''}
-TITLE:${data['job'] ?? ''}
-${(data['photo'] ?? '').isNotEmpty ? 'PHOTO;MEDIATYPE=image/jpeg:${data['photo']}' : ''}
-${(data['tel_work'] ?? '').isNotEmpty ? 'TEL;TYPE=_work,voice;VALUE=uri:tel:${data['tel_work']}' : ''}
-${(data['tel_home'] ?? '').isNotEmpty ? 'TEL;TYPE=_home,voice;VALUE=uri:tel:${data['tel_home']}' : ''}
-${(data['adr_work'] ?? '').isNotEmpty ? 'ADR;TYPE=_work;LABEL="${data['adr_work']}":${data['adr_work']}' : ''}
-${(data['adr_home'] ?? '').isNotEmpty ? 'ADR;TYPE=_home;LABEL="${data['adr_home']}":${data['adr_home']}' : ''}
-EMAIL:${data['email'] ?? ''}
-REV:$rev
-END:VCARD
-''';
-}
-
-bool isVCard(String text) {
-  final trimmed = text.trim().toUpperCase();
-  return trimmed.startsWith('BEGIN:VCARD') && trimmed.endsWith('END:VCARD');
-}
-
-Map<String, String> parseVCard(String vcard) {
-  final Map<String, String> data = {
-    'nom': '',
-    'prenom': '',
-    'nom2': '',
-    'prefixe': '',
-    'suffixe': '',
-    'org': '',
-    'job': '',
-    'photo': '',
-    'tel_work': '',
-    'tel_home': '',
-    'adr_work': '',
-    'adr_home': '',
-    'email': '',
-    'rev': '',
-  };
-
-  final lines = vcard.split(RegExp(r'\r?\n'));
-  for (var line in lines) {
-    line = line.trim();
-    if (line.startsWith('N:')) {
-      final parts = line.substring(2).split(';');
-      data['nom'] = parts.isNotEmpty ? parts[0] : '';
-      data['prenom'] = parts.length > 1 ? parts[1] : '';
-      data['nom2'] = parts.length > 2 ? parts[2] : '';
-      data['prefixe'] = parts.length > 3 ? parts[3] : '';
-      data['suffixe'] = parts.length > 4 ? parts[4] : '';
-    } else if (line.startsWith('FN:')) {
-      // optionnel, déjà couvert par N
-    } else if (line.startsWith('ORG:')) {
-      data['org'] = line.substring(4);
-    } else if (line.startsWith('TITLE:')) {
-      data['job'] = line.substring(6);
-    } else if (line.startsWith('PHOTO')) {
-      final index = line.indexOf(':');
-      if (index != -1) data['photo'] = line.substring(index + 1);
-    } else if (line.startsWith('TEL;TYPE=_work')) {
-      final index = line.indexOf(':tel:');
-      if (index != -1) data['tel_work'] = line.substring(index + 5);
-    } else if (line.startsWith('TEL;TYPE=_home')) {
-      final index = line.indexOf(':tel:');
-      if (index != -1) data['tel_home'] = line.substring(index + 5);
-    } else if (line.startsWith('ADR;TYPE=_work')) {
-      final index = line.indexOf(':');
-      if (index != -1) data['adr_work'] = line.substring(index + 1);
-    } else if (line.startsWith('ADR;TYPE=_home')) {
-      final index = line.indexOf(':');
-      if (index != -1) data['adr_home'] = line.substring(index + 1);
-    } else if (line.startsWith('EMAIL:')) {
-      data['email'] = line.substring(6);
-    } else if (line.startsWith('REV:')) {
-      data['rev'] = line.substring(4);
-    }
-  }
-
-  return data;
-}
-
-String getTitleAndPhoto(Map<String, dynamic> item) {
-  final data = item['data'] as Map<String, dynamic>;
-  final isVCard = item['type'] == 'vcard';
-
-  String title;
-
-  if (isVCard) {
-    final nom = data['nom'] ?? '';
-    final prenom = data['prenom'] ?? '';
-    final org = data['org'] ?? '';
-
-    if (nom.isNotEmpty && prenom.isNotEmpty) {
-      title = '$prenom $nom';
-    } else if (nom.isNotEmpty || prenom.isNotEmpty) {
-      title = '$prenom$nom';
-    } else {
-      title = org;
-    }
-  } else {
-    title = data['text'] ?? '';
-  }
-
-  return title;
 }
 
 Widget buildItemAvatar(bool isVCard, String photo) {
@@ -195,16 +83,6 @@ Future<void> saveFile(String originalPath, String fileName) async {
   );
 }
 
-Future<bool> verifContact() async {
-  var status = await Permission.contacts.status;
-
-  if (!status.isGranted) {
-    status = await Permission.contacts.request();
-  }
-
-  return status.isGranted;
-}
-
 Future<Uint8List> loadAssetImage(String path) async {
   final ByteData data = await rootBundle.load(path);
   return data.buffer.asUint8List();
@@ -222,4 +100,16 @@ String getDateDays() {
   final year = now.year.toString();
 
   return '$day/$month/$year';
+}
+
+Future<List<String>> getJsonFiles(String folderPath) async {
+  final manifestContent = await rootBundle.loadString('AssetManifest.json');
+  final Map<String, dynamic> manifestMap = json.decode(manifestContent);
+
+  final jsonFiles = manifestMap.keys
+      .where((path) => path.startsWith(folderPath) && path.endsWith('.json'))
+      .map((path) => path.split('/').last)
+      .toList();
+
+  return jsonFiles;
 }

@@ -4,9 +4,9 @@ import 'package:qr_code_app/components/btn.animated.dart';
 import 'package:qr_code_app/components/qr_save.dart';
 import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/pages/qr_card_view_page.dart';
 import 'package:qr_code_app/tools/tools.dart';
-import 'components/qr_result_page.dart';
-import 'tools/db/db.dart';
+import '../tools/db/db.dart';
 
 class GenerateSimpleQRCode extends StatefulWidget {
   const GenerateSimpleQRCode({super.key});
@@ -65,9 +65,9 @@ class GenerateSimpleQRCodeState extends State<GenerateSimpleQRCode> {
                     if (controller.text.isEmpty) return;
                     final qrData = controller.text;
                     final int id = await createSimpleQR(qrData);
-                    final path = await saveQrCode(qrData, id);
+                    await saveQrCode(qrData, id);
                     if (!context.mounted) return;
-                    await redirect(context, QRResultPage(path: path));
+                    await redirect(context, const Collection());
                   },
                 ),
               ],

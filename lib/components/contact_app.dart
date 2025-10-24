@@ -41,14 +41,20 @@ class _MultiContactPickerPageState extends State<MultiContactPickerPage> {
             child: CheckboxListTile(
               value: selectedMap[index],
               title: Text(c.displayName, style: TextStyle(color: textColor)),
-              secondary: c.photo != null
-                  ? CircleAvatar(backgroundImage: MemoryImage(c.photo!))
-                  : CircleAvatar(
-                      backgroundColor: darkMode.isDarkMode
-                          ? Colors.grey[900]
-                          : Colors.grey[300],
-                      child: Icon(Icons.person, color: textColor),
-                    ),
+              secondary: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  c.photo != null
+                      ? CircleAvatar(backgroundImage: MemoryImage(c.photo!))
+                      : CircleAvatar(
+                          backgroundColor: darkMode.isDarkMode
+                              ? Colors.grey[900]
+                              : Colors.grey[300],
+                          child: Icon(Icons.person, color: textColor),
+                        ),
+                ],
+              ),
+
               onChanged: (val) =>
                   setState(() => selectedMap[index] = val ?? false),
               activeColor: Colors.blue,

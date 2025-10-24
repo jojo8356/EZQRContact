@@ -385,8 +385,8 @@ Future<int> createVCard(Map<String, dynamic> vcardData) async {
   return id;
 }
 
-Future<int> createContact(vcardData) async {
-  await addContactToPhone(vcardData);
+Future<int> createContact(Map<String, dynamic> vcardData) async {
+  await PhoneContacts.add(vcardData);
   return await createVCard(vcardData);
 }
 

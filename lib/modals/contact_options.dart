@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qr_code_app/bottom_nav.dart';
+import 'package:qr_code_app/components/bottom_nav.dart';
 import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/tools/contacts.dart';
@@ -28,7 +28,7 @@ Future<void> showVCardPopup(
       "icon": Icons.sync,
       "action": () async {
         final vcard = await db.getVCardById(data['id']) ?? {};
-        await updateContactOnPhone(vcard);
+        await PhoneContacts.update(vcard);
       },
     },
     {
@@ -42,7 +42,7 @@ Future<void> showVCardPopup(
       "title": buttonsLang['empty input'],
       "icon": Icons.edit,
       "action": () async {
-        final vcard = await getContactByName(
+        final vcard = await PhoneContacts.getByName(
           nom: data['nom'],
           prenom: data['prenom'],
         );
@@ -51,19 +51,23 @@ Future<void> showVCardPopup(
     },
   ];
 
-  final bgColor = darkMode.isDarkMode ? Colors.black : Colors.white;
-  final textColor = darkMode.isDarkMode ? Colors.white : Colors.black;
-  final buttonColor = Colors.blue; // reste bleu dans les deux modes
+  final color = darkMode.isDarkMode ? Colors.black : Colors.white;
+  final buttonColor = Colors.blue;
 
   showDialog(
     context: context,
     builder: (dialogContext) {
       return AlertDialog(
-        backgroundColor: bgColor,
+        backgroundColor: color,
         actionsPadding: const EdgeInsets.fromLTRB(0, 0, 16, 8),
         insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
         contentPadding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
-        title: Text(lang['title'], style: TextStyle(color: textColor)),
+        title: Text(
+          lang['title'],
+          style: TextStyle(
+            color: darkMode.isDarkMode ? Colors.white : Colors.black,
+          ),
+        ),
         content: SingleChildScrollView(
           child: Column(
             children: List.generate(buttons.length, (index) {
@@ -75,12 +79,12 @@ Future<void> showVCardPopup(
                     backgroundColor: WidgetStateProperty.all<Color>(
                       buttonColor,
                     ),
-                    foregroundColor: WidgetStateProperty.all<Color>(textColor),
+                    foregroundColor: WidgetStateProperty.all<Color>(color),
                   ),
-                  icon: Icon(button['icon'] as IconData, color: textColor),
+                  icon: Icon(button['icon'] as IconData, color: color),
                   label: Text(
                     button['title'] as String,
-                    style: TextStyle(color: textColor),
+                    style: TextStyle(color: color),
                   ),
                   onPressed: () async {
                     final action = button['action'] as Future<void> Function();
@@ -94,7 +98,7 @@ Future<void> showVCardPopup(
                       autoCloseDuration: const Duration(seconds: 3),
                       title: Text(
                         '${button['title']} successful',
-                        style: TextStyle(color: textColor),
+                        style: TextStyle(color: color),
                       ),
                       alignment: Alignment.topRight,
                       direction: TextDirection.ltr,
@@ -102,15 +106,11 @@ Future<void> showVCardPopup(
                       animationBuilder: (context, animation, alignment, child) {
                         return FadeTransition(opacity: animation, child: child);
                       },
-                      icon: Icon(
-                        Icons.check_circle,
-                        size: 30,
-                        color: textColor,
-                      ),
+                      icon: Icon(Icons.check_circle, size: 30, color: color),
                       showIcon: true,
                       primaryColor: Colors.green,
-                      backgroundColor: bgColor,
-                      foregroundColor: textColor,
+                      backgroundColor: color,
+                      foregroundColor: color,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,
                         vertical: 8,

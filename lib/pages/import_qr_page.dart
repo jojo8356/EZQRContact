@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter_qrcode_analysis/flutter_qrcode_analysis.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/btn.animated.dart';
-import 'package:qr_code_app/components/text_result_page.dart';
 import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/pages/qr_card_view_page.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
 class QrFromImagePage extends StatefulWidget {
@@ -24,18 +23,13 @@ class _QrFromImagePageState extends State<QrFromImagePage> {
       final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
       if (pickedFile != null) {
-        final data = await FlutterQrcodeAnalysis.analysisImage(pickedFile.path);
-
         if (!mounted) return;
-        await redirect(
-          context,
-          TextResultPage(data: data ?? LangProvider.get('QR Not Found')),
-        );
+        await redirect(context, const Collection());
       }
     } catch (e) {
       debugPrint('Erreur lors du scan image: $e');
       if (!mounted) return;
-      await redirect(context, TextResultPage(data: 'Erreur: $e'));
+      await redirect(context, const Collection());
     }
   }
 

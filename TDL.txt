@@ -1,7 +1,8 @@
 Tests d'intégration (att pro)
 Tests unitaires (att pro)
-publish on play store
-qr code for download app in share app tab
+Clean code (att pro)
+Add QR Code du lien playstore dès que ce sera fait
+Ergonomie code
 
 alpha 0.11
 Font blanc sous qrcode (ok 12h25 18/08/2025)
@@ -73,3 +74,9 @@ Finir GUIDEME.md (ok 16/09/2024 21h00)
 
 alpha 0.60
 charger seulement les 8 premiers éléments actifs au fur et à mesure du scroll pour ne pas att et 2 en bas cachés pour faire charger le moins posisble
+
+alpha 0.61
+Add les liens des réseaux sociaux (21/09/2025)
+
+alpha 0.62
+Fix bug view VCard (29/09/2025)

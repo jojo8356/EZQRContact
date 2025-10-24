@@ -1,11 +1,11 @@
 import 'package:flutter_contacts/flutter_contacts.dart';
-import 'package:qr_code_app/contact_app.dart';
+import 'package:qr_code_app/components/contact_app.dart';
 import 'package:qr_code_app/tools/contacts.dart';
-import 'tools/db/db.dart';
-import 'tools/tools.dart';
+import 'db/db.dart';
+import 'tools.dart';
 
 Future<void> importContacts(context) async {
-  await verifContact();
+  await PhoneContacts.verifyPermission();
   final contacts = await FlutterContacts.getContacts(withProperties: true);
   if (contacts.isEmpty || !context.mounted) return;
 
@@ -14,7 +14,7 @@ Future<void> importContacts(context) async {
     MultiContactPickerPage(contacts: contacts),
   );
   if (selectedContacts == null || selectedContacts.isEmpty) return;
-  final contactsMap = contactsToMapList(selectedContacts);
+  final contactsMap = PhoneContacts.toMapList(selectedContacts);
 
   for (var contactMap in contactsMap) {
     await createVCard(contactMap);

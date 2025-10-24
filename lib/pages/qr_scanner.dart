@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
-import 'package:qr_code_app/components/text_result_page.dart';
 import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/pages/qr_card_view_page.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
 class QRScannerPage extends StatefulWidget {
@@ -36,10 +36,9 @@ class _QRScannerPageState extends State<QRScannerPage> {
           final List<Barcode> barcodes = capture.barcodes;
           for (final barcode in barcodes) {
             if (barcode.format == BarcodeFormat.qrCode) {
-              final String qrValue = barcode.rawValue ?? lang['invalid qr'];
               _navigated = true;
               _controller.stop();
-              await redirect(context, TextResultPage(data: qrValue));
+              await redirect(context, const Collection());
               _navigated = false;
               break;
             }

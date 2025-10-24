@@ -37,7 +37,7 @@ class VCardView extends StatelessWidget {
                     height: 80,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) =>
-                        Icon(Icons.person, size: 80, color: secondaryTextColor),
+                        Icon(Icons.person, size: 80, color: Colors.green),
                   ),
                 ),
                 const SizedBox(width: 16),

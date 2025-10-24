@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/qr_options.dart';
 import 'package:qr_code_app/providers/darkmode.dart';
+import 'package:qr_code_app/tools/contacts.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
 class QRCard extends StatefulWidget {
@@ -25,7 +26,7 @@ class _QRCardState extends State<QRCard> {
   @override
   Widget build(BuildContext context) {
     final darkMode = DarkModeProvider();
-    final titleText = getTitleAndPhoto({
+    final titleText = PhoneContacts.getTitle({
       'type': widget.isVCard ? 'vcard' : 'simple',
       'data': widget.data,
     });

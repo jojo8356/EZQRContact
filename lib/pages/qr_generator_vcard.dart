@@ -3,11 +3,12 @@ import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/btn.animated.dart';
 import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/pages/qr_card_view_page.dart';
 import 'package:qr_code_app/tools/contacts.dart';
 import 'package:qr_code_app/tools/db/db.dart';
 import 'package:qr_code_app/tools/tools.dart';
-import 'components/qr_result_page.dart';
-import 'components/qr_save.dart';
+import 'package:qr_code_app/tools/vcard.dart';
+import '../components/qr_save.dart';
 
 class GenerateVCardQRCode extends StatefulWidget {
   const GenerateVCardQRCode({super.key});
@@ -93,13 +94,13 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                   label: lang['submit button'],
                   onPressed: () async {
                     final data = extractValues(controllers);
-                    final vcard = generateVCardFromData(data);
+                    final vcard = VCard.fromMap(data);
                     int id = await createVCard(data);
-                    final path = await saveQrCode(vcard, id);
-                    await verifContact();
-                    await addContactToPhone(data);
+                    await saveQrCode(vcard.toVCard(), id);
+                    await PhoneContacts.verifyPermission();
+                    await PhoneContacts.add(data);
                     if (!context.mounted) return;
-                    await redirect(context, QRResultPage(path: path));
+                    await redirect(context, const Collection());
                   },
                 ),
               ],

@@ -2,15 +2,17 @@
   "buttons": { "close": "Close" },
   "title": "Easy QR Contact App",
   "QR Not Found": "No QR code found",
-  "choices": {
-    "add": {
-      "simple": "Simple QR Code",
-      "vcard": "VCard type QR Code"
-    },
-    "photo": {
-      "scanner": "Scan QR Code",
-      "import": "Import QR Code"
-    }
+  "menu": {
+    "simple": "Simple QR code",
+    "vcard": "VCard QR code",
+    "scanner": "Scan a QR code",
+    "import": "Import a QR code",
+    "import_contact": "Import contact"
+  },
+  "options": {
+    "guide": "Read guide",
+    "about": "About us",
+    "mode": "Change mode"
   },
   "pages": {
     "contact": {
@@ -18,9 +20,12 @@
         "buttons": {
           "replace": "Replace Contact",
           "clone": "Clone Contact",
-          "empty input": "Empty Input Completed"
+          "empty input": "Empty Field Filled"
         },
-        "title": "Contact Options"
+        "title": "Contact Options",
+        "empty": "No person saved",
+        "name_unknown": "Unknown name",
+        "email_uknown": "No email"
       },
       "import": {
         "title": "Select Contacts",
@@ -32,57 +37,63 @@
     },
     "QR": {
       "save": {
-        "title": "Save QR Code",
+        "title": "Save QR code",
         "input deco": "File Name",
         "button": "Save"
       },
       "import": {
-        "title": "Convert QR code to Text",
-        "pick": "Pick an Image",
+        "title": "Convert a QR code to Text",
+        "pick": "Choose an Image",
         "default result": "Result"
       },
       "generator": {
         "simple": {
-          "title": "Simple QR Code Generator",
+          "title": "Simple QR code Generator",
           "input": "Enter Your Text"
         },
-        "vcard": "VCard type QR Code Generator",
-        "submit button": "Create QR Code"
+        "vcard": "VCard QR code Generator",
+        "submit button": "Generate QR code"
       },
       "scanner": {
-        "title": "QR Code Scanner",
-        "invalid qr": "Invalid QR Code"
+        "title": "QR code Scanner",
+        "invalid qr": "Invalid QR code"
       },
       "result": {
-        "title": "Your QR Code",
+        "title": "Your QR code",
         "actions": {
           "menu": "Menu",
-          "generate": "Create"
+          "generate": "Generate"
         }
       },
       "card view": {
         "vcard": "VCard Information",
-        "simple": "Text QR Code"
+        "simple": "Text QR code"
       }
+    },
+    "history": {
+      "title": "History"
     }
   },
   "VCard Input": {
-    "nom": "Last name",
-    "prenom": "First name",
-    "nom2": "Nick name",
+    "nom": "Last Name",
+    "prenom": "First Name",
+    "nom2": "Nickname",
     "prefixe": "Prefix",
     "suffixe": "Suffix",
-    "org": "Company",
-    "job": "Job",
-    "photo": "Photo link (URL)",
-    "tel_work": "Work phone",
-    "tel_home": "Home phone",
-    "adr_work": "Work address",
-    "adr_home": "Home address",
-    "email": "E-mail"
+    "org": "Organization",
+    "job": "Position",
+    "photo": "Photo Link (URL)",
+    "tel_work": "Phone",
+    "tel_home": "Phone 2",
+    "adr_work": "Work Address",
+    "adr_home": "Home Address",
+    "email": "Email"
   },
   "bottom menu": {
     "home": "Home",
-    "history": "History"
-  }
+    "collection": "Collection",
+    "history": "History",
+    "settings": "Settings"
+  },
+  "empty": "No QR code found"
 }

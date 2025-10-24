@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/components/navbar.dart';
 import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/providers/lang.dart';
-import 'package:qr_code_app/qr_card.dart';
-import 'tools/db/db.dart';
+import 'package:qr_code_app/components/qr_card.dart';
+import '../tools/db/db.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -35,11 +36,12 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     final darkMode = DarkModeProvider();
+    final lang = LangProvider.get('pages')['history'];
     return Scaffold(
       backgroundColor: darkMode.isDarkMode ? Colors.black : Colors.white,
       appBar: AppBar(
         title: Text(
-          LangProvider.get('Historique'),
+          lang['title'],
           style: TextStyle(
             color: darkMode.isDarkMode ? Colors.white : Colors.black,
           ),
@@ -49,7 +51,7 @@ class _HistoryPageState extends State<HistoryPage> {
       body: loading
           ? const Center(child: CircularProgressIndicator())
           : deletedItems.isEmpty
-          ? Center(child: Text(LangProvider.get('QR Not Found')))
+          ? Center(child: Text(LangProvider.get('empty')))
           : ListView.builder(
               itemCount: deletedItems.length,
               itemBuilder: (context, index) {
@@ -64,6 +66,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 );
               },
             ),
+      bottomNavigationBar: const Navbar(currentRoute: '/history'),
     );
   }
 }

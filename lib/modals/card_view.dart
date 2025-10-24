@@ -25,10 +25,7 @@ Future<void> showDataDialog(
         actionsPadding: const EdgeInsets.fromLTRB(0, 0, 20, 8),
         insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-        title: Text(
-          cardView['vcard'],
-          style: TextStyle(color: textColor), // texte adaptatif
-        ),
+        title: Text(cardView['vcard'], style: TextStyle(color: textColor)),
         content: SingleChildScrollView(
           child: SizedBox(
             width: double.maxFinite,

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:qr_code_app/bottom_nav.dart';
+import 'package:qr_code_app/pages/actions_list_page.dart';
+import 'package:qr_code_app/pages/historique_page.dart';
 import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/pages/qr_card_view_page.dart';
+import 'package:qr_code_app/pages/settings.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
@@ -19,7 +22,13 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: LangProvider.get('title'),
-      home: const MainNavigation(),
+      initialRoute: '/options',
+      routes: {
+        '/options': (_) => const OptionsListPage(),
+        '/collection': (_) => const Collection(),
+        '/history': (_) => const HistoryPage(),
+        '/settings': (_) => const SettingsPage(),
+      },
     );
   }
 }
