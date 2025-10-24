@@ -16,7 +16,7 @@ class _SettingsPageState extends State<SettingsPage> {
   final darkMode = DarkModeProvider();
   String _selectedLang = LangProvider.currentLanguage();
   List<String> _langs = [];
-  final lang = LangProvider.get('options');
+  Map<String, dynamic> get lang => LangProvider.get('options');
 
   late final VoidCallback _langListener;
 

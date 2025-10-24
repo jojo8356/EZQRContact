@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:qr_code_app/components/bottom_nav.dart';
 import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/tools/contacts.dart';
@@ -133,13 +132,7 @@ Future<void> showVCardPopup(
                       pauseOnHover: true,
                       dragToClose: false,
                     );
-
-                    Navigator.pushReplacement(
-                      dialogContext,
-                      MaterialPageRoute(
-                        builder: (context) => const MainNavigation(),
-                      ),
-                    );
+                    Navigator.pushReplacementNamed(dialogContext, '/home');
                   },
                 ),
               );

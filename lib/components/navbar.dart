@@ -10,42 +10,51 @@ class Navbar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final darkMode = DarkModeProvider();
-    final lang = LangProvider.get('bottom menu');
 
     return AnimatedBuilder(
       animation: darkMode,
       builder: (context, _) {
-        return BottomNavigationBar(
-          currentIndex: _getIndexFromRoute(currentRoute),
-          onTap: (index) {
-            final route = _getRouteFromIndex(index);
-            if (route != currentRoute) {
-              Navigator.pushReplacementNamed(context, route);
-            }
+        // 🔹 On écoute aussi le changement de langue ici
+        return ValueListenableBuilder<String>(
+          valueListenable: LangProvider.notifier,
+          builder: (context, value, _) {
+            final lang = LangProvider.get('bottom menu');
+
+            return BottomNavigationBar(
+              currentIndex: _getIndexFromRoute(currentRoute),
+              onTap: (index) {
+                final route = _getRouteFromIndex(index);
+                if (route != currentRoute) {
+                  Navigator.pushReplacementNamed(context, route);
+                }
+              },
+              backgroundColor: darkMode.isDarkMode
+                  ? Colors.black
+                  : Colors.white,
+              selectedItemColor: const Color.fromARGB(255, 102, 53, 187),
+              unselectedItemColor: darkMode.isDarkMode
+                  ? Colors.white
+                  : const Color.fromARGB(255, 161, 107, 255),
+              items: [
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.home),
+                  label: lang['home'],
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.style),
+                  label: lang['collection'],
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.history),
+                  label: lang['history'],
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.settings),
+                  label: lang['settings'],
+                ),
+              ],
+            );
           },
-          backgroundColor: darkMode.isDarkMode ? Colors.black : Colors.white,
-          selectedItemColor: const Color.fromARGB(255, 102, 53, 187),
-          unselectedItemColor: darkMode.isDarkMode
-              ? Colors.white
-              : const Color.fromARGB(255, 161, 107, 255),
-          items: [
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.home),
-              label: lang['home'],
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.style),
-              label: lang['home'],
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.history),
-              label: lang['history'],
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.settings),
-              label: lang['history'],
-            ),
-          ],
         );
       },
     );
