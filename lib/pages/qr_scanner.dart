@@ -16,7 +16,7 @@ class QRScannerPage extends StatefulWidget {
 }
 
 class _QRScannerPageState extends State<QRScannerPage> {
-  bool _scanned = false; // ✅ blocage
+  bool _scanned = false;
 
   @override
   Widget build(BuildContext context) {
@@ -28,23 +28,27 @@ class _QRScannerPageState extends State<QRScannerPage> {
           onPressed: () async {
             await Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) => AiBarcodeScanner(
-                  hideGalleryButton: true,
-                  onDetect: (BarcodeCapture capture) async {
-                    if (_scanned) return; // ⚠️ ignore si déjà scanné
-                    _scanned = true;
+                builder: (context) => SafeArea(
+                  child: AiBarcodeScanner(
+                    hideGalleryButton: true,
+                    hideSheetDragHandler: true,
+                    hideSheetTitle: true,
+                    onDetect: (BarcodeCapture capture) async {
+                      if (_scanned) return;
+                      _scanned = true;
 
-                    final text = capture.barcodes.first.rawValue;
-                    final vcard = VCard.parse(text ?? '');
+                      final text = capture.barcodes.first.rawValue;
+                      final vcard = VCard.parse(text ?? '');
 
-                    await PhoneContacts.verifyPermission();
-                    await PhoneContacts.add(await vcard.toMap());
-                    await createVCard(await vcard.toMap());
+                      await PhoneContacts.verifyPermission();
+                      await PhoneContacts.add(await vcard.toMap());
+                      await createVCard(await vcard.toMap());
 
-                    if (context.mounted) {
-                      await redirect(context, const Collection());
-                    }
-                  },
+                      if (context.mounted) {
+                        await redirect(context, const Collection());
+                      }
+                    },
+                  ),
                 ),
               ),
             );
