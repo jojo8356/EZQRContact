@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/providers/theme_globals.dart';
 
 class Navbar extends StatelessWidget {
   final String currentRoute;
@@ -23,16 +24,9 @@ class Navbar extends StatelessWidget {
             return Theme(
               data: Theme.of(context).copyWith(
                 bottomNavigationBarTheme: BottomNavigationBarThemeData(
-                  backgroundColor: darkProv.isDarkMode
-                      ? Colors.black
-                      : Colors.white,
+                  backgroundColor: currentColors['bg'],
+                  unselectedItemColor: const Color.fromARGB(255, 102, 53, 187),
                   selectedItemColor: const Color.fromARGB(
-                    255,
-                    102,
-                    53,
-                    187,
-                  ), // violet foncé
-                  unselectedItemColor: const Color.fromARGB(
                     255,
                     161,
                     107,
