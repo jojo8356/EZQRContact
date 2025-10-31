@@ -9,50 +9,65 @@ class Navbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final darkMode = DarkModeProvider();
+    final darkProv = DarkModeProvider();
 
     return AnimatedBuilder(
-      animation: darkMode,
+      animation: darkProv,
       builder: (context, _) {
-        // 🔹 On écoute aussi le changement de langue ici
         return ValueListenableBuilder<String>(
           valueListenable: LangProvider.notifier,
           builder: (context, value, _) {
             final lang = LangProvider.get('bottom menu');
 
-            return BottomNavigationBar(
-              currentIndex: _getIndexFromRoute(currentRoute),
-              onTap: (index) {
-                final route = _getRouteFromIndex(index);
-                if (route != currentRoute) {
-                  Navigator.pushReplacementNamed(context, route);
-                }
-              },
-              backgroundColor: darkMode.isDarkMode
-                  ? Colors.black
-                  : Colors.white,
-              selectedItemColor: const Color.fromARGB(255, 102, 53, 187),
-              unselectedItemColor: darkMode.isDarkMode
-                  ? Colors.white
-                  : const Color.fromARGB(255, 161, 107, 255),
-              items: [
-                BottomNavigationBarItem(
-                  icon: const Icon(Icons.home),
-                  label: lang['home'],
+            // 🔹 On applique un Theme local pour forcer la couleur
+            return Theme(
+              data: Theme.of(context).copyWith(
+                bottomNavigationBarTheme: BottomNavigationBarThemeData(
+                  backgroundColor: darkProv.isDarkMode
+                      ? Colors.black
+                      : Colors.white,
+                  selectedItemColor: const Color.fromARGB(
+                    255,
+                    102,
+                    53,
+                    187,
+                  ), // violet foncé
+                  unselectedItemColor: const Color.fromARGB(
+                    255,
+                    161,
+                    107,
+                    255,
+                  ), // violet clair
+                  type: BottomNavigationBarType.fixed,
                 ),
-                BottomNavigationBarItem(
-                  icon: const Icon(Icons.style),
-                  label: lang['collection'],
-                ),
-                BottomNavigationBarItem(
-                  icon: const Icon(Icons.history),
-                  label: lang['history'],
-                ),
-                BottomNavigationBarItem(
-                  icon: const Icon(Icons.settings),
-                  label: lang['settings'],
-                ),
-              ],
+              ),
+              child: BottomNavigationBar(
+                currentIndex: _getIndexFromRoute(currentRoute),
+                onTap: (index) {
+                  final route = _getRouteFromIndex(index);
+                  if (route != currentRoute) {
+                    Navigator.pushReplacementNamed(context, route);
+                  }
+                },
+                items: [
+                  BottomNavigationBarItem(
+                    icon: const Icon(Icons.home),
+                    label: lang['home'],
+                  ),
+                  BottomNavigationBarItem(
+                    icon: const Icon(Icons.style),
+                    label: lang['collection'],
+                  ),
+                  BottomNavigationBarItem(
+                    icon: const Icon(Icons.history),
+                    label: lang['history'],
+                  ),
+                  BottomNavigationBarItem(
+                    icon: const Icon(Icons.settings),
+                    label: lang['settings'],
+                  ),
+                ],
+              ),
             );
           },
         );

@@ -1,9 +1,10 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/providers/darkmode.dart';
 
 Future<void> showImageDialog(BuildContext context, String? path) async {
-  final darkMode = DarkModeProvider();
+  final darkProv = DarkModeProvider();
   if (path == null || path.isEmpty) return;
   if (!context.mounted) return;
 
@@ -26,7 +27,7 @@ Future<void> showImageDialog(BuildContext context, String? path) async {
               child: Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: darkMode.isDarkMode ? Colors.black : Colors.white,
+                  color: darkProv.isDarkMode ? Colors.black : Colors.white,
                   borderRadius: BorderRadius.circular(40),
                 ),
                 child: Image.file(File(path), fit: BoxFit.contain),

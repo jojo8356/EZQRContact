@@ -25,7 +25,7 @@ class _QRCardState extends State<QRCard> {
 
   @override
   Widget build(BuildContext context) {
-    final darkMode = DarkModeProvider();
+    final darkProv = DarkModeProvider();
     final titleText = PhoneContacts.getTitle({
       'type': widget.isVCard ? 'vcard' : 'simple',
       'data': widget.data,
@@ -33,7 +33,7 @@ class _QRCardState extends State<QRCard> {
     final photo = widget.data['photo'] ?? '';
 
     return Card(
-      color: darkMode.isDarkMode ? Colors.white30 : Colors.white,
+      color: darkProv.isDarkMode ? Colors.white30 : Colors.white,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 3,
       child: Column(
@@ -47,7 +47,7 @@ class _QRCardState extends State<QRCard> {
                   titleText,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: darkMode.isDarkMode ? Colors.white70 : Colors.black,
+                    color: darkProv.isDarkMode ? Colors.white70 : Colors.black,
                   ),
                 ),
                 if (widget.data['date_deleted'] != null)
@@ -55,7 +55,7 @@ class _QRCardState extends State<QRCard> {
                     "Supprimé le : ${widget.data['date_deleted']}",
                     style: TextStyle(
                       fontSize: 12,
-                      color: darkMode.isDarkMode
+                      color: darkProv.isDarkMode
                           ? Colors.redAccent
                           : Colors.pinkAccent,
                     ),
@@ -64,7 +64,7 @@ class _QRCardState extends State<QRCard> {
             ),
             trailing: Icon(
               expanded ? Icons.expand_less : Icons.expand_more,
-              color: darkMode.isDarkMode ? Colors.white : Colors.black,
+              color: darkProv.isDarkMode ? Colors.white : Colors.black,
             ),
             onTap: () {
               setState(() => expanded = !expanded);

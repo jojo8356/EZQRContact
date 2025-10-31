@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qr_code_app/providers/darkmode.dart';
+import 'package:qr_code_app/providers/theme_globals.dart';
 
 class AppBarCustom extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -8,19 +8,14 @@ class AppBarCustom extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final darkMode = DarkModeProvider();
-
     return AnimatedBuilder(
-      animation: darkMode,
+      animation: darkProv,
       builder: (context, _) {
-        final isDark = darkMode.isDarkMode;
         return AppBar(
-          backgroundColor: isDark ? Colors.black : Colors.white,
-          title: Text(
-            title,
-            style: TextStyle(color: isDark ? Colors.white : Colors.black),
-          ),
-          iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),
+          backgroundColor: currentColors['bg'],
+          foregroundColor: currentColors['text'],
+          title: Text(title, style: TextStyle(color: currentColors['text'])),
+          iconTheme: IconThemeData(color: currentColors['text']),
         );
       },
     );

@@ -88,11 +88,6 @@ Future<Uint8List> loadAssetImage(String path) async {
   return data.buffer.asUint8List();
 }
 
-Widget closeButton(BuildContext context) => TextButton(
-  onPressed: () => Navigator.pop(context),
-  child: const Text('Close'),
-);
-
 String getDateDays() {
   final now = DateTime.now();
   final day = now.day.toString().padLeft(2, '0');

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/providers/theme_globals.dart';
 
 class AnimatedSubmitButton extends StatefulWidget {
   final bool isDark;
@@ -24,7 +25,7 @@ class _AnimatedSubmitButtonState extends State<AnimatedSubmitButton>
   @override
   void initState() {
     super.initState();
-    _bgColor = widget.isDark ? Colors.black : Colors.white;
+    _bgColor = currentColors['bg'];
   }
 
   void _onTap() async {
@@ -38,7 +39,7 @@ class _AnimatedSubmitButtonState extends State<AnimatedSubmitButton>
       () => _bgColor = widget.isDark ? Colors.grey[800] : Colors.grey[300],
     );
     await Future.delayed(const Duration(milliseconds: 100));
-    setState(() => _bgColor = widget.isDark ? Colors.black : Colors.white);
+    setState(() => _bgColor = currentColors['bg']);
 
     widget.onPressed();
   }
@@ -57,14 +58,14 @@ class _AnimatedSubmitButtonState extends State<AnimatedSubmitButton>
           child: OutlinedButton(
             style: OutlinedButton.styleFrom(
               backgroundColor: Colors.transparent,
-              foregroundColor: widget.isDark ? Colors.white : Colors.black,
+              foregroundColor: currentColors['text'],
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
             ),
             onPressed: _onTap,
             child: Text(
               widget.label,
               style: TextStyle(
-                color: widget.isDark ? Colors.white : Colors.black,
+                color: currentColors['text'],
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),

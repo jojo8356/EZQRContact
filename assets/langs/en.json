@@ -1,5 +1,5 @@
 {
-  "buttons": { "close": "Close" },
+  "close": "Close",
   "title": "Easy QR Contact App",
   "QR Not Found": "No QR code found",
   "menu": {

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/btn.animated.dart';
-import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/pages/qr_card_view_page.dart';
+import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/tools/contacts.dart';
 import 'package:qr_code_app/tools/db/db.dart';
 import 'package:qr_code_app/tools/tools.dart';
@@ -18,7 +18,6 @@ class GenerateVCardQRCode extends StatefulWidget {
 }
 
 class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
-  final darkProv = DarkModeProvider();
   final List<String> fieldKeys = [
     "nom",
     "prenom",
@@ -39,32 +38,6 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
     for (var key in fieldKeys) key: TextEditingController(),
   };
 
-  Widget input(f) {
-    final isDark = darkProv.isDarkMode;
-    return TextField(
-      controller: f["controller"],
-      style: TextStyle(color: isDark ? Colors.white : Colors.black),
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: isDark ? Colors.grey[900] : Colors.white,
-        border: OutlineInputBorder(
-          borderSide: BorderSide(color: isDark ? Colors.white : Colors.black),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: isDark ? Colors.white : Colors.black),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: isDark ? Colors.white : Colors.black,
-            width: 2,
-          ),
-        ),
-        labelText: f["label"] as String,
-        labelStyle: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final fields = buildFields(controllers);
@@ -76,7 +49,7 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
         final isDark = darkProv.isDarkMode;
 
         return Scaffold(
-          backgroundColor: isDark ? Colors.black : Colors.white, // fond noir
+          backgroundColor: currentColors['bg'], // fond noir
           appBar: AppBarCustom(lang['vcard']),
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -110,4 +83,27 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
       },
     );
   }
+}
+
+Widget input(f) {
+  final isDark = darkProv.isDarkMode;
+  return TextField(
+    controller: f["controller"],
+    style: TextStyle(color: currentColors['text']),
+    decoration: InputDecoration(
+      filled: true,
+      fillColor: isDark ? Colors.grey[900] : Colors.white,
+      border: OutlineInputBorder(
+        borderSide: BorderSide(color: currentColors['text']),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: currentColors['text']),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: currentColors['text'], width: 2),
+      ),
+      labelText: f["label"] as String,
+      labelStyle: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
+    ),
+  );
 }

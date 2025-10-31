@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/btn.animated.dart';
 import 'package:qr_code_app/components/qr_save.dart';
-import 'package:qr_code_app/providers/darkmode.dart';
-import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/pages/qr_card_view_page.dart';
+import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/tools/tools.dart';
+
 import '../tools/db/db.dart';
 
 class GenerateSimpleQRCode extends StatefulWidget {
@@ -22,15 +23,14 @@ class GenerateSimpleQRCodeState extends State<GenerateSimpleQRCode> {
   Widget build(BuildContext context) {
     final generator = LangProvider.get('pages')['QR']['generator'];
     final lang = generator['simple'];
-    final darkMode = DarkModeProvider();
 
     return AnimatedBuilder(
-      animation: darkMode,
+      animation: darkProv,
       builder: (context, _) {
-        final isDark = darkMode.isDarkMode;
+        final isDark = darkProv.isDarkMode;
 
         return Scaffold(
-          backgroundColor: isDark ? Colors.black : Colors.white,
+          backgroundColor: currentColors['bg'],
           appBar: AppBarCustom(lang['title']),
           body: Padding(
             padding: const EdgeInsets.all(20),
@@ -38,7 +38,7 @@ class GenerateSimpleQRCodeState extends State<GenerateSimpleQRCode> {
               children: [
                 TextField(
                   controller: controller,
-                  style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                  style: TextStyle(color: currentColors['text']),
                   decoration: InputDecoration(
                     labelText: lang['input'],
                     labelStyle: TextStyle(
@@ -46,12 +46,12 @@ class GenerateSimpleQRCodeState extends State<GenerateSimpleQRCode> {
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(
-                        color: isDark ? Colors.white : Colors.black,
+                        color: currentColors['text'] ?? Colors.white,
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(
-                        color: isDark ? Colors.white : Colors.black,
+                        color: currentColors['text'] ?? Colors.white,
                         width: 2,
                       ),
                     ),

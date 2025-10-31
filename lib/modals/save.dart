@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/components/close_button.dart';
 import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
 Future<void> showSaveDialog(BuildContext context, String originalPath) async {
@@ -21,7 +23,7 @@ Future<void> showSaveDialog(BuildContext context, String originalPath) async {
         ),
       ),
       actions: [
-        closeButton(context),
+        cancelButton(context, currentColors),
         ElevatedButton(
           onPressed: () {
             fileName = nameController.text.trim();

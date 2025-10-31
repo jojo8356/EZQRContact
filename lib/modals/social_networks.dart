@@ -1,23 +1,21 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:qr_code_app/providers/darkmode.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:qr_code_app/components/close_button.dart';
+import 'package:qr_code_app/providers/theme_globals.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 Future<void> showSharePopup(BuildContext context) async {
-  final darkMode = DarkModeProvider();
-
   showDialog(
     context: context,
     builder: (_) => AnimatedBuilder(
-      animation: darkMode,
+      animation: darkProv,
       builder: (context, _) {
-        final isDark = darkMode.isDarkMode;
+        final isDark = darkProv.isDarkMode;
         return AlertDialog(
           backgroundColor: isDark ? Colors.blueGrey : Colors.white,
           title: Text(
             "Partager",
-            style: TextStyle(color: isDark ? Colors.white : Colors.black),
+            style: TextStyle(color: currentColors['text']),
           ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16,
@@ -43,15 +41,7 @@ Future<void> showSharePopup(BuildContext context) async {
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                "Fermer",
-                style: TextStyle(color: isDark ? Colors.white : Colors.black),
-              ),
-            ),
-          ],
+          actions: [cancelButton(context, currentColors)],
         );
       },
     ),
@@ -63,17 +53,12 @@ Widget _shareIcon(String url, IconData icon, bool isDark) {
     onTap: () async {
       final uri = Uri.parse(url);
       try {
-        final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
-        if (kDebugMode) {
-          print("launchUrl renvoie: $ok");
-        }
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
       } catch (e) {
-        if (kDebugMode) {
-          print("Erreur: $e");
-        }
+        return;
       }
     },
 
-    child: Icon(icon, size: 40, color: isDark ? Colors.white : Colors.black),
+    child: Icon(icon, size: 40, color: currentColors['text']),
   );
 }

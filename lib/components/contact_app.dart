@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/contact.dart';
-import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/providers/darkmode.dart';
+import 'package:qr_code_app/providers/lang.dart';
 
 class MultiContactPickerPage extends StatefulWidget {
   final List<Contact> contacts;
@@ -18,10 +18,10 @@ class _MultiContactPickerPageState extends State<MultiContactPickerPage> {
 
   @override
   Widget build(BuildContext context) {
-    final darkMode = DarkModeProvider();
+    final darkProv = DarkModeProvider();
 
-    final bgColor = darkMode.isDarkMode ? Colors.black : Colors.white;
-    final textColor = darkMode.isDarkMode ? Colors.white : Colors.black;
+    final bgColor = darkProv.isDarkMode ? Colors.black : Colors.white;
+    final textColor = darkProv.isDarkMode ? Colors.white : Colors.black;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -47,7 +47,7 @@ class _MultiContactPickerPageState extends State<MultiContactPickerPage> {
                   c.photo != null
                       ? CircleAvatar(backgroundImage: MemoryImage(c.photo!))
                       : CircleAvatar(
-                          backgroundColor: darkMode.isDarkMode
+                          backgroundColor: darkProv.isDarkMode
                               ? Colors.grey[900]
                               : Colors.grey[300],
                           child: Icon(Icons.person, color: textColor),
@@ -69,7 +69,7 @@ class _MultiContactPickerPageState extends State<MultiContactPickerPage> {
           children: [
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: darkMode.isDarkMode
+                backgroundColor: darkProv.isDarkMode
                     ? Colors.grey[800]
                     : Colors.grey[300],
               ),
@@ -82,7 +82,7 @@ class _MultiContactPickerPageState extends State<MultiContactPickerPage> {
             const Spacer(),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: darkMode.isDarkMode
+                backgroundColor: darkProv.isDarkMode
                     ? Colors.blueGrey
                     : Colors.blue,
               ),

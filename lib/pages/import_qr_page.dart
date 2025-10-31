@@ -20,17 +20,12 @@ class _QrFromImagePageState extends State<QrFromImagePage> {
   Future<void> pickAndDecodeImage() async {
     try {
       final picker = ImagePicker();
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-      if (pickedFile != null) {
-        if (!mounted) return;
-        await redirect(context, const Collection());
-      }
+      await picker.pickImage(source: ImageSource.gallery);
     } catch (e) {
       debugPrint('Erreur lors du scan image: $e');
-      if (!mounted) return;
-      await redirect(context, const Collection());
     }
+    if (!mounted) return;
+    await redirect(context, const Collection());
   }
 
   @override

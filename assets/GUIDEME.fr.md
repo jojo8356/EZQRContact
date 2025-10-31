@@ -16,7 +16,7 @@
    - Menu sombre
 3. **Contactez-moi**
 
-## Footer
+## Bas de page
 1. **Menu**
 2. **Historique**
    - Lecture seule, aucune autre action disponible

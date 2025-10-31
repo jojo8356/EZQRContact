@@ -10,11 +10,11 @@ class VCardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fields = buildFields(controllers);
-    final darkMode = DarkModeProvider();
+    final darkProv = DarkModeProvider();
 
-    final bgColor = darkMode.isDarkMode ? Colors.white12 : Colors.white;
-    final textColor = darkMode.isDarkMode ? Colors.white : Colors.black;
-    final secondaryTextColor = darkMode.isDarkMode
+    final bgColor = darkProv.isDarkMode ? Colors.white12 : Colors.white;
+    final textColor = darkProv.isDarkMode ? Colors.white : Colors.black;
+    final secondaryTextColor = darkProv.isDarkMode
         ? Colors.white70
         : Colors.black54;
 

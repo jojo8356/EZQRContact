@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:qr_code_app/modals/card_view.dart';
 import 'package:qr_code_app/modals/contact_options.dart';
 import 'package:qr_code_app/modals/qr_view.dart';
+import 'package:qr_code_app/modals/save.dart';
 import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/tools/db/db.dart';
-import 'package:qr_code_app/modals/save.dart';
 
 class OptionsQR extends StatelessWidget {
   final bool isVCard;
@@ -20,7 +20,7 @@ class OptionsQR extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
-    final darkMode = DarkModeProvider();
+    final darkProv = DarkModeProvider();
     final actions = [
       {
         "icon": Icons.remove_red_eye,
@@ -41,7 +41,7 @@ class OptionsQR extends StatelessWidget {
       if (data['deleted'] != 1)
         {
           "icon": Icons.delete,
-          "color": darkMode.isDarkMode ? Colors.red : Colors.redAccent,
+          "color": darkProv.isDarkMode ? Colors.red : Colors.redAccent,
           "onPressed": () async {
             await deleteQR(isVCard, data['id']);
             await onRefresh();
@@ -49,7 +49,7 @@ class OptionsQR extends StatelessWidget {
         },
       {
         "icon": Icons.download,
-        "color": darkMode.isDarkMode ? Colors.indigo : Colors.blue,
+        "color": darkProv.isDarkMode ? Colors.indigo : Colors.blue,
         "onPressed": () async {
           String? path = isVCard
               ? await QRDatabase().getPathFromVCard(data['id'])
@@ -62,7 +62,7 @@ class OptionsQR extends StatelessWidget {
       if (isVCard && data['deleted'] != 1)
         {
           "icon": Icons.contact_emergency,
-          "color": darkMode.isDarkMode ? Colors.green : Colors.lightGreen,
+          "color": darkProv.isDarkMode ? Colors.green : Colors.lightGreen,
           "onPressed": () async {
             await showVCardPopup(context, data, isVCard: true);
             await onRefresh();

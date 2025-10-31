@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/navbar.dart';
-import 'package:qr_code_app/tools/import_contact.dart';
 import 'package:qr_code_app/pages/import_qr_page.dart';
-import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/pages/qr_generator_simple.dart';
 import 'package:qr_code_app/pages/qr_generator_vcard.dart';
 import 'package:qr_code_app/pages/qr_scanner.dart';
-import 'package:qr_code_app/providers/darkmode.dart';
+import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/providers/theme_globals.dart';
+import 'package:qr_code_app/tools/import_contact.dart';
 
 class OptionsListPage extends StatelessWidget {
   const OptionsListPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final darkMode = DarkModeProvider();
     final lang = LangProvider.get('menu');
     final buttons = [
       {
@@ -58,12 +58,8 @@ class OptionsListPage extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: darkMode.isDarkMode ? Colors.black : Colors.white,
-      appBar: AppBar(
-        title: const Text("Actions QR"),
-        backgroundColor: darkMode.isDarkMode ? Colors.black : Colors.white,
-        foregroundColor: darkMode.isDarkMode ? Colors.white : Colors.black,
-      ),
+      backgroundColor: currentColors['bg'],
+      appBar: AppBarCustom("Actions QR"),
       body: Center(
         child: ListView.separated(
           shrinkWrap: true,
@@ -74,15 +70,13 @@ class OptionsListPage extends StatelessWidget {
             final btn = buttons[index];
             return ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                backgroundColor: darkMode.isDarkMode
-                    ? Colors.purple
-                    : Colors.blue,
+                backgroundColor: currentColors['button-color'],
                 minimumSize: const Size(double.infinity, 50),
               ),
               icon: Icon(btn["icon"] as IconData?, color: Colors.white),
               label: Text(
                 btn["label"] as String,
-                style: const TextStyle(color: Colors.white, fontSize: 16),
+                style: TextStyle(color: Colors.white, fontSize: 16),
               ),
               onPressed: () => (btn["action"] as void Function())(),
             );

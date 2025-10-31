@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/navbar.dart';
-import 'package:qr_code_app/providers/darkmode.dart';
-import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/components/qr_card_list.dart';
+import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/providers/theme_globals.dart';
+
 import '../tools/db/db.dart';
 
 class Collection extends StatefulWidget {
@@ -41,22 +43,12 @@ class _CollectionState extends State<Collection> {
 
   @override
   Widget build(BuildContext context) {
-    final darkMode = DarkModeProvider();
-
     return AnimatedBuilder(
-      animation: darkMode,
+      animation: darkProv,
       builder: (context, _) {
         return Scaffold(
-          backgroundColor: darkMode.isDarkMode ? Colors.black : Colors.white,
-          appBar: AppBar(
-            title: Text(
-              "QR List",
-              style: TextStyle(
-                color: darkMode.isDarkMode ? Colors.white : Colors.black,
-              ),
-            ),
-            backgroundColor: darkMode.isDarkMode ? Colors.black : Colors.white,
-          ),
+          backgroundColor: currentColors['bg'],
+          appBar: AppBarCustom("QR List"),
           body: loading
               ? const Center(child: CircularProgressIndicator())
               : allItems.isEmpty
@@ -64,7 +56,7 @@ class _CollectionState extends State<Collection> {
                   child: Text(
                     LangProvider.get('empty'),
                     style: TextStyle(
-                      color: darkMode.isDarkMode ? Colors.white : Colors.black,
+                      color: currentColors['text'],
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
