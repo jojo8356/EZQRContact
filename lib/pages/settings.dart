@@ -85,73 +85,111 @@ class _SettingsPageState extends State<SettingsPage> {
           body: Center(
             child: _langs.isEmpty
                 ? const CircularProgressIndicator()
-                : Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 40),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // 🔹 dropdown langue
-                        ValueListenableBuilder<String>(
-                          valueListenable: LangProvider.notifier,
-                          builder: (context, value, child) {
-                            return DropdownButton<String>(
-                              value: _selectedLang,
-                              dropdownColor:
-                                  currentColors['bg'], // fond du menu
-                              style: TextStyle(
-                                color: currentColors['text'], // texte visible
-                                fontWeight: FontWeight.bold, // 🔹 texte en gras
-                              ),
-                              items: _langs
-                                  .map(
-                                    (lang) => DropdownMenuItem(
-                                      value: lang,
-                                      child: Text(
-                                        lang.toUpperCase(),
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                        ), // 🔹 option aussi en gras
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                              onChanged: (newValue) async {
-                                if (newValue != null) {
-                                  await LangProvider.changeLanguage(newValue);
-                                }
-                              },
-                            );
-                          },
+                : LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 40,
                         ),
-                        const SizedBox(height: 30),
-
-                        // 🔹 boutons
-                        ...buttons.map((btn) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: ElevatedButton.icon(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: currentColors['button-color'],
-                                minimumSize: const Size(double.infinity, 50),
-                              ),
-                              icon: Icon(
-                                btn["icon"] as IconData?,
-                                color: Colors.white,
-                              ),
-                              label: Text(
-                                btn["label"] as String,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: constraints.maxHeight - 80,
+                          ),
+                          child: IntrinsicHeight(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                // dropdown langue
+                                ValueListenableBuilder<String>(
+                                  valueListenable: LangProvider.notifier,
+                                  builder: (context, value, child) {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 20,
+                                      ), // 🔹 margin-bottom: 20px
+                                      child: Align(
+                                        alignment: Alignment
+                                            .center, // centré horizontalement
+                                        child: IntrinsicWidth(
+                                          child: DropdownButton<String>(
+                                            value: _selectedLang,
+                                            isDense:
+                                                true, // réduit la hauteur et padding
+                                            underline:
+                                                Container(), // supprime la ligne
+                                            dropdownColor: currentColors['bg'],
+                                            style: TextStyle(
+                                              color: currentColors['text'],
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            items: _langs
+                                                .map(
+                                                  (lang) => DropdownMenuItem(
+                                                    value: lang,
+                                                    child: Text(
+                                                      lang.toUpperCase(),
+                                                      style: const TextStyle(
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                )
+                                                .toList(),
+                                            onChanged: (newValue) async {
+                                              if (newValue != null) {
+                                                await LangProvider.changeLanguage(
+                                                  newValue,
+                                                );
+                                              }
+                                            },
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
-                              ),
-                              onPressed: () =>
-                                  (btn["action"] as Function)(context),
+
+                                // boutons
+                                ...buttons.map((btn) {
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                    ),
+                                    child: ElevatedButton.icon(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            currentColors['button-color'],
+                                        minimumSize: const Size(
+                                          double.infinity,
+                                          50,
+                                        ),
+                                      ),
+                                      icon: Icon(
+                                        btn["icon"] as IconData?,
+                                        color: Colors.white,
+                                      ),
+                                      label: Text(
+                                        btn["label"] as String,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      onPressed: () =>
+                                          (btn["action"] as Function)(context),
+                                    ),
+                                  );
+                                }),
+                                const Spacer(),
+                              ],
                             ),
-                          );
-                        }),
-                      ],
-                    ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
           ),
           bottomNavigationBar: const Navbar(currentRoute: '/settings'),
