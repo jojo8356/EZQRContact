@@ -25,13 +25,12 @@ class Navbar extends StatelessWidget {
               data: Theme.of(context).copyWith(
                 bottomNavigationBarTheme: BottomNavigationBarThemeData(
                   backgroundColor: currentColors['bg'],
-                  unselectedItemColor: const Color.fromARGB(255, 102, 53, 187),
-                  selectedItemColor: const Color.fromARGB(
-                    255,
-                    161,
-                    107,
-                    255,
-                  ), // violet clair
+                  unselectedItemColor: DarkModeProvider().isDarkMode
+                      ? const Color.fromARGB(255, 102, 53, 187)
+                      : Color.fromARGB(255, 161, 107, 255),
+                  selectedItemColor: !DarkModeProvider().isDarkMode
+                      ? const Color.fromARGB(255, 102, 53, 187)
+                      : Color.fromARGB(255, 161, 107, 255),
                   type: BottomNavigationBarType.fixed,
                 ),
               ),
