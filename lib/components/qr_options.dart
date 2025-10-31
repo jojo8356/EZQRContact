@@ -18,6 +18,7 @@ class OptionsQR extends StatelessWidget {
     required this.expanded,
     required this.onRefresh,
   });
+
   @override
   Widget build(BuildContext context) {
     final darkProv = DarkModeProvider();

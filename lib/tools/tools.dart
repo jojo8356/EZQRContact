@@ -1,10 +1,22 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:file_saver/file_saver.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_code_app/providers/lang.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+Future<bool> shouldShowGuide() async {
+  final prefs = await SharedPreferences.getInstance();
+  final hasShown = prefs.getInt('guideShown') ?? 0;
+  return hasShown == 0;
+}
+
+Future<void> markGuideShown() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setInt('guideShown', 1);
+}
 
 Map<String, TextEditingController> mapToControllers(Map<String, dynamic> data) {
   return {

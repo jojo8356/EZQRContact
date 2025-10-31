@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/navbar.dart';
+import 'package:qr_code_app/modals/guide.dart';
 import 'package:qr_code_app/pages/import_qr_page.dart';
 import 'package:qr_code_app/pages/qr_generator_simple.dart';
 import 'package:qr_code_app/pages/qr_generator_vcard.dart';
@@ -8,12 +9,21 @@ import 'package:qr_code_app/pages/qr_scanner.dart';
 import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/tools/import_contact.dart';
+import 'package:qr_code_app/tools/tools.dart';
 
 class OptionsListPage extends StatelessWidget {
   const OptionsListPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!context.mounted) return;
+      if (await shouldShowGuide() && context.mounted) {
+        showGuidePopup(context);
+        await markGuideShown();
+        debugPrint('Guide affiché et marqué comme montré.');
+      }
+    });
     final lang = LangProvider.get('menu');
     final buttons = [
       {
