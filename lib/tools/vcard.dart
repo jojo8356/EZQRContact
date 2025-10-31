@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:qr_code_app/tools/tools.dart';
+
 class VCard {
   String nom;
   String prenom;
@@ -53,40 +57,84 @@ class VCard {
     rev: data['rev'],
   );
 
-  Map<String, String> toMap() => {
-    'nom': nom,
-    'prenom': prenom,
-    'nom2': nom2,
-    'prefixe': prefixe,
-    'suffixe': suffixe,
-    'org': org,
-    'job': job,
-    'photo': photo,
-    'tel_work': telWork,
-    'tel_home': telHome,
-    'adr_work': adrWork,
-    'adr_home': adrHome,
-    'email': email,
-    'rev': rev,
-  };
+  String clean(String? value) {
+    value = value?.replaceAll(';;', '') ?? '';
+    return value.replaceAll(';', ' ');
+  }
+
+  Future<Map<String, String>> toMap() async {
+    final map = <String, String>{
+      'nom': clean(nom),
+      'prenom': clean(prenom),
+      'nom2': clean(nom2),
+      'prefixe': clean(prefixe),
+      'suffixe': clean(suffixe),
+      'org': clean(org),
+      'job': clean(job),
+      'tel_work': clean(telWork),
+      'tel_home': clean(telHome),
+      'adr_work': clean(adrWork),
+      'adr_home': clean(adrHome),
+      'email': clean(email),
+      'rev': clean(rev),
+    };
+
+    if (photo.isNotEmpty) {
+      final isValid =
+          await isImageUrl(photo) || photo.startsWith('data:image/');
+      if (isValid) {
+        map['photo'] = clean(photo);
+      }
+    }
+
+    return map;
+  }
+
+  String toJson() => jsonEncode(toMap());
 
   String toVCard() {
-    return '''
-BEGIN:VCARD
-VERSION:4.0
-N:$nom;$prenom;$nom2;$prefixe;$suffixe
-FN:$prefixe $prenom $nom $suffixe
-ORG:$org
-TITLE:$job
-${photo.isNotEmpty ? 'PHOTO;MEDIATYPE=image/jpeg:$photo' : ''}
-${telWork.isNotEmpty ? 'TEL;TYPE=_work,voice;VALUE=uri:tel:$telWork' : ''}
-${telHome.isNotEmpty ? 'TEL;TYPE=_home,voice;VALUE=uri:tel:$telHome' : ''}
-${adrWork.isNotEmpty ? 'ADR;TYPE=_work;LABEL="$adrWork":$adrWork' : ''}
-${adrHome.isNotEmpty ? 'ADR;TYPE=_home;LABEL="$adrHome":$adrHome' : ''}
-EMAIL:$email
-REV:$rev
-END:VCARD
-''';
+    final buffer = StringBuffer();
+    buffer.writeln('BEGIN:VCARD');
+    buffer.writeln('VERSION:4.0');
+    buffer.writeln(
+      'N:${clean(nom)};${clean(prenom)};${clean(nom2)};${clean(prefixe)};${clean(suffixe)}',
+    );
+    buffer.writeln(
+      'FN:${clean(prefixe)} ${clean(prenom)} ${clean(nom)} ${clean(suffixe)}',
+    );
+    if (org.isNotEmpty) buffer.writeln('ORG:${clean(org)}');
+    if (job.isNotEmpty) buffer.writeln('TITLE:${clean(job)}');
+
+    // PHOTO : base64 ou URL
+    if (photo.isNotEmpty) {
+      if (photo.startsWith('data:image/')) {
+        buffer.writeln('PHOTO:$photo');
+      } else {
+        buffer.writeln('PHOTO;VALUE=uri:$photo');
+      }
+    }
+
+    if (telWork.isNotEmpty) {
+      buffer.writeln('TEL;TYPE=work,voice;VALUE=uri:tel:${clean(telWork)}');
+    }
+    if (telHome.isNotEmpty) {
+      buffer.writeln('TEL;TYPE=home,voice;VALUE=uri:tel:${clean(telHome)}');
+    }
+    if (adrWork.isNotEmpty) {
+      buffer.writeln(
+        'ADR;TYPE=work;LABEL="${clean(adrWork)}":${clean(adrWork)}',
+      );
+    }
+    if (adrHome.isNotEmpty) {
+      buffer.writeln(
+        'ADR;TYPE=home;LABEL="${clean(adrHome)}":${clean(adrHome)}',
+      );
+    }
+    if (email.isNotEmpty) buffer.writeln('EMAIL:${clean(email)}');
+    buffer.writeln('REV:${clean(rev)}');
+    buffer.writeln('END:VCARD');
+
+    return buffer.toString();
   }
 
   static bool isVCard(String text) {
@@ -128,22 +176,20 @@ END:VCARD
       } else if (line.startsWith('PHOTO')) {
         final index = line.indexOf(':');
         if (index != -1) data['photo'] = line.substring(index + 1);
-      } else if (line.startsWith('TEL;TYPE=_work')) {
-        final index = line.indexOf(':tel:');
-        if (index != -1) data['tel_work'] = line.substring(index + 5);
-      } else if (line.startsWith('TEL;TYPE=_home')) {
-        final index = line.indexOf(':tel:');
-        if (index != -1) data['tel_home'] = line.substring(index + 5);
-      } else if (line.startsWith('ADR;TYPE=_work')) {
+      } else if (line.startsWith('TEL;TYPE=work') ||
+          line.startsWith('TEL;WORK')) {
+        final index = line.indexOf(':');
+        if (index != -1) data['tel_work'] = line.substring(index + 1);
+      } else if (line.startsWith('TEL;TYPE=cell') ||
+          line.startsWith('TEL;CELL')) {
+        final index = line.indexOf(':');
+        if (index != -1) data['tel_home'] = line.substring(index + 1);
+      } else if (line.startsWith('ADR;WORK') ||
+          line.startsWith('ADR;TYPE=work')) {
         final index = line.indexOf(':');
         if (index != -1) data['adr_work'] = line.substring(index + 1);
-      } else if (line.startsWith('ADR;TYPE=_home')) {
-        final index = line.indexOf(':');
-        if (index != -1) data['adr_home'] = line.substring(index + 1);
-      } else if (line.startsWith('EMAIL:')) {
-        data['email'] = line.substring(6);
-      } else if (line.startsWith('REV:')) {
-        data['rev'] = line.substring(4);
+      } else if (line.startsWith('URL:')) {
+        data['photo'] = line.substring(4);
       }
     }
 

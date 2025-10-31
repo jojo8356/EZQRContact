@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
 import 'package:qr_code_app/providers/lang.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -119,4 +120,20 @@ Future<List<String>> getJsonFiles(String folderPath) async {
       .toList();
 
   return jsonFiles;
+}
+
+Future<bool> isImageUrl(String url) async {
+  try {
+    final response = await http.head(Uri.parse(url));
+    if (response.statusCode == 200) {
+      final contentType = response.headers['content-type'];
+      if (contentType != null) {
+        return contentType.startsWith('image/');
+      }
+    }
+  } catch (e) {
+    // URL invalide ou problème réseau
+    return false;
+  }
+  return false;
 }

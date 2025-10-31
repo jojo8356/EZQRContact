@@ -152,7 +152,7 @@ Future<void> showVCardPopup(
             ),
           ),
         ),
-        actions: [cancelButton(context, currentColors)],
+        actions: [cancelButton(dialogContext, currentColors)],
       );
     },
   );
