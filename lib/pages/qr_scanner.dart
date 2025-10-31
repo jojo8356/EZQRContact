@@ -23,32 +23,35 @@ class _QRScannerPageState extends State<QRScannerPage> {
     final lang = LangProvider.get('pages')['QR']['scanner'];
     return Scaffold(
       appBar: AppBarCustom(lang['title']),
-      body: ElevatedButton(
-        onPressed: () async {
-          await Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => AiBarcodeScanner(
-                onDetect: (BarcodeCapture capture) async {
-                  if (_scanned) return; // ⚠️ ignore si déjà scanné
-                  _scanned = true;
+      body: Center(
+        child: ElevatedButton(
+          onPressed: () async {
+            await Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => AiBarcodeScanner(
+                  hideGalleryButton: true,
+                  onDetect: (BarcodeCapture capture) async {
+                    if (_scanned) return; // ⚠️ ignore si déjà scanné
+                    _scanned = true;
 
-                  final text = capture.barcodes.first.rawValue;
-                  final vcard = VCard.parse(text ?? '');
+                    final text = capture.barcodes.first.rawValue;
+                    final vcard = VCard.parse(text ?? '');
 
-                  await PhoneContacts.verifyPermission();
-                  await PhoneContacts.add(await vcard.toMap());
-                  await createVCard(await vcard.toMap());
+                    await PhoneContacts.verifyPermission();
+                    await PhoneContacts.add(await vcard.toMap());
+                    await createVCard(await vcard.toMap());
 
-                  if (context.mounted) {
-                    await redirect(context, const Collection());
-                  }
-                },
+                    if (context.mounted) {
+                      await redirect(context, const Collection());
+                    }
+                  },
+                ),
               ),
-            ),
-          );
-          _scanned = false; // reset si on revient sur la page
-        },
-        child: const Text("Scan Barcode"),
+            );
+            _scanned = false; // reset si on revient sur la page
+          },
+          child: const Text("Scan Barcode"),
+        ),
       ),
     );
   }
