@@ -24,6 +24,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
     final lang = LangProvider.get('pages')['QR']['scanner'];
     return Scaffold(
       appBar: AppBarCustom(lang['title']),
+      backgroundColor: currentColors['bg'],
       body: Center(
         child: ElevatedButton(
           onPressed: () async {
@@ -75,7 +76,13 @@ class _QRScannerPageState extends State<QRScannerPage> {
             );
             _scanned = false; // reset si on revient sur la page
           },
-          child: const Text("Scan Barcode"),
+          style: ButtonStyle(
+            backgroundColor: WidgetStatePropertyAll(
+              currentColors['button-color'],
+            ),
+            foregroundColor: WidgetStatePropertyAll(Colors.white),
+          ),
+          child: Text(lang['scan']),
         ),
       ),
     );

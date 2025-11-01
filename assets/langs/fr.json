@@ -56,7 +56,8 @@
       },
       "scanner": {
         "title": "Scanner de QR code",
-        "invalid qr": "QR code Invalide"
+        "invalid qr": "QR code Invalide",
+        "scan": "Scanner QR Code"
       },
       "result": {
         "title": "Votre QR code",
