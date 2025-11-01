@@ -60,11 +60,15 @@ class _QRScannerPageState extends State<QRScannerPage> {
                       _scanned = true;
 
                       final text = capture.barcodes.first.rawValue;
-                      final vcard = VCard.parse(text ?? '');
 
-                      await PhoneContacts.verifyPermission();
-                      await PhoneContacts.add(await vcard.toMap());
-                      await createVCard(await vcard.toMap());
+                      if (VCard.isVCard(text ?? '')) {
+                        final vcard = VCard.parse(text ?? '');
+                        await PhoneContacts.verifyPermission();
+                        await PhoneContacts.add(await vcard.toMap());
+                        await createVCard(await vcard.toMap());
+                      } else {
+                        await createSimpleQR(text ?? '');
+                      }
 
                       if (context.mounted) {
                         await redirect(context, const Collection());
@@ -74,7 +78,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
                 ),
               ),
             );
-            _scanned = false; // reset si on revient sur la page
+            _scanned = false;
           },
           style: ButtonStyle(
             backgroundColor: WidgetStatePropertyAll(
