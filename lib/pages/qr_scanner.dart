@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/pages/qr_card_view_page.dart';
 import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/tools/contacts.dart';
 import 'package:qr_code_app/tools/db/db.dart';
 import 'package:qr_code_app/tools/tools.dart';
@@ -30,9 +31,29 @@ class _QRScannerPageState extends State<QRScannerPage> {
               MaterialPageRoute(
                 builder: (context) => SafeArea(
                   child: AiBarcodeScanner(
+                    borderColor: currentColors['text'],
+                    overlayColor: currentColors['bg'],
                     hideGalleryButton: true,
                     hideSheetDragHandler: true,
                     hideSheetTitle: true,
+                    appBarBuilder: (context, controller) => AppBar(
+                      backgroundColor: Colors.transparent,
+                      elevation: 0,
+                      foregroundColor:
+                          currentColors['text'], // 🔹 couleur des icônes
+                      actions: [
+                        IconButton(
+                          icon: const Icon(Icons.cameraswitch_rounded),
+                          onPressed: controller.switchCamera,
+                        ),
+                        IconButton(
+                          icon: controller.torchEnabled
+                              ? const Icon(Icons.flashlight_off_rounded)
+                              : const Icon(Icons.flashlight_on_rounded),
+                          onPressed: controller.toggleTorch,
+                        ),
+                      ],
+                    ),
                     onDetect: (BarcodeCapture capture) async {
                       if (_scanned) return;
                       _scanned = true;
