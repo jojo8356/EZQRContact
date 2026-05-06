@@ -6,3 +6,7 @@ You will be able to create VCards: Virtual identity card made up of personal con
 
 You can have a QR Code from an image.
 This can be done by scanning or downloading an image from your phone
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
