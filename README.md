@@ -158,17 +158,19 @@ The full v2.0 architecture, ADRs, and migration plan are documented in
 
 ## Contributing
 
-Contributions are welcome. A full `CONTRIBUTING.md` with setup, conventions,
-and PR workflow is coming with the v2.0 release.
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup
+instructions, the PR workflow, commit message conventions, and how to run
+tests.
 
-For now, you can:
+Looking for a starter task? Browse the
+[Good First Issues](https://github.com/jojo8356/EZQRContact/contribute) page.
+Each issue has a clear scope and the skills required.
 
-- Open issues with bugs, ideas, or questions
-- Star the repo if you find it useful
-- Fork and propose features via PR
+Other ways to help:
 
-Issues tagged `good first issue` are intentionally easy entry points for
-first time contributors.
+- Star the repo
+- Try the app and report bugs via issues
+- Suggest features via issues
 
 ## Roadmap
 
