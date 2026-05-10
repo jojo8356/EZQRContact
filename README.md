@@ -69,12 +69,15 @@ EZQRContact is different:
 
 ## Screenshots
 
-<!-- ![My Card](docs/screenshots/my-card.png) -->
-<!-- ![Scanner](docs/screenshots/scanner.png) -->
-<!-- ![Contact Detail](docs/screenshots/contact-detail.png) -->
-<!-- ![Export PDF](docs/screenshots/export-pdf.png) -->
+| Light | Dark |
+|---|---|
+| ![Home](docs/screenshots/home.png) | ![Home dark](docs/screenshots/home-dark.png) |
+| ![VCard form](docs/screenshots/vcard-form.png) | ![Scanner](docs/screenshots/scanner.png) |
+| ![Collection](docs/screenshots/collection.png) | ![Collection dark](docs/screenshots/collection-dark.png) |
 
-_Screenshots coming with the v2.0 release._
+Captured automatically via `./scripts/capture_screenshots.sh`. See
+[`integration_test/screenshots_test.dart`](integration_test/screenshots_test.dart)
+for the test that drives the navigation.
 
 ## Stack
 
