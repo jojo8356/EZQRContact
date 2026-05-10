@@ -164,18 +164,71 @@ visible de l'app. Sans ça, tout le reste est instable.
 
 ### Story E1.1: Migrer sqflite → Drift avec préservation DB v1
 
-As un **développeur qui doit ajouter des features avec confiance**,
-I want **toute la couche persistance en Drift type-safe avec migrations versionnées**,
-So that **je n'ai plus de bugs runtime liés à des cast Map<String, dynamic> et que je peux faire évoluer le schéma proprement**.
+**SPLIT INTO 4 SUB-STORIES** (per implementation-readiness audit, 2026-05-06)
+
+The original Story E1.1 was flagged as too large by the readiness audit
+(touches all the persistence layer, all repositories, the migration, the
+backup, and the integration tests in one go). It is split into four
+sub-stories that each ship independently and can be reviewed atomically.
+
+#### Story E1.1a: Setup Drift + tables miroir + codegen
+
+As un **développeur**,
+I want **les dépendances Drift installées et les 3 tables Drift définies en miroir du schéma sqflite v1**,
+So that **`build_runner` génère les classes Dart type-safe sans toucher au runtime de l'app**.
 
 **Acceptance Criteria:**
 
-**Given** la DB v1 sqflite existante avec 2 tables et soft-delete
-**When** j'ajoute `drift`, `drift_sqflite`, `drift_dev`, `build_runner` au pubspec et je définis les tables `SimpleQRs`, `VCards`, `Events` en Drift miroir + extensions
-**Then** `dart run build_runner build` génère les classes type-safe sans erreur
-**And** toutes les méthodes existantes du `QRDatabase` sont remplacées par leurs équivalents Drift, avec tests unit `sqflite_common_ffi` validés
-**And** un user qui upgrade depuis v1 voit ses données préservées (test avec dump réel d'une DB v1)
-**And** un backup auto `qr_app.db.backup` est créé avant la migration
+**Given** le pubspec.yaml v1.0.1 avec `sqflite ^2.4.2`
+**When** j'ajoute `drift ^2.21+`, `drift_sqflite ^2`, `drift_dev ^2.21+`, `build_runner ^2.4+` aux deps et dev_deps appropriées
+**And** je crée `lib/data/db/tables/simple_qrs.dart`, `vcards.dart`, `events.dart` en miroir du schéma actuel
+**Then** `dart run build_runner build --delete-conflicting-outputs` génère les classes sans erreur
+**And** `flutter analyze` reste à 0 warning (NFR-8)
+**And** l'app v1.0.1 continue de tourner sans modification de comportement
+
+#### Story E1.1b: Migrer VCardRepository
+
+As un **développeur**,
+I want **toutes les méthodes liées aux VCards de `lib/tools/db/db.dart` portées dans un nouveau `lib/data/repositories/vcard_repository.dart` qui utilise Drift**,
+So that **les VCards sont accédées en mode type-safe sans toucher SimpleQR ni la migration v1→v2**.
+
+**Acceptance Criteria:**
+
+**Given** `QRDatabase` v1 sqflite avec `insertVCard`, `getAllVCards`, `getVCardById`, `verifContact`, `modifContact`, `cloneVCard`, `deleteVCard`, `isClone`, `updateVCardPath`, `getPathFromVCard`, `getDeletedVCards`, `isDeletedVCard`, `getLastVCardId`
+**When** je crée `VCardRepository` avec ces méthodes via Drift
+**Then** chaque méthode a un test unit dans `test/data/vcard_repository_test.dart` avec `sqflite_common_ffi` qui valide le comportement
+**And** la couverture de `vcard_repository.dart` est ≥ 70% (NFR-4.2)
+**And** l'ancien code `QRDatabase` reste en place (cohabitation pendant la migration)
+
+#### Story E1.1c: Migrer SimpleQRRepository
+
+As un **développeur**,
+I want **toutes les méthodes liées aux SimpleQR portées dans `lib/data/repositories/simple_qr_repository.dart` via Drift**,
+So that **les SimpleQR sont accessibles en type-safe et que le pattern repository est cohérent avec celui de E1.1b**.
+
+**Acceptance Criteria:**
+
+**Given** `QRDatabase` v1 avec `insertSimpleQR`, `getAllSimpleQR`, `deleteSimpleQR`, `getDeletedSimpleQR`, `getPathFromSimpleQR`, `updateSimpleQRPath`, `isDeletedSimpleQR`
+**When** je crée `SimpleQRRepository` avec ces méthodes via Drift
+**Then** chaque méthode a un test unit dans `test/data/simple_qr_repository_test.dart`
+**And** la couverture du fichier est ≥ 70%
+**And** le pattern (naming, error handling, return types) match `VCardRepository` de E1.1b
+
+#### Story E1.1d: Migration v1 → v2 avec backup et tests d'intégration
+
+As un **utilisateur existant qui upgrade depuis v1.0.1 vers v2.0**,
+I want **mes données VCard et SimpleQR préservées sans corruption**,
+So that **la mise à jour est invisible pour moi et que je ne perds aucun contact capté**.
+
+**Acceptance Criteria:**
+
+**Given** un device avec `qr_app.db` v1 contenant N VCards et M SimpleQRs
+**When** l'app v2 démarre pour la première fois
+**Then** un backup automatique `qr_app.db.backup` est créé dans `getApplicationDocumentsDirectory()` avant toute migration
+**And** la migration `MigrationStrategy.onUpgrade` ajoute les colonnes `visual_config TEXT NULL`, `event_id INTEGER NULL`, `captured_at TEXT NULL` à `VCards`, et crée la table `Events`
+**And** un test d'intégration utilise un dump réel d'une DB v1 (fixture committée dans `test/fixtures/v1_qr_app.db`) et vérifie que tous les enregistrements sont accessibles via les nouveaux repositories après migration
+**And** si la migration échoue, le backup est restauré automatiquement et un toast d'erreur clair s'affiche
+**And** tout l'ancien code `lib/tools/db/db.dart` est supprimé une fois cette story validée (cohabitation E1.1b/c terminée)
 
 ### Story E1.2: Migrer flutter_lints → very_good_analysis
 
@@ -687,7 +740,7 @@ So that **je n'oublie pas une étape (bump version, tag, push, Play Store upload
 ## Ordre de réalisation suggéré (sprint plan)
 
 1. **Sprint 1** (P0 critique) : E0.1 → E0.2 → E0.3 → E0.4 (préparation OS)
-2. **Sprint 2** (P0 foundation) : E1.1 → E1.2 → E1.3 → E1.5 (Drift, lints, commits, CI)
+2. **Sprint 2** (P0 foundation) : E1.1a → E1.1b → E1.1c → E1.1d → E1.2 → E1.3 → E1.4 → E1.5 (Drift split, lints, commits, i18n, CI)
 3. **Sprint 3** (P0 vCard) : E2.1 → E2.2 → E2.3 (vCard 3.0 + parser dual)
 4. **Sprint 4** (P1 perso) : E3.1 → E3.2 → E3.3 → E3.4 → E3.5 (visuel + photo)
 5. **Sprint 5** (P1 scan) : E4.1 → E4.2 → E4.3 → E4.4 → E4.5 → E4.6 (scan + contacts)
