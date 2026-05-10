@@ -19,4 +19,4 @@ dans une story dédiée ou en cleanup global quand bandwidth.
 
 ## Deferred from: code review of story-1.1d (2026-05-10)
 
-- **Test d'intégration migration v1 → v2 avec dump synthétique** — La migration `onUpgrade(1, 2)` est validée par 21 tests unitaires (les repositories) et par la pratique sur device. Un test en pure Dart qui crée une DB v1 raw (via `sqlite3.openInMemory()` + `PRAGMA user_version = 1`), ouvre avec `QRDatabase.forTesting`, et vérifie que les colonnes/données sont préservées serait plus robuste. Effort : ~30-60 min de setup. À faire si on rencontre un bug de migration en prod ou avant un release majeur.
+- ~~**Test d'intégration migration v1 → v2 avec dump synthétique**~~ — **Résolu** (commit `f00e15f`). 12 tests d'intégration dans `test/data/migration_v1_to_v2_test.dart` valident la migration sur une DB v1 in-memory (`sqlite3.openInMemory()` + `PRAGMA user_version = 1` + seed v1 data). Bug bonus identifié et fixé en cours de route : les NULL des colonnes texte v1 plantaient le mapping Drift, résolu via un `UPDATE ... COALESCE` ajouté dans `onUpgrade(1, 2)`.
