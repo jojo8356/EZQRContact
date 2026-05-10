@@ -7,7 +7,7 @@ import 'package:qr_code_app/data/db/database.dart';
 /// while exposing a typed Drift API. Story 1.1d will switch the app from
 /// the legacy `QRDatabase` to this repository.
 class VCardRepository {
-  final QRDatabaseV2 _db;
+  final QRDatabase _db;
 
   VCardRepository(this._db);
 

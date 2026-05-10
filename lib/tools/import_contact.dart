@@ -1,7 +1,7 @@
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:qr_code_app/components/contact_app.dart';
 import 'package:qr_code_app/tools/contacts.dart';
-import 'db/db.dart';
+import 'package:qr_code_app/data/db/database.dart';
 import 'tools.dart';
 
 Future<void> importContacts(context) async {

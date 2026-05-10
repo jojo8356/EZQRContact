@@ -8,7 +8,7 @@ import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/data/repositories/vcard_repository.dart';
 
 void main() {
-  late QRDatabaseV2 db;
+  late QRDatabase db;
   late VCardRepository repo;
 
   VCardsCompanion sample({
@@ -36,7 +36,7 @@ void main() {
   }
 
   setUp(() {
-    db = QRDatabaseV2.forTesting(NativeDatabase.memory());
+    db = QRDatabase.forTesting(NativeDatabase.memory());
     repo = VCardRepository(db);
   });
 

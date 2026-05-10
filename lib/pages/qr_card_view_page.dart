@@ -5,7 +5,7 @@ import 'package:qr_code_app/components/qr_card_list.dart';
 import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 
-import '../tools/db/db.dart';
+import 'package:qr_code_app/data/db/database.dart';
 
 class Collection extends StatefulWidget {
   const Collection({super.key});

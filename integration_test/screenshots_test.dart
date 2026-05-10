@@ -16,7 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:qr_code_app/main.dart' as app;
 import 'package:qr_code_app/providers/darkmode.dart';
-import 'package:qr_code_app/tools/db/db.dart';
+import 'package:qr_code_app/data/db/database.dart';
 
 // Insert sample QR/VCard rows so the Collection page is not empty when
 // captured. Uses raw insert (no saveQrCode) to avoid the file system

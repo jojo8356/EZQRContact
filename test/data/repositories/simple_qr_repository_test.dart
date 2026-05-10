@@ -8,7 +8,7 @@ import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/data/repositories/simple_qr_repository.dart';
 
 void main() {
-  late QRDatabaseV2 db;
+  late QRDatabase db;
   late SimpleQRRepository repo;
 
   SimpleQRsCompanion sample({
@@ -21,7 +21,7 @@ void main() {
       );
 
   setUp(() {
-    db = QRDatabaseV2.forTesting(NativeDatabase.memory());
+    db = QRDatabase.forTesting(NativeDatabase.memory());
     repo = SimpleQRRepository(db);
   });
 

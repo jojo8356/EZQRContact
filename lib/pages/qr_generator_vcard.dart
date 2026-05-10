@@ -5,7 +5,7 @@ import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/pages/qr_card_view_page.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/tools/contacts.dart';
-import 'package:qr_code_app/tools/db/db.dart';
+import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/tools/tools.dart';
 import 'package:qr_code_app/tools/vcard.dart';
 import '../components/qr_save.dart';

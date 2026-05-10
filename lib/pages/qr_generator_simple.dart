@@ -7,7 +7,7 @@ import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
-import '../tools/db/db.dart';
+import 'package:qr_code_app/data/db/database.dart';
 
 class GenerateSimpleQRCode extends StatefulWidget {
   const GenerateSimpleQRCode({super.key});

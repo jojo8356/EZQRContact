@@ -4,7 +4,7 @@ import 'package:qr_code_app/modals/contact_options.dart';
 import 'package:qr_code_app/modals/qr_view.dart';
 import 'package:qr_code_app/modals/save.dart';
 import 'package:qr_code_app/providers/darkmode.dart';
-import 'package:qr_code_app/tools/db/db.dart';
+import 'package:qr_code_app/data/db/database.dart';
 
 class OptionsQR extends StatelessWidget {
   final bool isVCard;

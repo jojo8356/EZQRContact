@@ -7,7 +7,7 @@ import 'package:qr_code_app/data/db/database.dart';
 /// QRs (URLs, free text). Story 1.1d will switch the app from the legacy
 /// `QRDatabase` to this repository.
 class SimpleQRRepository {
-  final QRDatabaseV2 _db;
+  final QRDatabase _db;
 
   SimpleQRRepository(this._db);
 
