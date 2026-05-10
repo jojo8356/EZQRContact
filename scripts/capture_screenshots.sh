@@ -62,4 +62,20 @@ echo
 echo "Screenshots saved to docs/screenshots/"
 ls -lh docs/screenshots/ 2>/dev/null || echo "  (none yet)"
 
+# Auto-optimize PNGs if at least one screenshot was produced.
+# Failure to optimize is non-fatal: the screenshots are still usable raw,
+# just heavier.
+shopt -s nullglob
+SHOTS=(docs/screenshots/*.png)
+if [ ${#SHOTS[@]} -gt 0 ]; then
+  echo
+  echo "[step] Optimizing PNGs via pngquant"
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  if "$SCRIPT_DIR/optimize_screenshots.sh"; then
+    echo "[ok] optimization complete"
+  else
+    echo "[warn] optimization failed; the raw screenshots are kept as-is"
+  fi
+fi
+
 exit $DRIVE_EXIT

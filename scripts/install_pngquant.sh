@@ -40,26 +40,49 @@ echo "[info] pngquant not found. Detected OS=$OS ARCH=$ARCH"
 echo "[info] Will install to $LOCAL_PNGQUANT"
 
 build_with_cargo() {
+  # Check git
+  if ! command -v git >/dev/null 2>&1; then
+    echo "[error] git is required to clone the pngquant source"
+    case "$OS" in
+      Linux*)
+        echo "        Install: sudo apt install git           (Debian / Ubuntu)"
+        echo "                 sudo dnf install git           (Fedora)"
+        echo "                 sudo pacman -S git             (Arch)"
+        ;;
+      Darwin*)
+        echo "        Install: xcode-select --install          (Xcode CLI tools include git)"
+        echo "                 OR: brew install git"
+        ;;
+    esac
+    return 1
+  fi
+
+  # Check cargo
   if ! command -v cargo >/dev/null 2>&1; then
-    echo "[error] cargo (Rust) is required to build pngquant from source"
-    echo "        Install Rust: https://rustup.rs"
-    echo "        Quick install (no sudo): curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
+    echo "[error] cargo (Rust 1.70+) is required to build pngquant from source"
+    echo "        Install Rust via rustup (no sudo, user-local):"
+    echo "          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y"
+    echo "          source \"\$HOME/.cargo/env\""
+    echo "        Or check https://rustup.rs for OS-specific instructions."
     return 1
   fi
 
   local rust_version
   rust_version="$(cargo --version | awk '{print $2}')"
-  echo "[info] using cargo $rust_version"
+  echo "[info] using git $(git --version | awk '{print $3}') + cargo $rust_version"
 
   local src_dir
   src_dir="$(mktemp -d)"
   trap 'rm -rf "$src_dir"' RETURN
 
   echo "[step] Cloning kornelski/pngquant"
-  git clone --depth=1 --recurse-submodules https://github.com/kornelski/pngquant.git "$src_dir" >/dev/null 2>&1 || {
-    echo "[error] git clone failed"
+  if ! git clone --depth=1 --recurse-submodules https://github.com/kornelski/pngquant.git "$src_dir" >/dev/null 2>&1; then
+    echo "[error] git clone failed. Possible causes:"
+    echo "        - No network access"
+    echo "        - GitHub is unreachable from this network"
+    echo "        - Submodule clone failed (try: git clone --recurse-submodules ... manually)"
     return 1
-  }
+  fi
 
   echo "[step] cargo build --release (this can take 1-3 min the first time)"
   (
