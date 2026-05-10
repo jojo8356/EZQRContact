@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 
+@DataClassName('SimpleQRRow')
 class SimpleQRs extends Table {
   IntColumn get id => integer().autoIncrement()();
 

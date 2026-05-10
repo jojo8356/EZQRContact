@@ -1,6 +1,11 @@
 import 'package:drift/drift.dart';
 import 'package:qr_code_app/data/db/tables/events.dart';
 
+// `@DataClassName('VCardRow')` avoids a name clash with the existing
+// `VCard` class in lib/tools/vcard.dart (the vCard 4.0 format builder
+// and parser). The DB row is a `VCardRow`, the contact representation
+// for the QR code is still `VCard`.
+@DataClassName('VCardRow')
 class VCards extends Table {
   IntColumn get id => integer().autoIncrement()();
   TextColumn get nom => text().withDefault(const Constant(''))();
