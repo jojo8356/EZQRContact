@@ -55,11 +55,11 @@ development_status:
   # ==========================================================================
   # Epic 1: Migration technique foundation (P0)
   # ==========================================================================
-  epic-1: backlog
+  epic-1: in-progress
   # Story 1-1 was split into 4 sub-stories per the implementation-readiness
   # audit (2026-05-06). The original key is kept here as a tracking parent
   # marked done when 1-1a..d are all done.
-  1-1a-setup-drift-tables-miroir-codegen: backlog
+  1-1a-setup-drift-tables-miroir-codegen: done
   1-1b-migrer-vcard-repository: backlog
   1-1c-migrer-simple-qr-repository: backlog
   1-1d-migration-v1-vers-v2-avec-backup: backlog
