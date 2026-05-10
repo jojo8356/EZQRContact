@@ -63,6 +63,33 @@ class QRDatabase extends _$QRDatabase {
             await m.addColumn(vCards, vCards.eventId);
             await m.addColumn(vCards, vCards.capturedAt);
             await m.createTable(events);
+
+            // Normalize legacy NULLs in TEXT columns to empty strings so
+            // that the Drift-generated non-null String getters can map
+            // them without throwing. In v1 the schema allowed NULL for
+            // every TEXT column except SimpleQR.text, and partial inserts
+            // (only nom + prenom + tel) were common. We materialize the
+            // implicit `e[col] ?? ''` that the legacy `VCard.fromMap` did
+            // at read time. Idempotent.
+            await customStatement('''
+              UPDATE VCard SET
+                nom = COALESCE(nom, ''),
+                prenom = COALESCE(prenom, ''),
+                nom2 = COALESCE(nom2, ''),
+                prefixe = COALESCE(prefixe, ''),
+                suffixe = COALESCE(suffixe, ''),
+                org = COALESCE(org, ''),
+                job = COALESCE(job, ''),
+                photo = COALESCE(photo, ''),
+                tel_work = COALESCE(tel_work, ''),
+                tel_home = COALESCE(tel_home, ''),
+                adr_work = COALESCE(adr_work, ''),
+                adr_home = COALESCE(adr_home, ''),
+                email = COALESCE(email, ''),
+                rev = COALESCE(rev, ''),
+                clone = COALESCE(clone, 0),
+                deleted = COALESCE(deleted, 0)
+            ''');
           }
         },
       );
