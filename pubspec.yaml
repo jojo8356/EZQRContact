@@ -24,6 +24,8 @@ dependencies:
   qr_flutter: ^4.0.0
   path: ^1.9.1
   sqflite: ^2.4.2
+  drift: ^2.33.0
+  drift_sqflite: ^2.0.1
   path_provider: ^2.1.5
   flutter_contacts: ^1.1.9+2
   permission_handler: ^12.0.1
@@ -53,6 +55,8 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   flutter_native_splash: ^2.4.6
   flutter_launcher_icons: ^0.14.4
+  drift_dev: ^2.33.0
+  build_runner: ^2.4.13
 
 flutter:
   uses-material-design: true
