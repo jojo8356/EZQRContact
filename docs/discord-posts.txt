@@ -1,0 +1,161 @@
+================================================================================
+EZQRContact - Messages Discord prêts à coller
+================================================================================
+
+Ce fichier contient :
+  1. Le post de présentation initial (à poster une seule fois)
+  2. Le template de post de release (à réutiliser à chaque vX.Y.Z)
+  3. Le post pour la release actuelle (v1.0.1)
+  4. Notes opérationnelles (serveurs, formatage, embeds)
+
+Règles d'écriture (memory feedback_no_dashes) :
+  - Pas de tiret cadratin (—) ni double tiret (--)
+  - Direct, sobre, pas de survente
+  - Tutoiement cohérent avec le ton de Smaug/Alexandrie
+
+================================================================================
+1. POST DE PRÉSENTATION INITIAL (à poster une seule fois)
+================================================================================
+
+Salut tout le monde, je viens vous partager EZQRContact, un projet que je
+développe en solo depuis l'été dernier.
+
+C'est une app mobile open source (Flutter) qui échange des contacts
+professionnels en face-à-face via un QR code. Concrètement tu rentres tes
+infos une fois (nom, tel, email, photo), l'app génère un QR code
+personnalisé, l'autre personne le scanne et tu te retrouves dans son
+carnet de contacts. Comme un Snapcode mais pour les coordonnées pros.
+
+L'idée m'est venue parce que j'en avais marre de dicter mon numéro à
+chaque salon ou event de networking, et que les apps qui font ça (Blinq,
+HiHello, Popl) sont toutes du SaaS qui te demandent un compte et 8 à
+15 €/mois. EZQRContact est gratuit, sans compte, sans cloud, MIT.
+
+Stack: Flutter cross-platform Android/iOS, sqflite pour la persistance
+locale (migration vers Drift planifiée pour la v2), provider pour le state,
+mobile_scanner et qr_flutter pour la partie QR. C'est mon premier vrai
+projet mobile donc côté code y a sûrement à redire, et je suis preneur de
+toute critique constructive.
+
+Le projet vient de passer une grosse phase de mise en propre du repo:
+README structuré, CONTRIBUTING, screenshots, et 3 good first issues
+ouvertes pour qui veut tester une première contrib facile (ajouter une
+trad espagnole, un petit refacto, ou un fix d'accessibilité Semantics).
+
+GitHub: https://github.com/jojo8356/EZQRContact
+Release v1.0.1: https://github.com/jojo8356/EZQRContact/releases/tag/v1.0.1
+Good first issues: https://github.com/jojo8356/EZQRContact/contribute
+
+Une petite ⭐ aide à attirer d'autres devs sur le projet 😊
+
+Si vous avez des questions ou des idées de features, n'hésitez pas !
+
+================================================================================
+2. TEMPLATE POST DE RELEASE (à customiser à chaque vX.Y.Z)
+================================================================================
+
+EZQRContact version X.Y.Z
+
+Quoi de neuf dans cette version (version complète sur GitHub)
+
+Nouvelles fonctionnalités & améliorations 🚀
+- Feature 1
+- Feature 2
+- Feature 3
+
+Corrections 🩹
+- Fix 1
+- Fix 2
+
+[Optionnel: 1 ou 2 phrases sur le contexte technique pour les devs curieux]
+
+Changelog complet: https://github.com/jojo8356/EZQRContact/releases/tag/vX.Y.Z
+
+Et comme toujours, si vous aimez le projet hésitez pas a laisser une
+petite ⭐ sur GitHub, ça aide à attirer d'autres contributeurs.
+
+================================================================================
+3. POST RELEASE v1.0.1 (déjà sortie le 2026-05-10)
+================================================================================
+
+EZQRContact version 1.0.1
+
+Première version de polish. Pas de changement de comportement de l'app
+depuis la v1.0.0, mais le repo est maintenant un vrai projet open source
+crédible: README, license, contributing, screenshots, et tooling.
+
+Highlights 🚀
+- Licence MIT à la racine, badge MIT sur GitHub
+- README structuré en anglais avec 10 sections, 4 badges, table 2x3 light/dark
+- CONTRIBUTING.md complet (setup, PR workflow, Conventional Commits)
+- 3 good first issues ouvertes pour démarrer une première contrib
+- 6 screenshots in-app capturés automatiquement via integration_test
+
+Tooling cross-platform 🛠️
+- scripts/capture_screenshots.sh: capture auto en une commande
+- scripts/optimize_screenshots.sh: compression pngquant (-77% sur les PNG)
+- scripts/install_pngquant.sh: install no-sudo via cargo (Linux/Mac) ou
+  download prebuilt (Windows)
+
+Build fix 🩹
+- android/app/build.gradle.kts: la release signing config n'est créée que
+  si key.properties existe. Les builds debug marchent sans keystore.
+
+Prochain sprint: migration vers Drift ORM, lints very_good_analysis, et
+un workflow CI GitHub Actions.
+
+Changelog complet: https://github.com/jojo8356/EZQRContact/releases/tag/v1.0.1
+
+================================================================================
+4. NOTES OPÉRATIONNELLES
+================================================================================
+
+SERVEURS DISCORD CIBLES (par ordre de pertinence)
+
+1. Serveur Flutter France (le plus pertinent pour un projet Flutter FR)
+2. Serveur dev FR généraliste (Smaug post Alexandrie est dans ce style)
+3. Serveur de l'IUT/BUT Info (audience étudiante = personas cible 4)
+4. Reddit r/flutterdev en backup (à traduire en EN)
+
+QUAND POSTER
+
+- Premier post: dès qu'il y a au moins 4 screenshots, README structuré,
+  LICENSE, CONTRIBUTING, et 1 release. (Toutes ces conditions sont
+  réunies au 2026-05-10.)
+- Posts de release: à chaque vX.Y.Z, dans les 24h après publication
+  GitHub. Ne pas attendre une "grosse" version, le pattern Smaug
+  publie chaque petit changelog.
+- Posts ponctuels: milestones stars (50, 100, 500, 1000), articles
+  dev.to ou Medium, vidéos YouTube tierces, mentions presse, etc.
+
+FORMATAGE DISCORD
+
+- Pas besoin de coller les images: le lien GitHub auto-embed une card
+  avec image et description.
+- Les liens vers raw.githubusercontent.com/jojo8356/EZQRContact/main/
+  docs/screenshots/<name>.png sont aussi auto-embedés (utile pour
+  insister visuellement).
+- Discord ne supporte pas le markdown table. Préférer une liste à
+  bullet (- ) plutôt qu'une | table |.
+- Les emojis 🚀 🩹 🛠️ ⭐ marchent bien et structurent visuellement.
+- Garder les paragraphes courts (4-6 lignes max) pour la lecture mobile.
+
+INTERACTION POST-PUBLICATION
+
+- Répondre à TOUS les commentaires dans les 24h.
+- Si quelqu'un demande "ça utilise quoi pour X?": pointer vers le code
+  ou la doc, pas réécrire l'explication.
+- Si quelqu'un veut contribuer: pointer vers CONTRIBUTING.md + good
+  first issues.
+- Garder le thread vivant: chaque release devient un nouveau message
+  dans le même thread (pattern Smaug Alexandrie).
+
+ATTENTES RAISONNABLES (post premier post)
+
+Selon le pattern Alexandrie (référence du marché OS Flutter mobile):
+- 0 à 5 stars dans la première semaine = normal pour un projet inconnu
+- 10 à 30 stars dans le premier mois = bon signe (= projet reposté)
+- 1 à 3 contributions externes dans le premier trimestre = excellent
+- 100+ stars en 12 mois = projet qui a percé
+
+Patience: Smaug a mis 18 mois pour atteindre 1000 stars sur Alexandrie.

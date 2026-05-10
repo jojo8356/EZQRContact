@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-06
-last_updated: 2026-05-07
+last_updated: 2026-05-10
 project: EZQRContact
 project_key: NOKEY
 tracking_system: file-system
@@ -45,11 +45,11 @@ development_status:
   # ==========================================================================
   # Epic 0: Préparation contributions OS (P0)
   # ==========================================================================
-  epic-0: in-progress
+  epic-0: done
   0-1-ajouter-license-mit: done
   0-2-reecrire-readme-structure: done
-  0-3-ajouter-contributing-good-first-issues: backlog
-  0-4-capturer-screenshots-representatifs: backlog
+  0-3-ajouter-contributing-good-first-issues: done
+  0-4-capturer-screenshots-representatifs: done
   epic-0-retrospective: optional
 
   # ==========================================================================

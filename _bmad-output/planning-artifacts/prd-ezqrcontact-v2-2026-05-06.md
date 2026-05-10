@@ -215,6 +215,44 @@ identité visuelle perso (couleurs, logo).
   (`Semantics` widget Flutter).
 - **NFR-7.3** : Mode sombre supporté (existant en v1, à préserver).
 
+### NFR-8 — Zéro warning toléré (clean build)
+
+Tout build, analyse, ou test doit retourner **0 warning** sur la sortie
+visible aux contributeurs. Un warning visible dégrade l'expérience
+contributeur et donne l'impression d'un projet non maintenu.
+
+- **NFR-8.1** : `flutter analyze` retourne 0 warning et 0 info.
+- **NFR-8.2** : `flutter build apk` (debug et release) retourne 0 warning
+  Gradle. En particulier :
+  - Pas de mismatch NDK version (aligner sur la version la plus haute
+    requise par les plugins, ex: NDK 28.2.x au moment de la rédaction).
+  - Pas de "deprecated API" warning Gradle ou Kotlin.
+  - Pas de "package is discontinued" warning sur les dépendances pub.dev
+    (remplacer ou pinner toute dep deprecated identifiée).
+- **NFR-8.3** : `flutter pub outdated` n'affiche aucune dépendance
+  marquée `discontinued`. Action si une dep est discontinued :
+  remplacer par le successeur recommandé (ex: `flutter_markdown` →
+  `flutter_markdown_plus`).
+- **NFR-8.4** : `flutter test` et `flutter drive` retournent 0 warning de
+  framework ni d'assertion non fatale.
+- **NFR-8.5** : Le hook commitlint (story E1.3) doit avoir 0 warning de
+  config. Une fois `very_good_analysis` actif (story E1.2), aucun
+  `// ignore:` dans le code sans commentaire de justification adjacent.
+
+**Stratégie d'application** :
+- À chaque release, vérifier les 5 commandes ci-dessus localement avant
+  tag.
+- Le workflow GitHub Actions CI (story E1.5 et E8.2) doit aussi vérifier
+  ces conditions et fail le pipeline en cas de warning détecté.
+- Pour les warnings hérités (legacy v1) qu'on ne peut pas fixer
+  immédiatement : les documenter dans `deferred-work.md` avec une
+  justification claire et une story dédiée pour le fix.
+
+**Périmètre exclusion** : les warnings produits par les outils Flutter
+externes que Johan ne contrôle pas (ex: warnings du NDK Google sur des
+APIs internes, warnings d'AAPT2 hors du code projet) sont acceptés tant
+que documentés.
+
 ---
 
 ## 5. Success Criteria
