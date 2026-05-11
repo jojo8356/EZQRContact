@@ -6,6 +6,7 @@
 [![Flutter](https://img.shields.io/badge/Flutter-3.8%2B-blue?logo=flutter&style=flat-square)](https://flutter.dev)
 [![Stars](https://img.shields.io/github/stars/jojo8356/EZQRContact?style=flat-square)](https://github.com/jojo8356/EZQRContact/stargazers)
 [![Last commit](https://img.shields.io/github/last-commit/jojo8356/EZQRContact?style=flat-square)](https://github.com/jojo8356/EZQRContact/commits/main)
+[![CI](https://github.com/jojo8356/EZQRContact/actions/workflows/ci.yml/badge.svg)](https://github.com/jojo8356/EZQRContact/actions/workflows/ci.yml)
 
 ## Table of Contents
 
