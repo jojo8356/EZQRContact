@@ -104,7 +104,9 @@ class LangProvider {
     _currentLang = lang;
     await _loadTranslations(lang);
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_kPrefKey, lang);
+    // Persist _currentLang (not the arg) — _loadTranslations may have
+    // overridden it to the fallback if lang was not a bundled locale.
+    await prefs.setString(_kPrefKey, _currentLang);
     notifier.value = _currentLang;
   }
 
