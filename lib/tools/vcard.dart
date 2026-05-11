@@ -1,10 +1,17 @@
 import 'dart:convert';
 
+import 'package:qr_code_app/providers/vcard_settings_provider.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
-/// In-memory representation of a vCard 4.0 contact, with helpers to
-/// serialize to/from the legacy `Map<String, dynamic>` shape used by
-/// `QRDatabase` and to the canonical RFC 6350 text encoding.
+/// CRLF line separator imposed by RFC 2426 (vCard 3.0) and RFC 6350
+/// (vCard 4.0) between every content line, including the last one before
+/// `END:VCARD`.
+const String _crlf = '\r\n';
+
+/// In-memory representation of a vCard contact, with helpers to serialize
+/// to/from the legacy `Map<String, dynamic>` shape used by `QRDatabase` and
+/// to/from the canonical vCard text encoding (3.0 by default, 4.0 when
+/// [VCardSettingsProvider.useVCard4] is opt-in).
 class VCard {
 
   /// Creates a VCard with the given fields. All string fields default to ''.
@@ -45,9 +52,14 @@ class VCard {
     rev: data['rev'] as String?,
   );
 
-  /// Parses an RFC 6350 vCard text [vcard] into a VCard instance. Only the
-  /// subset of properties used by EZQRContact (N, FN, ORG, TITLE, PHOTO,
-  /// TEL, ADR, EMAIL, REV) is recognized; everything else is ignored.
+  /// Parses a vCard text [vcard] into a VCard instance. Detects the
+  /// `VERSION:` line (2.1 / 3.0 / 4.0) and applies version-specific
+  /// rules: line unfolding (RFC 6350 §3.2), `TEL;VALUE=uri:tel:` for
+  /// 4.0, `TEL;TYPE=` for 3.0, best-effort for 2.1.
+  ///
+  /// Only the subset of properties used by EZQRContact (N, FN, ORG,
+  /// TITLE, PHOTO, TEL, ADR, EMAIL, REV) is recognized; everything else
+  /// is ignored.
   factory VCard.parse(String vcard) {
     final data = <String, String>{
       'nom': '',
@@ -66,36 +78,68 @@ class VCard {
       'rev': '',
     };
 
-    for (var line in vcard.split(RegExp(r'\r?\n'))) {
-      line = line.trim();
-      if (line.startsWith('N:')) {
-        final parts = line.substring(2).split(';');
+    final lines = _unfoldLines(vcard);
+    final version = _detectVersion(lines);
+
+    for (final raw in lines) {
+      final line = raw.trim();
+      if (line.isEmpty) continue;
+      if (line.toUpperCase().startsWith('BEGIN:') ||
+          line.toUpperCase().startsWith('END:') ||
+          line.toUpperCase().startsWith('VERSION:')) {
+        continue;
+      }
+
+      final colonIdx = line.indexOf(':');
+      if (colonIdx == -1) continue;
+      final propPart = line.substring(0, colonIdx);
+      final value = line.substring(colonIdx + 1);
+      final segments = propPart.split(';');
+      final name = segments.first.toUpperCase();
+      final params = segments.skip(1).map((s) => s.toUpperCase()).toList();
+
+      if (name == 'N') {
+        final parts = value.split(';');
         data['nom'] = parts.isNotEmpty ? parts[0] : '';
         data['prenom'] = parts.length > 1 ? parts[1] : '';
         data['nom2'] = parts.length > 2 ? parts[2] : '';
         data['prefixe'] = parts.length > 3 ? parts[3] : '';
         data['suffixe'] = parts.length > 4 ? parts[4] : '';
-      } else if (line.startsWith('ORG:')) {
-        data['org'] = line.substring(4);
-      } else if (line.startsWith('TITLE:')) {
-        data['job'] = line.substring(6);
-      } else if (line.startsWith('PHOTO')) {
-        final index = line.indexOf(':');
-        if (index != -1) data['photo'] = line.substring(index + 1);
-      } else if (line.startsWith('TEL;TYPE=work') ||
-          line.startsWith('TEL;WORK')) {
-        final index = line.indexOf(':');
-        if (index != -1) data['tel_work'] = line.substring(index + 1);
-      } else if (line.startsWith('TEL;TYPE=cell') ||
-          line.startsWith('TEL;CELL')) {
-        final index = line.indexOf(':');
-        if (index != -1) data['tel_home'] = line.substring(index + 1);
-      } else if (line.startsWith('ADR;WORK') ||
-          line.startsWith('ADR;TYPE=work')) {
-        final index = line.indexOf(':');
-        if (index != -1) data['adr_work'] = line.substring(index + 1);
-      } else if (line.startsWith('URL:')) {
-        data['photo'] = line.substring(4);
+      } else if (name == 'ORG') {
+        // ORG components are `;`-separated (org-name;unit;unit). We keep
+        // the full string — the model is single-field.
+        data['org'] = value;
+      } else if (name == 'TITLE') {
+        data['job'] = value;
+      } else if (name == 'PHOTO') {
+        data['photo'] = _decodePhoto(value, params);
+      } else if (name == 'TEL') {
+        final typed = _classifyTel(params, version);
+        final phone = _extractTelValue(value, params);
+        if (typed == _TelKind.work && (data['tel_work'] ?? '').isEmpty) {
+          data['tel_work'] = phone;
+        } else if (typed == _TelKind.home && (data['tel_home'] ?? '').isEmpty) {
+          data['tel_home'] = phone;
+        } else if ((data['tel_home'] ?? '').isEmpty) {
+          // Untyped TEL: store on home as best-effort.
+          data['tel_home'] = phone;
+        }
+      } else if (name == 'ADR') {
+        final kind = _classifyAdr(params);
+        if (kind == _AdrKind.work && (data['adr_work'] ?? '').isEmpty) {
+          data['adr_work'] = value;
+        } else if (kind == _AdrKind.home && (data['adr_home'] ?? '').isEmpty) {
+          data['adr_home'] = value;
+        } else if ((data['adr_home'] ?? '').isEmpty) {
+          data['adr_home'] = value;
+        }
+      } else if (name == 'EMAIL') {
+        if ((data['email'] ?? '').isEmpty) data['email'] = value;
+      } else if (name == 'URL') {
+        // Legacy fallback: some 2.1 exporters put the photo URL in URL.
+        if ((data['photo'] ?? '').isEmpty) data['photo'] = value;
+      } else if (name == 'REV') {
+        data['rev'] = value;
       }
     }
 
@@ -126,16 +170,16 @@ class VCard {
   /// Photo URL or `data:image/...` base64 payload (vCard `PHOTO`).
   String photo;
 
-  /// Work phone number (vCard `TEL;TYPE=work,voice`).
+  /// Work phone number (vCard `TEL;TYPE=WORK,VOICE`).
   String telWork;
 
-  /// Home phone number (vCard `TEL;TYPE=home,voice`).
+  /// Home phone number (vCard `TEL;TYPE=HOME,VOICE`).
   String telHome;
 
-  /// Work postal address (vCard `ADR;TYPE=work`).
+  /// Work postal address (vCard `ADR;TYPE=WORK`).
   String adrWork;
 
-  /// Home postal address (vCard `ADR`).
+  /// Home postal address (vCard `ADR;TYPE=HOME`).
   String adrHome;
 
   /// Email address (vCard `EMAIL`).
@@ -155,11 +199,41 @@ class VCard {
     return '${iso}Z';
   }
 
-  /// Removes the `;` separator characters that would corrupt vCard
-  /// serialization, returning '' for null inputs.
+  /// Strips characters that would corrupt vCard serialization: the `;`
+  /// component separator (replaced by a space), `\r`/`\n` line breaks
+  /// (stripped), and Unicode C0 control characters (U+0000–U+001F) except
+  /// the horizontal tab. Returns '' for null inputs.
+  ///
+  /// Story 2.3 hardening: also drops UTF-8 surrogate halves to avoid
+  /// invalid UTF-8 sequences in the final QR payload. Emojis and printable
+  /// non-ASCII Unicode (accents, CJK, etc.) are preserved.
   String clean(String? value) {
-    final cleaned = value?.replaceAll(';;', '') ?? '';
-    return cleaned.replaceAll(';', ' ');
+    if (value == null || value.isEmpty) return '';
+
+    // Drop CR/LF (would inject new content lines), then collapse doubled
+    // semicolons before stripping single ones to preserve the legacy
+    // `replaceAll(';;', '')` semantics (used to remove placeholder empty
+    // ADR components like `;;Street;...`).
+    var out = value
+        .replaceAll('\r\n', '')
+        .replaceAll('\n', '')
+        .replaceAll('\r', '');
+    out = out.replaceAll(';;', '');
+    out = out.replaceAll(';', ' ');
+
+    final buffer = StringBuffer();
+    for (final rune in out.runes) {
+      // Drop C0 controls except TAB (U+0009).
+      if (rune < 0x20 && rune != 0x09) continue;
+      // Drop DEL.
+      if (rune == 0x7F) continue;
+      // Drop unpaired surrogates (invalid UTF-8 by itself).
+      if (rune >= 0xD800 && rune <= 0xDFFF) continue;
+      // Drop non-character code points U+FFFE and U+FFFF.
+      if (rune == 0xFFFE || rune == 0xFFFF) continue;
+      buffer.writeCharCode(rune);
+    }
+    return buffer.toString();
   }
 
   /// Serializes the VCard to the legacy flat `Map<String, String>` shape.
@@ -196,53 +270,271 @@ class VCard {
   /// Returns the VCard's flat map JSON-encoded.
   String toJson() => jsonEncode(toMap());
 
-  /// Renders the VCard as an RFC 6350 vCard 4.0 text payload.
+  /// Renders the VCard as a vCard text payload. Returns vCard 3.0
+  /// (RFC 2426) by default; emits vCard 4.0 (RFC 6350) instead when
+  /// [VCardSettingsProvider.useVCard4] is true.
+  ///
+  /// Both versions enforce CRLF (`\r\n`) between content lines and RFC
+  /// 2425/6350 line folding (75-octet limit, continuation with `\r\n `).
   String toVCard() {
-    final buffer = StringBuffer()
-      ..writeln('BEGIN:VCARD')
-      ..writeln('VERSION:4.0')
-      ..writeln(
-        'N:${clean(nom)};${clean(prenom)};${clean(nom2)};'
-        '${clean(prefixe)};${clean(suffixe)}',
-      )
-      ..writeln(
-        'FN:${clean(prefixe)} ${clean(prenom)} '
-        '${clean(nom)} ${clean(suffixe)}',
-      );
-    if (org.isNotEmpty) buffer.writeln('ORG:${clean(org)}');
-    if (job.isNotEmpty) buffer.writeln('TITLE:${clean(job)}');
+    if (VCardSettingsProvider.useVCard4) return _toVCard4();
+    return _toVCard3();
+  }
 
-    // PHOTO : base64 ou URL
-    if (photo.isNotEmpty) {
-      if (photo.startsWith('data:image/')) {
-        buffer.writeln('PHOTO:$photo');
-      } else {
-        buffer.writeln('PHOTO;VALUE=uri:$photo');
-      }
-    }
+  String _toVCard3() {
+    // N and FN are REQUIRED in vCard 3.0 (RFC 2426 §3.1) — emit even
+    // when fully empty; the parser side handles it.
+    final n = 'N:${clean(nom)};${clean(prenom)};${clean(nom2)};'
+        '${clean(prefixe)};${clean(suffixe)}';
+    final lines = <String>[
+      'BEGIN:VCARD',
+      'VERSION:3.0',
+      n,
+      'FN:${_buildFn()}',
+    ];
+
+    if (org.isNotEmpty) lines.add('ORG:${clean(org)}');
+    if (job.isNotEmpty) lines.add('TITLE:${clean(job)}');
+    final photoLine = _buildPhotoLine(useV4: false);
+    if (photoLine != null) lines.add(photoLine);
 
     if (telWork.isNotEmpty) {
-      buffer.writeln('TEL;TYPE=work,voice;VALUE=uri:tel:${clean(telWork)}');
+      lines.add('TEL;TYPE=WORK,VOICE:${clean(telWork)}');
     }
     if (telHome.isNotEmpty) {
-      buffer.writeln('TEL;TYPE=home,voice;VALUE=uri:tel:${clean(telHome)}');
+      lines.add('TEL;TYPE=HOME,VOICE:${clean(telHome)}');
     }
     if (adrWork.isNotEmpty) {
-      buffer.writeln(
-        'ADR;TYPE=work;LABEL="${clean(adrWork)}":${clean(adrWork)}',
+      lines.add('ADR;TYPE=WORK:${_buildAdrValue(adrWork)}');
+    }
+    if (adrHome.isNotEmpty) {
+      lines.add('ADR;TYPE=HOME:${_buildAdrValue(adrHome)}');
+    }
+    if (email.isNotEmpty) {
+      lines.add('EMAIL;TYPE=INTERNET:${clean(email)}');
+    }
+    lines
+      ..add('REV:${clean(rev)}')
+      ..add('END:VCARD');
+
+    return _assemble(lines);
+  }
+
+  String _toVCard4() {
+    final n = 'N:${clean(nom)};${clean(prenom)};${clean(nom2)};'
+        '${clean(prefixe)};${clean(suffixe)}';
+    final lines = <String>[
+      'BEGIN:VCARD',
+      'VERSION:4.0',
+      n,
+      'FN:${_buildFn()}',
+    ];
+
+    if (org.isNotEmpty) lines.add('ORG:${clean(org)}');
+    if (job.isNotEmpty) lines.add('TITLE:${clean(job)}');
+    final photoLine = _buildPhotoLine(useV4: true);
+    if (photoLine != null) lines.add(photoLine);
+
+    if (telWork.isNotEmpty) {
+      lines.add('TEL;TYPE=work,voice;VALUE=uri:tel:${clean(telWork)}');
+    }
+    if (telHome.isNotEmpty) {
+      lines.add('TEL;TYPE=home,voice;VALUE=uri:tel:${clean(telHome)}');
+    }
+    if (adrWork.isNotEmpty) {
+      lines.add(
+        'ADR;TYPE=work;LABEL="${clean(adrWork)}":'
+        '${_buildAdrValue(adrWork)}',
       );
     }
     if (adrHome.isNotEmpty) {
-      buffer.writeln(
-        'ADR;TYPE=home;LABEL="${clean(adrHome)}":${clean(adrHome)}',
+      lines.add(
+        'ADR;TYPE=home;LABEL="${clean(adrHome)}":'
+        '${_buildAdrValue(adrHome)}',
       );
     }
-    if (email.isNotEmpty) buffer.writeln('EMAIL:${clean(email)}');
-    buffer
-      ..writeln('REV:${clean(rev)}')
-      ..writeln('END:VCARD');
+    if (email.isNotEmpty) lines.add('EMAIL:${clean(email)}');
+    lines
+      ..add('REV:${clean(rev)}')
+      ..add('END:VCARD');
 
+    return _assemble(lines);
+  }
+
+  String _buildFn() {
+    // RFC 2426: FN is mandatory; we synthesize from prefix/given/family/suffix.
+    final parts = <String>[
+      if (prefixe.isNotEmpty) clean(prefixe),
+      if (prenom.isNotEmpty) clean(prenom),
+      if (nom.isNotEmpty) clean(nom),
+      if (suffixe.isNotEmpty) clean(suffixe),
+    ];
+    if (parts.isEmpty) return clean(org);
+    return parts.join(' ');
+  }
+
+  /// Builds the structured `ADR` value:
+  /// `PO;Ext;Street;Locality;Region;Code;Country`. Our model has a single
+  /// free-form string; we map it into the `Street` component (3rd field)
+  /// so it round-trips through iOS / Google parsers that key on positional
+  /// fields.
+  String _buildAdrValue(String addr) {
+    final cleaned = clean(addr);
+    return ';;$cleaned;;;;';
+  }
+
+  String? _buildPhotoLine({required bool useV4}) {
+    if (photo.isEmpty) return null;
+    if (photo.startsWith('data:image/')) {
+      if (useV4) return 'PHOTO:$photo';
+      // vCard 3.0: data: URIs aren't standard. Translate to inline base64
+      // with ENCODING=b and TYPE=<mediaType>.
+      final match = RegExp(r'^data:image/([^;]+);base64,(.+)$')
+          .firstMatch(photo);
+      if (match != null) {
+        final mediaType = match.group(1)!.toUpperCase();
+        final b64 = match.group(2)!;
+        return 'PHOTO;ENCODING=b;TYPE=$mediaType:$b64';
+      }
+      // Fallback: emit as-is (best-effort).
+      return 'PHOTO:$photo';
+    }
+    if (useV4) return 'PHOTO;VALUE=uri:$photo';
+    return 'PHOTO;VALUE=URI:$photo';
+  }
+
+  /// Assembles content lines into the final CRLF-separated payload with
+  /// RFC 2425 §5.8.1 line folding at the 75-octet boundary.
+  String _assemble(List<String> lines) {
+    final buffer = StringBuffer();
+    for (final line in lines) {
+      buffer
+        ..write(_foldLine(line))
+        ..write(_crlf);
+    }
     return buffer.toString();
+  }
+
+  /// Folds a single content line so that no resulting physical line
+  /// exceeds 75 **octets** of UTF-8 (per RFC 6350 §3.2). Continuation
+  /// lines are prefixed by `\r\n ` (CRLF + single space).
+  static String _foldLine(String line) {
+    const limit = 75;
+    final bytes = utf8.encode(line);
+    if (bytes.length <= limit) return line;
+
+    final buffer = StringBuffer();
+    var offset = 0;
+    var isFirst = true;
+    while (offset < bytes.length) {
+      // First segment uses full 75; continuations also 75 (the leading
+      // space is in addition, that's compliant).
+      var take = limit;
+      if (offset + take > bytes.length) take = bytes.length - offset;
+
+      // Don't split a multi-byte UTF-8 sequence: back off until we land
+      // on a code-unit boundary.
+      while (take > 0 &&
+          offset + take < bytes.length &&
+          (bytes[offset + take] & 0xC0) == 0x80) {
+        take--;
+      }
+      if (take == 0) {
+        // Shouldn't happen with valid UTF-8 input, but guard anyway.
+        take = limit;
+      }
+
+      final segment = utf8.decode(bytes.sublist(offset, offset + take));
+      if (isFirst) {
+        buffer.write(segment);
+        isFirst = false;
+      } else {
+        buffer
+          ..write(_crlf)
+          ..write(' ')
+          ..write(segment);
+      }
+      offset += take;
+    }
+    return buffer.toString();
+  }
+
+  /// RFC 6350 §3.2 line unfolding: merge any line starting with a single
+  /// space or tab into the previous line. Supports both CRLF and LF
+  /// terminators.
+  static List<String> _unfoldLines(String text) {
+    final raw = text.split(RegExp(r'\r?\n'));
+    final out = <String>[];
+    for (final line in raw) {
+      if (line.isNotEmpty &&
+          (line.startsWith(' ') || line.startsWith('\t')) &&
+          out.isNotEmpty) {
+        out[out.length - 1] = out.last + line.substring(1);
+      } else {
+        out.add(line);
+      }
+    }
+    return out;
+  }
+
+  /// Detects the vCard version from the `VERSION:` header. Returns the
+  /// version string (`'2.1'`, `'3.0'`, `'4.0'`); defaults to `'3.0'` when
+  /// missing (best-effort for malformed input).
+  static String _detectVersion(List<String> lines) {
+    for (final line in lines) {
+      final t = line.trim().toUpperCase();
+      if (t.startsWith('VERSION:')) {
+        return t.substring('VERSION:'.length).trim();
+      }
+    }
+    return '3.0';
+  }
+
+  static _TelKind _classifyTel(List<String> params, String version) {
+    final joined = params.join(',');
+    final isWork = joined.contains('WORK');
+    final isHome = joined.contains('HOME');
+    final isCell = joined.contains('CELL') || joined.contains('MOBILE');
+    if (isWork) return _TelKind.work;
+    if (isHome || isCell) return _TelKind.home;
+    return _TelKind.other;
+  }
+
+  static String _extractTelValue(String value, List<String> params) {
+    // vCard 4.0 may encode as `tel:+33...` URI; strip the scheme.
+    if (value.toLowerCase().startsWith('tel:')) {
+      return value.substring(4);
+    }
+    return value;
+  }
+
+  static _AdrKind _classifyAdr(List<String> params) {
+    final joined = params.join(',');
+    if (joined.contains('WORK')) return _AdrKind.work;
+    if (joined.contains('HOME')) return _AdrKind.home;
+    return _AdrKind.other;
+  }
+
+  /// Decodes a `PHOTO` value into our model's flat string:
+  /// - `PHOTO;ENCODING=b;TYPE=JPEG:<b64>` → `data:image/jpeg;base64,<b64>`
+  /// - `PHOTO;VALUE=URI:https://...` or `PHOTO:https://...` → `https://...`
+  /// - `PHOTO:data:image/...;base64,...` (4.0) → passthrough.
+  static String _decodePhoto(String value, List<String> params) {
+    if (value.startsWith('data:image/')) return value;
+    final joined = params.join(';');
+    final isBase64 = joined.contains('ENCODING=B') ||
+        joined.contains('ENCODING=BASE64');
+    if (isBase64) {
+      var mime = 'jpeg';
+      for (final p in params) {
+        if (p.startsWith('TYPE=')) {
+          mime = p.substring('TYPE='.length).toLowerCase();
+          break;
+        }
+      }
+      return 'data:image/$mime;base64,$value';
+    }
+    return value;
   }
 
   /// Returns true when [text] is a vCard payload (BEGIN/END:VCARD wrapper).
@@ -259,3 +551,7 @@ class VCard {
     return org;
   }
 }
+
+enum _TelKind { work, home, other }
+
+enum _AdrKind { work, home, other }
