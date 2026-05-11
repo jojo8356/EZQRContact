@@ -73,15 +73,31 @@ chore(deps): bump permission_handler from 12.0.1 to 12.1.0
 docs(readme): add screenshots from v2 release
 ```
 
-A `commitlint` Git hook enforces this format on every commit. It is
+Rules enforced by `@commitlint/config-conventional` (most common):
+
+- Header (first line): max 72 characters, no trailing period.
+- Body lines: max 100 characters each.
+- Type: must be one of the list above.
+- `Merge branch ...` and `Revert "..."` auto-messages are ignored
+  by default — no need for `--no-verify` on those.
+
+A `commitlint` Git hook enforces these rules on every commit. It is
 installed automatically the first time you run `pnpm install` at the
 repo root (see the `.husky/commit-msg` hook + `.commitlintrc.json` +
 `package.json` devDependencies). Rejected messages print the rule
 that failed and exit non-zero, blocking the commit.
 
-The hook also runs during interactive rebases. If you ever need to
-preserve a non-conforming legacy message (for example when re-applying
-an old `Revert "..."` commit), bypass it with:
+**Verify the hook is active** after `pnpm install` with:
+
+```bash
+ls .husky/_/commit-msg   # husky shim, must exist
+```
+
+If the file is missing, re-run `pnpm install` or `pnpm exec husky init`.
+
+The hook runs during `git commit --amend` and during `reword` steps of
+interactive rebases. If you need to bypass it for a one-off legacy
+fixup, use:
 
 ```bash
 git commit --no-verify -m "<your message>"
@@ -89,6 +105,14 @@ git commit --no-verify -m "<your message>"
 
 Use `--no-verify` only for revert / rebase scenarios — never as a
 shortcut for skipping the linter on regular work.
+
+**GUI Git clients** (Tower, GitHub Desktop, IntelliJ, VS Code commit UI)
+sometimes launch with a minimal `PATH` that doesn't include `pnpm`,
+causing the hook to fail with `pnpm: command not found`. If this happens,
+either commit from a terminal where `pnpm` is on `PATH`, or configure
+your client to source your shell profile (`~/.zshrc` / `~/.bashrc`).
+Run `corepack enable` once to make `pnpm` available system-wide via
+Node's Corepack shim — recommended for Node 20+.
 
 ## How to run tests
 
