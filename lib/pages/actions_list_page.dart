@@ -6,7 +6,7 @@ import 'package:qr_code_app/pages/import_qr_page.dart';
 import 'package:qr_code_app/pages/qr_generator_simple.dart';
 import 'package:qr_code_app/pages/qr_generator_vcard.dart';
 import 'package:qr_code_app/pages/qr_scanner.dart';
-import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/tools/import_contact.dart';
 import 'package:qr_code_app/tools/tools.dart';

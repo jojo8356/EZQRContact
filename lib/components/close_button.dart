@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/providers/lang_provider.dart';
 
 /// "Annuler" button used in every modal: pops the current dialog and is
 /// styled with the active theme's popup-text color.

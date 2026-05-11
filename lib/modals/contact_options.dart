@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/close_button.dart';
 import 'package:qr_code_app/data/db/database.dart';
-import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/tools/contacts.dart';
 import 'package:toastification/toastification.dart';

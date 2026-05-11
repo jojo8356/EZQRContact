@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/pages/qr_card_view_page.dart';
-import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/tools/contacts.dart';
 import 'package:qr_code_app/tools/tools.dart';

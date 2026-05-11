@@ -5,7 +5,7 @@ import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/navbar.dart';
 import 'package:qr_code_app/modals/guide.dart';
 import 'package:qr_code_app/modals/social_networks.dart';
-import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 
 /// Settings page exposing language selection, dark-mode toggle, and links
@@ -105,6 +105,22 @@ class _SettingsPageState extends State<SettingsPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
+                                // section header "Apparence" / "Appearance"
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      (lang['appearance'] as String?)
+                                          ?? 'Apparence',
+                                      style: TextStyle(
+                                        color: currentColors['text'],
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                                 // dropdown langue
                                 ValueListenableBuilder<String>(
                                   valueListenable: LangProvider.notifier,

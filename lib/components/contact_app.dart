@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/contact.dart';
 import 'package:qr_code_app/providers/darkmode.dart';
-import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/providers/lang_provider.dart';
 
 /// Full-screen multi-select list of device contacts. Pops back the
 /// `List<Contact>` chosen by the user (or empty when cancelled).

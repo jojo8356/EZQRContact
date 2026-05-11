@@ -5,7 +5,7 @@ import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/navbar.dart';
 import 'package:qr_code_app/components/qr_card.dart';
 import 'package:qr_code_app/data/db/database.dart';
-import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 
 /// Page listing the soft-deleted QR / VCard rows ("trash" view).

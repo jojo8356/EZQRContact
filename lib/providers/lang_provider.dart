@@ -1,10 +1,16 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-
+import 'package:flutter/widgets.dart';
 import 'package:qr_code_app/tools/tools.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-/// Singleton pour stocker les traductions et notifier l'UI
+/// Singleton pour stocker les traductions et notifier l'UI.
+///
+/// L'ordre de priorité pour la langue active est :
+///   1. paramètre explicite `lang` passé à [init]
+///   2. valeur persistée dans `SharedPreferences[_kPrefKey]`
+///   3. locale du device via [PlatformDispatcher]
 class LangProvider {
 
   /// Returns the singleton instance.
@@ -15,15 +21,28 @@ class LangProvider {
   static Map<String, dynamic>? _translations;
   static String _currentLang = 'en';
 
+  /// Clé `SharedPreferences` qui stocke l'override manuel de la langue.
+  /// Absente → auto-détection device. Présente → respecter le choix user.
+  static const String _kPrefKey = 'lang_override';
+
+  /// Langue de secours si le bundle ne contient pas le pack demandé.
+  static const String _kFallbackLang = 'en';
+
   /// Notifier listeners can subscribe to in order to rebuild on language
   /// changes. Holds the active language code (e.g. `'en'`, `'fr'`).
   static final ValueNotifier<String> notifier = ValueNotifier(_currentLang);
 
-  /// Initialise la langue depuis les fichiers JSON
+  /// Initialise la langue depuis les fichiers JSON.
   static Future<void> init({String? lang}) async {
-    _currentLang = lang ?? PlatformDispatcher.instance.locale.languageCode;
+    var resolved = lang;
+    if (resolved == null) {
+      final prefs = await SharedPreferences.getInstance();
+      resolved = prefs.getString(_kPrefKey)
+          ?? WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+    }
+    _currentLang = resolved;
     await _loadTranslations(_currentLang);
-    notifier.value = _currentLang; // notifier l'UI
+    notifier.value = _currentLang;
   }
 
   /// 🔹 Récupère une traduction (typée String)
@@ -80,18 +99,51 @@ class LangProvider {
     return files.map((f) => f.replaceAll('.json', '')).toList();
   }
 
-  /// 🔹 Change la langue et recharge les traductions
+  /// 🔹 Change la langue, recharge les traductions, persiste l'override.
   static Future<void> changeLanguage(String lang) async {
     _currentLang = lang;
     await _loadTranslations(lang);
-    notifier.value = _currentLang; // notifier l'UI
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kPrefKey, lang);
+    notifier.value = _currentLang;
   }
 
-  /// 🔹 Méthode privée pour charger un fichier JSON
+  /// Supprime tout override manuel et rebascule sur la locale device.
+  static Future<void> resetToDeviceLocale() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_kPrefKey);
+    _currentLang =
+        WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+    await _loadTranslations(_currentLang);
+    notifier.value = _currentLang;
+  }
+
+  /// 🔹 Méthode privée pour charger un fichier JSON.
+  ///
+  /// Si le pack demandé n'est pas bundlé (ex. locale device `de` ou pref
+  /// corrompue `zz`), fallback silencieux sur [_kFallbackLang] pour éviter
+  /// un crash au démarrage.
   static Future<void> _loadTranslations(String lang) async {
     final fileLang = 'assets/langs/$lang.json';
-    final jsonString = await rootBundle.loadString(fileLang);
-    _translations = json.decode(jsonString) as Map<String, dynamic>;
+    try {
+      final jsonString = await rootBundle.loadString(fileLang);
+      _translations = json.decode(jsonString) as Map<String, dynamic>;
+      // `rootBundle.loadString` throws `FlutterError` (a subclass of `Error`)
+      // when an asset is missing. Catching `Error` is normally an anti-pattern
+      // but here it's the official API surface for "asset not found" — no
+      // typed Exception variant exists.
+      // ignore: avoid_catching_errors
+    } on FlutterError catch (e) {
+      debugPrint(
+        'LangProvider: $fileLang not found ($e), '
+        'falling back to $_kFallbackLang',
+      );
+      _currentLang = _kFallbackLang;
+      final jsonString = await rootBundle.loadString(
+        'assets/langs/$_kFallbackLang.json',
+      );
+      _translations = json.decode(jsonString) as Map<String, dynamic>;
+    }
   }
 
   /// 🔹 Optionnel : récupérer la langue actuelle

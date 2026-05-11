@@ -3,7 +3,7 @@ import 'package:qr_code_app/pages/actions_list_page.dart';
 import 'package:qr_code_app/pages/historique_page.dart';
 import 'package:qr_code_app/pages/qr_card_view_page.dart';
 import 'package:qr_code_app/pages/settings.dart';
-import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/providers/lang_provider.dart';
 
 /// Application entry point: ensures Flutter bindings, loads the active
 /// language pack, then launches [MyApp].

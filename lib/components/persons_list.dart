@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qr_code_app/providers/lang.dart';
+import 'package:qr_code_app/providers/lang_provider.dart';
 
 /// Scrollable list rendering imported phone contacts as cards. Falls back
 /// to a centered "empty" message (translated) when [persons] is empty.

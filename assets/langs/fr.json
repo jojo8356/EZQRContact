@@ -12,7 +12,8 @@
   "options": {
     "guide": "Lire guide",
     "about": "À Propos de nous",
-    "mode": "Changer de mode"
+    "mode": "Changer de mode",
+    "appearance": "Apparence"
   },
   "pages": {
     "contact": {
