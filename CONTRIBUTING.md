@@ -14,6 +14,7 @@ README for the full setup. In short:
 git clone https://github.com/jojo8356/EZQRContact.git
 cd EZQRContact
 flutter pub get
+pnpm install        # installs commitlint + husky Git hook
 flutter run
 ```
 
@@ -22,6 +23,8 @@ Requirements:
 - Flutter SDK `^3.8.1`
 - Android SDK with `compileSdkVersion = 35`
 - Xcode 15+ for iOS builds (Mac only)
+- Node.js 18+ and [pnpm](https://pnpm.io) (only for the commit-msg
+  Git hook; no application code uses Node)
 
 ## Pull request workflow
 
@@ -70,8 +73,22 @@ chore(deps): bump permission_handler from 12.0.1 to 12.1.0
 docs(readme): add screenshots from v2 release
 ```
 
-A `commitlint` hook will enforce this format starting from story E1-3 of
-v2. Until then, please follow the convention manually.
+A `commitlint` Git hook enforces this format on every commit. It is
+installed automatically the first time you run `pnpm install` at the
+repo root (see the `.husky/commit-msg` hook + `.commitlintrc.json` +
+`package.json` devDependencies). Rejected messages print the rule
+that failed and exit non-zero, blocking the commit.
+
+The hook also runs during interactive rebases. If you ever need to
+preserve a non-conforming legacy message (for example when re-applying
+an old `Revert "..."` commit), bypass it with:
+
+```bash
+git commit --no-verify -m "<your message>"
+```
+
+Use `--no-verify` only for revert / rebase scenarios — never as a
+shortcut for skipping the linter on regular work.
 
 ## How to run tests
 

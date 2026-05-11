@@ -8,6 +8,10 @@
 .build/
 .buildlog/
 .history
+
+# Node tooling (commitlint + husky)
+node_modules/
+.husky/_/
 .svn/
 .swiftpm/
 migrate_working_dir/
