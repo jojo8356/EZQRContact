@@ -64,7 +64,7 @@ development_status:
   1-1c-migrer-simple-qr-repository: done
   1-1d-migration-v1-vers-v2-avec-backup: done
   1-2-migrer-flutter-lints-vers-very-good-analysis: done
-  1-3-configurer-conventional-commits-commitlint: backlog
+  1-3-configurer-conventional-commits-commitlint: ready-for-dev
   1-4-preserver-toggle-fr-en-i18n-existant: backlog
   1-5-setup-ci-github-actions-de-base: backlog
   epic-1-retrospective: optional
