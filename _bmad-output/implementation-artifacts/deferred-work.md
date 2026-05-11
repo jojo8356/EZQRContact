@@ -42,3 +42,9 @@ Tous les findings ci-dessous sont **pré-existants** (pas causés par le commit 
 - **`btn['action'] as Function)(context)` settings** [`lib/pages/settings.dart:174`] — typage Function loose.
 - **`saveQrCode` exception message fallback** [`lib/components/qr_save.dart:45`] — si la clé i18n manque, `LangProvider.t` retourne le path littéral.
 - **`data['photo'] as String?` runtime risk** [`lib/components/qr_card.dart:41`] — non-string dans le map (peu probable vu le schema Drift) throw.
+
+## Deferred from: code review of story-1.5 (2026-05-11)
+
+- **`runs-on: ubuntu-latest` image rolling** [`.github/workflows/ci.yml:13`] — pratique standard, risque de changement OS silencieux entre Ubuntu 22/24. Préférer `ubuntu-24.04` pour reproductibilité stricte.
+- **Pas de seuil de couverture de tests** [`.github/workflows/ci.yml:31`] — `flutter test --coverage` + threshold explicitement hors scope story 1.5. À adresser en story 8.x ou cleanup CI.
+- **`Directory('lib')` chemin relatif dans `langs_consistency_test.dart`** [`test/providers/langs_consistency_test.dart:39`] — fonctionne si CWD = racine projet. Fragile si `flutter test` appelé depuis sous-répertoire. Préférer un path absolu via `Platform.script`.

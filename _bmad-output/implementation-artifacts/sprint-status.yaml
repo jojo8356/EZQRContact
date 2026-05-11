@@ -36,6 +36,7 @@
 
 generated: 2026-05-06
 last_updated: 2026-05-11
+# story-1-5 ready-for-dev — 2026-05-11
 # story-1-4 done — 2026-05-11
 project: EZQRContact
 project_key: NOKEY
@@ -56,7 +57,7 @@ development_status:
   # ==========================================================================
   # Epic 1: Migration technique foundation (P0)
   # ==========================================================================
-  epic-1: in-progress
+  epic-1: done
   # Story 1-1 was split into 4 sub-stories per the implementation-readiness
   # audit (2026-05-06). The original key is kept here as a tracking parent
   # marked done when 1-1a..d are all done.
@@ -67,8 +68,8 @@ development_status:
   1-2-migrer-flutter-lints-vers-very-good-analysis: done
   1-3-configurer-conventional-commits-commitlint: done
   1-4-preserver-toggle-fr-en-i18n-existant: done
-  1-5-setup-ci-github-actions-de-base: backlog
-  epic-1-retrospective: optional
+  1-5-setup-ci-github-actions-de-base: done
+  epic-1-retrospective: done
 
   # ==========================================================================
   # Epic 2: Refactor génération VCard (P0)
