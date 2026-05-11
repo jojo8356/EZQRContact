@@ -13,8 +13,7 @@ Future<void> showSaveDialog(BuildContext context, String originalPath) async {
     text: 'QR_${DateTime.now().millisecondsSinceEpoch}',
   );
   String? fileName;
-  final lang = (LangProvider.getMap('pages')['QR']
-      as Map<String, dynamic>)['save'] as Map<String, dynamic>;
+  final lang = LangProvider.section('pages.QR.save');
 
   await showDialog<void>(
     context: context,

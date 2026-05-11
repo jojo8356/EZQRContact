@@ -19,8 +19,7 @@ class PersonsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final lang =
-        LangProvider.getMap('pages')['contact'] as Map<String, dynamic>;
+    final lang = LangProvider.section('pages.contact');
     if (persons.isEmpty) {
       return Center(
         child: Text(

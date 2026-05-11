@@ -47,8 +47,7 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
   @override
   Widget build(BuildContext context) {
     final fields = buildFields(controllers);
-    final lang = (LangProvider.getMap('pages')['QR']
-        as Map<String, dynamic>)['generator'] as Map<String, dynamic>;
+    final lang = LangProvider.section('pages.QR.generator');
 
     return AnimatedBuilder(
       animation: darkProv,

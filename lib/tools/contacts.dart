@@ -120,33 +120,45 @@ class PhoneContacts {
 
   /// Ajoute un contact à l'appareil
   static Future<void> add(Map<String, dynamic> data) async {
+    // Use isPresent (non-null AND non-empty) so blank form fields don't
+    // produce empty Email('') / Phone('') / Address('') entries on the
+    // device contact card.
     String s(String key) => (data[key] as String?) ?? '';
-    String? sn(String key) => data[key] as String?;
+    bool has(String key) {
+      final v = data[key];
+      return v is String && v.isNotEmpty;
+    }
+
     final newContact = Contact()
       ..name.first = s('prenom')
-      ..name.last = s('nom')
-      ..name.middle = sn('nom2') ?? ''
-      ..name.prefix = sn('prefixe') ?? ''
-      ..name.suffix = sn('suffixe') ?? ''
-      ..organizations = [
-        if (data['org'] != null || data['job'] != null)
-          Organization(company: s('org'), title: s('job')),
-      ]
-      ..emails = [
-        if (data['email'] != null) Email(s('email')),
-      ]
-      ..phones = [
-        if (data['tel_work'] != null)
-          Phone(s('tel_work'), label: PhoneLabel.work),
-        if (data['tel_home'] != null)
-          Phone(s('tel_home'), label: PhoneLabel.home),
-      ]
-      ..addresses = [
-        if (data['adr_work'] != null)
-          Address(s('adr_work'), label: AddressLabel.work),
-        if (data['adr_home'] != null)
-          Address(s('adr_home')),
+      ..name.last = s('nom');
+    if (has('nom2')) newContact.name.middle = s('nom2');
+    if (has('prefixe')) newContact.name.prefix = s('prefixe');
+    if (has('suffixe')) newContact.name.suffix = s('suffixe');
+    if (has('org') || has('job')) {
+      newContact.organizations = [
+        Organization(company: s('org'), title: s('job')),
       ];
+    }
+    if (has('email')) {
+      newContact.emails = [Email(s('email'))];
+    }
+    final phones = <Phone>[];
+    if (has('tel_work')) {
+      phones.add(Phone(s('tel_work'), label: PhoneLabel.work));
+    }
+    if (has('tel_home')) {
+      phones.add(Phone(s('tel_home'), label: PhoneLabel.home));
+    }
+    if (phones.isNotEmpty) newContact.phones = phones;
+    final addresses = <Address>[];
+    if (has('adr_work')) {
+      addresses.add(Address(s('adr_work'), label: AddressLabel.work));
+    }
+    if (has('adr_home')) {
+      addresses.add(Address(s('adr_home')));
+    }
+    if (addresses.isNotEmpty) newContact.addresses = addresses;
 
     await newContact.insert();
   }

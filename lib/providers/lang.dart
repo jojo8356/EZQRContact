@@ -52,6 +52,23 @@ class LangProvider {
     return node is String ? node : path;
   }
 
+  /// 🔹 Récupère une section imbriquée via un chemin pointé "a.b.c".
+  /// Retourne `<String, dynamic>{}` si une clé du chemin est absente —
+  /// évite les chains de cast `(getMap('a')['b'] as Map<...>)['c'] as Map`
+  /// qui throw quand une locale est partiellement traduite.
+  static Map<String, dynamic> section(String path) {
+    final parts = path.split('.');
+    dynamic node = _translations;
+    for (final p in parts) {
+      if (node is Map) {
+        node = node[p];
+      } else {
+        return <String, dynamic>{};
+      }
+    }
+    return node is Map<String, dynamic> ? node : <String, dynamic>{};
+  }
+
   /// 🔹 Récupère une traduction (legacy, retourne dynamic)
   static dynamic get(String key) {
     return _translations?[key] ?? key;

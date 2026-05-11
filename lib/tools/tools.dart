@@ -151,8 +151,11 @@ Future<bool> isImageUrl(String url) async {
         return contentType.startsWith('image/');
       }
     }
-  } on Exception catch (_) {
-    // URL invalide ou problème réseau
+    // URL probing is best-effort: any failure (FormatException from
+    // Uri.parse on garbage input, ArgumentError on malformed scheme,
+    // SocketException offline) means "not a valid image URL".
+    // ignore: avoid_catches_without_on_clauses
+  } catch (_) {
     return false;
   }
   return false;

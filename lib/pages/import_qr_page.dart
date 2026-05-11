@@ -35,8 +35,7 @@ class _QrFromImagePageState extends State<QrFromImagePage> {
   @override
   Widget build(BuildContext context) {
     final darkProv = DarkModeProvider();
-    final lang = (LangProvider.getMap('pages')['QR']
-        as Map<String, dynamic>)['import'] as Map<String, dynamic>;
+    final lang = LangProvider.section('pages.QR.import');
 
     return Scaffold(
       backgroundColor: currentColors['bg'], // fond noir

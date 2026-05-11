@@ -24,8 +24,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
 
   @override
   Widget build(BuildContext context) {
-    final lang = (LangProvider.getMap('pages')['QR']
-        as Map<String, dynamic>)['scanner'] as Map<String, dynamic>;
+    final lang = LangProvider.section('pages.QR.scanner');
     return Scaffold(
       appBar: AppBarCustom(lang['title'] as String),
       backgroundColor: currentColors['bg'],

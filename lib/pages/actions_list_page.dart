@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/navbar.dart';
@@ -25,7 +23,10 @@ class OptionsListPage extends StatelessWidget {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!context.mounted) return;
       if (await shouldShowGuide() && context.mounted) {
-        unawaited(showGuidePopup(context));
+        // Await the dialog so the guide-shown flag is only persisted if
+        // the popup actually appears (otherwise rapid navigation marks
+        // it as seen and suppresses it forever for fast users).
+        await showGuidePopup(context);
         await markGuideShown();
         debugPrint('Guide affiché et marqué comme montré.');
       }

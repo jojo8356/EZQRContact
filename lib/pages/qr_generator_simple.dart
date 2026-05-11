@@ -24,9 +24,9 @@ class GenerateSimpleQRCodeState extends State<GenerateSimpleQRCode> {
 
   @override
   Widget build(BuildContext context) {
-    final generator = (LangProvider.getMap('pages')['QR']
-        as Map<String, dynamic>)['generator'] as Map<String, dynamic>;
-    final lang = generator['simple'] as Map<String, dynamic>;
+    final generator = LangProvider.section('pages.QR.generator');
+    final lang = generator['simple'] as Map<String, dynamic>? ??
+        const <String, dynamic>{};
 
     return AnimatedBuilder(
       animation: darkProv,

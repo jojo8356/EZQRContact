@@ -40,6 +40,7 @@ class _AnimatedSubmitButtonState extends State<AnimatedSubmitButton>
     // petite animation de "punch"
     setState(() => _scale = 1.1);
     await Future<void>.delayed(const Duration(milliseconds: 100));
+    if (!mounted) return;
     setState(() => _scale = 1.0);
 
     // flash couleur
@@ -47,6 +48,7 @@ class _AnimatedSubmitButtonState extends State<AnimatedSubmitButton>
       () => _bgColor = widget.isDark ? Colors.grey[800] : Colors.grey[300],
     );
     await Future<void>.delayed(const Duration(milliseconds: 100));
+    if (!mounted) return;
     setState(() => _bgColor = currentColors['bg']);
 
     widget.onPressed();

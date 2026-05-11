@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-06
-last_updated: 2026-05-10
+last_updated: 2026-05-11
 project: EZQRContact
 project_key: NOKEY
 tracking_system: file-system
@@ -63,7 +63,7 @@ development_status:
   1-1b-migrer-vcard-repository: done
   1-1c-migrer-simple-qr-repository: done
   1-1d-migration-v1-vers-v2-avec-backup: done
-  1-2-migrer-flutter-lints-vers-very-good-analysis: in-progress
+  1-2-migrer-flutter-lints-vers-very-good-analysis: done
   1-3-configurer-conventional-commits-commitlint: backlog
   1-4-preserver-toggle-fr-en-i18n-existant: backlog
   1-5-setup-ci-github-actions-de-base: backlog

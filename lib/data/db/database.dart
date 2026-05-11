@@ -31,12 +31,21 @@ class QRDatabase extends _$QRDatabase {
 
   /// Test-only constructor. Inject any [QueryExecutor] (typically
   /// `NativeDatabase.memory()` from `package:drift/native.dart`).
-  QRDatabase.forTesting(super.e);
+  // The `matching_super_parameters` lint wants this to mirror the super
+  // ctor's `e` param name, but `executor` is the meaningful API contract
+  // for callers; keep the descriptive name.
+  // ignore: matching_super_parameters
+  QRDatabase.forTesting(super.executor);
 
   QRDatabase._internal()
       : super(
           SqfliteQueryExecutor.inDatabaseFolder(
             path: 'qr_app.db',
+            // Explicit even though it's the current default: prevents
+            // multiple sqflite handles to qr_app.db across hot-restart
+            // and isolates (would surface as "database is locked").
+            // ignore: avoid_redundant_argument_values
+            singleInstance: true,
           ),
         );
   static final QRDatabase _instance = QRDatabase._internal();
@@ -360,9 +369,12 @@ Future<int> createContact(Map<String, dynamic> vcardData) async {
 }
 
 /// Returns true when two VCard maps are equal (excluding the `id` field).
+/// Returns false (rather than throwing) when either input is null or not
+/// a Map — defensive against legacy `dynamic` callers.
 Future<bool> compare2VCard(dynamic vcard1, dynamic vcard2) async {
-  final map1 = Map<String, dynamic>.from(vcard1 as Map)..remove('id');
-  final map2 = Map<String, dynamic>.from(vcard2 as Map)..remove('id');
+  if (vcard1 is! Map || vcard2 is! Map) return false;
+  final map1 = Map<String, dynamic>.from(vcard1)..remove('id');
+  final map2 = Map<String, dynamic>.from(vcard2)..remove('id');
   return _mapDeepEquals(map1, map2);
 }
 

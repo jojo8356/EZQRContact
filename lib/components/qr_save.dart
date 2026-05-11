@@ -10,8 +10,13 @@ import 'package:qr_flutter/qr_flutter.dart';
 /// documents directory as `<id>.png`. Returns the absolute file path.
 /// Throws when [data] is not a valid QR payload (translated message).
 Future<String> saveQrCode(String data, int id) async {
+  // Explicit defaults below pin behavior against future qr_flutter
+  // upgrades that might change them.
   final qrValidationResult = QrValidator.validate(
     data: data,
+    // Pin behavior against future qr_flutter default change.
+    // ignore: avoid_redundant_argument_values
+    version: QrVersions.auto,
     errorCorrectionLevel: QrErrorCorrectLevel.M,
   );
 
@@ -22,6 +27,12 @@ Future<String> saveQrCode(String data, int id) async {
       gapless: true,
       dataModuleStyle: const QrDataModuleStyle(
         color: Colors.black, // carrés de données
+      ),
+      // Pin eye style against future qr_flutter default change.
+      // ignore: avoid_redundant_argument_values
+      eyeStyle: const QrEyeStyle(
+        eyeShape: QrEyeShape.square,
+        color: Colors.black,
       ),
     );
 

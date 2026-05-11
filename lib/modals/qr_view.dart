@@ -11,6 +11,12 @@ Future<void> showImageDialog(BuildContext context, String? path) async {
   if (path == null || path.isEmpty) return;
   if (!context.mounted) return;
 
+  // Capture the existence probe once: async (off the UI thread) and stable
+  // across rebuilds. Caching avoids re-stat()ing on every parent rebuild and
+  // restores the original retry semantics that the synchronous Builder broke.
+  // ignore: avoid_slow_async_io
+  final existsFuture = File(path).exists();
+
   unawaited(showDialog<void>(
     context: context,
     barrierColor: Colors.black54,
@@ -19,10 +25,19 @@ Future<void> showImageDialog(BuildContext context, String? path) async {
       insetPadding: const EdgeInsets.all(10),
       child: GestureDetector(
         onTap: () => Navigator.of(context).pop(),
-        child: Builder(
-          builder: (context) {
-            if (!File(path).existsSync()) {
+        child: FutureBuilder<bool>(
+          future: existsFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState != ConnectionState.done) {
               return const Center(child: CircularProgressIndicator());
+            }
+            if (snapshot.data != true) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Icon(Icons.broken_image, size: 64),
+                ),
+              );
             }
 
             return InteractiveViewer(

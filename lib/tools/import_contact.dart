@@ -12,12 +12,15 @@ Future<void> importContacts(BuildContext context) async {
   final contacts = await FlutterContacts.getContacts(withProperties: true);
   if (contacts.isEmpty || !context.mounted) return;
 
-  final selectedContacts = await redirect(
+  final popped = await redirect(
     context,
     MultiContactPickerPage(contacts: contacts),
-  ) as List<Contact>?;
-  if (selectedContacts == null || selectedContacts.isEmpty) return;
-  final contactsMap = PhoneContacts.toMapList(selectedContacts);
+  );
+  // Use is-check instead of as-cast: any future pop returning a different
+  // type (system back gesture, forced dispose) becomes a no-op rather than
+  // crashing the importer.
+  if (popped is! List<Contact> || popped.isEmpty) return;
+  final contactsMap = PhoneContacts.toMapList(popped);
 
   for (final contactMap in contactsMap) {
     await createVCard(contactMap);

@@ -101,9 +101,9 @@ Future<void> showVCardPopup(
   if (!isVCard) return;
   if (!context.mounted) return;
 
-  final lang = (LangProvider.getMap('pages')['contact']
-      as Map<String, dynamic>)['options'] as Map<String, dynamic>;
-  final buttonsLang = lang['buttons'] as Map<String, dynamic>;
+  final lang = LangProvider.section('pages.contact.options');
+  final buttonsLang =
+      lang['buttons'] as Map<String, dynamic>? ?? const <String, dynamic>{};
   final buttons = [
     {
       'title': buttonsLang['replace'] as String,

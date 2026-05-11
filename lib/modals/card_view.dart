@@ -14,8 +14,7 @@ Future<void> showDataDialog(
   Map<String, dynamic> data, {
   required bool isVCard,
 }) async {
-  final cardView = (LangProvider.getMap('pages')['QR']
-      as Map<String, dynamic>)['card view'] as Map<String, dynamic>;
+  final cardView = LangProvider.section('pages.QR.card view');
   if (!context.mounted) return;
 
   final content = isVCard

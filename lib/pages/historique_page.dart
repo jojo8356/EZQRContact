@@ -40,8 +40,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final lang =
-        LangProvider.getMap('pages')['history'] as Map<String, dynamic>;
+    final lang = LangProvider.section('pages.history');
     return Scaffold(
       backgroundColor: currentColors['bg'],
       appBar: AppBarCustom(lang['title'] as String),

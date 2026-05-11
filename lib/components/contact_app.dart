@@ -18,11 +18,12 @@ class MultiContactPickerPage extends StatefulWidget {
 
 class _MultiContactPickerPageState extends State<MultiContactPickerPage> {
   final Map<int, bool> selectedMap = {};
-  final lang = (LangProvider.getMap('pages')['contact']
-      as Map<String, dynamic>)['import'] as Map<String, dynamic>;
 
   @override
   Widget build(BuildContext context) {
+    // Resolved per build so language switches and late-loaded translations
+    // refresh the UI; field-initializer would freeze it at construction.
+    final lang = LangProvider.section('pages.contact.import');
     final darkProv = DarkModeProvider();
 
     final bgColor = darkProv.isDarkMode ? Colors.black : Colors.white;
