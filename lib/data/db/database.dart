@@ -5,8 +5,6 @@ import 'package:drift_sqflite/drift_sqflite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:sqflite/sqflite.dart' as sqflite;
-
 import 'package:qr_code_app/components/qr_save.dart';
 import 'package:qr_code_app/data/db/tables/events.dart';
 import 'package:qr_code_app/data/db/tables/simple_qrs.dart';
@@ -14,6 +12,7 @@ import 'package:qr_code_app/data/db/tables/vcards.dart';
 import 'package:qr_code_app/data/repositories/simple_qr_repository.dart';
 import 'package:qr_code_app/data/repositories/vcard_repository.dart';
 import 'package:qr_code_app/tools/contacts.dart';
+import 'package:sqflite/sqflite.dart' as sqflite;
 
 part 'database.g.dart';
 
@@ -26,23 +25,26 @@ part 'database.g.dart';
 /// for new code.
 @DriftDatabase(tables: [SimpleQRs, VCards, Events])
 class QRDatabase extends _$QRDatabase {
-  static final QRDatabase _instance = QRDatabase._internal();
+
+  /// Returns the singleton [QRDatabase] instance backed by sqflite.
+  factory QRDatabase() => _instance;
 
   /// Test-only constructor. Inject any [QueryExecutor] (typically
   /// `NativeDatabase.memory()` from `package:drift/native.dart`).
-  QRDatabase.forTesting(super.executor);
-
-  factory QRDatabase() => _instance;
+  QRDatabase.forTesting(super.e);
 
   QRDatabase._internal()
       : super(
           SqfliteQueryExecutor.inDatabaseFolder(
             path: 'qr_app.db',
-            singleInstance: true,
           ),
         );
+  static final QRDatabase _instance = QRDatabase._internal();
 
+  /// Typed repository for VCard rows.
   late final VCardRepository vcards = VCardRepository(this);
+
+  /// Typed repository for SimpleQR rows.
   late final SimpleQRRepository simpleQrs = SimpleQRRepository(this);
 
   @override
@@ -98,13 +100,19 @@ class QRDatabase extends _$QRDatabase {
     try {
       final dbDir = await sqflite.getDatabasesPath();
       final src = File(p.join(dbDir, 'qr_app.db'));
-      if (!await src.exists()) return;
+      if (!src.existsSync()) return;
       final dst = File(p.join(dbDir, 'qr_app.db.backup'));
       await src.copy(dst.path);
       if (kDebugMode) {
         debugPrint('[QRDatabase] backup written to ${dst.path}');
       }
+      // Catch-all is required: sqflite.getDatabasesPath() throws StateError
+      // (a subclass of Error, not Exception) when the platform binding is
+      // missing (e.g. unit tests).
+      // ignore: avoid_catches_without_on_clauses
     } catch (e) {
+      // Best-effort backup: tolerate any failure (missing platform binding,
+      // permission denied, disk full, etc.) so DB open never throws.
       if (kDebugMode) {
         debugPrint('[QRDatabase] backup failed: $e');
       }
@@ -120,6 +128,7 @@ class QRDatabase extends _$QRDatabase {
   // any change. New code should use `db.vcards` / `db.simpleQrs` instead.
   // -----------------------------------------------------------------------
 
+  /// Inserts a new SimpleQR row and returns its generated id.
   Future<int> insertSimpleQR(String text, String? path) {
     return simpleQrs.insert(SimpleQRsCompanion(
       qrText: Value(text),
@@ -127,47 +136,59 @@ class QRDatabase extends _$QRDatabase {
     ));
   }
 
+  /// Inserts a new VCard row from a legacy `Map<String, dynamic>` payload.
   Future<int> insertVCard(Map<String, dynamic> data) {
     final clean = Map<String, dynamic>.from(data)..remove('id');
     return vcards.insert(_mapToVCardCompanion(clean));
   }
 
+  /// Returns all non-deleted SimpleQR rows as legacy maps.
   Future<List<Map<String, dynamic>>> getAllSimpleQR() async {
     final rows = await simpleQrs.getAllActive();
     return rows.map(_simpleQrToLegacyMap).toList();
   }
 
+  /// Returns all non-deleted VCard rows as legacy maps.
   Future<List<Map<String, dynamic>>> getAllVCards() async {
     final rows = await vcards.getAllActive();
     return rows.map(_vcardToLegacyMap).toList();
   }
 
+  /// Soft-deletes a SimpleQR row by id.
   Future<void> deleteSimpleQR(int id) async {
     await simpleQrs.softDelete(id);
   }
 
+  /// Soft-deletes a VCard row by id.
   Future<void> deleteVCard(int id) async {
     await vcards.softDelete(id);
   }
 
+  /// Returns true when the VCard at [id] is marked as a clone.
   Future<bool> isClone(int id) => vcards.isClone(id);
 
+  /// Updates the file path for a VCard row.
   Future<int> updateVCardPath(int id, String path) =>
       vcards.updatePath(id, path);
 
+  /// Updates the file path for a SimpleQR row.
   Future<void> updateSimpleQRPath(int id, String path) async {
     await simpleQrs.updatePath(id, path);
   }
 
+  /// Returns the on-disk path of the SimpleQR image at [id].
   Future<String?> getPathFromSimpleQR(int id) => simpleQrs.getPath(id);
 
+  /// Returns the on-disk path of the VCard image at [id].
   Future<String?> getPathFromVCard(int id) => vcards.getPath(id);
 
+  /// Returns the VCard row at [id] as a legacy map, or null if missing.
   Future<Map<String, dynamic>?> getVCardById(int id) async {
     final row = await vcards.getById(id);
     return row == null ? null : _vcardToLegacyMap(row);
   }
 
+  /// Looks up an existing VCard by [nom] and/or [prenom].
   Future<Map<String, dynamic>?> verifContact({
     String? nom,
     String? prenom,
@@ -176,15 +197,18 @@ class QRDatabase extends _$QRDatabase {
     return row == null ? null : _vcardToLegacyMap(row);
   }
 
+  /// Merges [newContact] fields into an existing VCard row when one matches.
   Future<void> modifContact(Map<String, dynamic> newContact) async {
     await vcards.mergeIfExists(_mapToVCardCompanion(newContact));
   }
 
+  /// Returns the id of the most recently inserted VCard, or 0 if none.
   Future<int?> getLastVCardId() async {
     final id = await vcards.getLastId();
     return id ?? 0;
   }
 
+  /// Duplicates a VCard row and returns the new id.
   Future<int> cloneVCard(int id) async {
     final newId = await vcards.clone(id);
     final directory = await getApplicationDocumentsDirectory();
@@ -193,18 +217,22 @@ class QRDatabase extends _$QRDatabase {
     return newId;
   }
 
+  /// Returns all soft-deleted SimpleQR rows as legacy maps.
   Future<List<Map<String, dynamic>>> getDeletedSimpleQR() async {
     final rows = await simpleQrs.getDeleted();
     return rows.map(_simpleQrToLegacyMap).toList();
   }
 
+  /// Returns all soft-deleted VCard rows as legacy maps.
   Future<List<Map<String, dynamic>>> getDeletedVCards() async {
     final rows = await vcards.getDeleted();
     return rows.map(_vcardToLegacyMap).toList();
   }
 
+  /// Returns true when the VCard at [id] is soft-deleted.
   Future<bool> isDeletedVCard(int id) => vcards.isDeleted(id);
 
+  /// Returns true when the SimpleQR at [id] is soft-deleted.
   Future<bool> isDeletedSimpleQR(int id) => simpleQrs.isDeleted(id);
 }
 
@@ -294,7 +322,8 @@ VCardsCompanion _mapToVCardCompanion(Map<String, dynamic> data) {
 // compatibility).
 // ---------------------------------------------------------------------------
 
-Future<void> deleteQR(bool isVCard, int id) async {
+/// Soft-deletes a QR or VCard row by [id], dispatching on [isVCard].
+Future<void> deleteQR({required bool isVCard, required int id}) async {
   if (isVCard) {
     await QRDatabase().deleteVCard(id);
   } else {
@@ -302,6 +331,7 @@ Future<void> deleteQR(bool isVCard, int id) async {
   }
 }
 
+/// Inserts a SimpleQR row, then updates its path to the rendered PNG file.
 Future<int> createSimpleQR(String txt) async {
   final db = QRDatabase();
   final id = await db.insertSimpleQR(txt, null);
@@ -311,6 +341,7 @@ Future<int> createSimpleQR(String txt) async {
   return id;
 }
 
+/// Inserts a VCard row from [vcardData], saves the QR image, and links it.
 Future<int> createVCard(Map<String, dynamic> vcardData) async {
   final db = QRDatabase();
   vcardData['clone'] = '0';
@@ -322,14 +353,16 @@ Future<int> createVCard(Map<String, dynamic> vcardData) async {
   return id;
 }
 
+/// Adds [vcardData] to the device contacts then persists it as a VCard row.
 Future<int> createContact(Map<String, dynamic> vcardData) async {
   await PhoneContacts.add(vcardData);
-  return await createVCard(vcardData);
+  return createVCard(vcardData);
 }
 
+/// Returns true when two VCard maps are equal (excluding the `id` field).
 Future<bool> compare2VCard(dynamic vcard1, dynamic vcard2) async {
-  final map1 = Map<String, dynamic>.from(vcard1)..remove('id');
-  final map2 = Map<String, dynamic>.from(vcard2)..remove('id');
+  final map1 = Map<String, dynamic>.from(vcard1 as Map)..remove('id');
+  final map2 = Map<String, dynamic>.from(vcard2 as Map)..remove('id');
   return _mapDeepEquals(map1, map2);
 }
 
@@ -342,6 +375,8 @@ bool _mapDeepEquals(Map<String, dynamic> a, Map<String, dynamic> b) {
   return true;
 }
 
+/// Returns soft-deleted entries from both SimpleQR and VCard tables, each
+/// tagged with a `'type'` key (`'simple'` or `'vcard'`).
 Future<List<Map<String, dynamic>>> getAllDeletedQRs() async {
   final db = QRDatabase();
   final deletedSimple = await db.getDeletedSimpleQR();

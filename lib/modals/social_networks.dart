@@ -1,11 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:qr_code_app/components/close_button.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+/// Shows the "Partager" dialog with social-network icons that open the
+/// developer's Discord / Instagram / X profiles in the platform browser.
 Future<void> showSharePopup(BuildContext context) async {
-  showDialog(
+  unawaited(showDialog<void>(
     context: context,
     builder: (_) => AnimatedBuilder(
       animation: darkProv,
@@ -14,7 +18,7 @@ Future<void> showSharePopup(BuildContext context) async {
         return AlertDialog(
           backgroundColor: isDark ? Colors.blueGrey : Colors.white,
           title: Text(
-            "Partager",
+            'Partager',
             style: TextStyle(color: currentColors['text']),
           ),
           contentPadding: const EdgeInsets.symmetric(
@@ -25,17 +29,17 @@ Future<void> showSharePopup(BuildContext context) async {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _shareIcon(
-                "https://discord.gg/gz25QVbS",
+                'https://discord.gg/gz25QVbS',
                 FontAwesomeIcons.discord,
                 isDark,
               ),
               _shareIcon(
-                "https://www.instagram.com/dev_jojokes/",
+                'https://www.instagram.com/dev_jojokes/',
                 FontAwesomeIcons.instagram,
                 isDark,
               ),
               _shareIcon(
-                "https://x.com/HazroF3",
+                'https://x.com/HazroF3',
                 FontAwesomeIcons.xTwitter,
                 isDark,
               ),
@@ -45,7 +49,7 @@ Future<void> showSharePopup(BuildContext context) async {
         );
       },
     ),
-  );
+  ));
 }
 
 Widget _shareIcon(String url, IconData icon, bool isDark) {
@@ -54,7 +58,7 @@ Widget _shareIcon(String url, IconData icon, bool isDark) {
       final uri = Uri.parse(url);
       try {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } catch (e) {
+      } on Exception catch (_) {
         return;
       }
     },

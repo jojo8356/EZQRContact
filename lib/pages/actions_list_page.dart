@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/navbar.dart';
@@ -11,7 +13,11 @@ import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/tools/import_contact.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
+/// Home page of the app, presenting the five primary user actions
+/// (generate simple QR / vCard, scan, import image, import contact)
+/// as a vertical list of large buttons.
 class OptionsListPage extends StatelessWidget {
+  /// Creates the home page.
   const OptionsListPage({super.key});
 
   @override
@@ -19,49 +25,55 @@ class OptionsListPage extends StatelessWidget {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!context.mounted) return;
       if (await shouldShowGuide() && context.mounted) {
-        showGuidePopup(context);
+        unawaited(showGuidePopup(context));
         await markGuideShown();
         debugPrint('Guide affiché et marqué comme montré.');
       }
     });
-    final lang = LangProvider.get('menu');
+    final lang = LangProvider.getMap('menu');
     final buttons = [
       {
-        "label": lang['simple'],
-        "icon": Icons.qr_code_2,
-        "action": () => Navigator.push(
+        'label': lang['simple'],
+        'icon': Icons.qr_code_2,
+        'action': () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const GenerateSimpleQRCode()),
+          MaterialPageRoute<void>(
+            builder: (context) => const GenerateSimpleQRCode(),
+          ),
         ),
       },
       {
-        "label": lang['vcard'],
-        "icon": Icons.contact_page,
-        "action": () => Navigator.push(
+        'label': lang['vcard'],
+        'icon': Icons.contact_page,
+        'action': () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const GenerateVCardQRCode()),
+          MaterialPageRoute<void>(
+            builder: (context) => const GenerateVCardQRCode(),
+          ),
         ),
       },
       {
-        "label": lang['scanner'],
-        "icon": Icons.qr_code_scanner,
-        "action": () => Navigator.push(
+        'label': lang['scanner'],
+        'icon': Icons.qr_code_scanner,
+        'action': () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => const QRScannerPage()),
+          MaterialPageRoute<void>(builder: (context) => const QRScannerPage()),
         ),
       },
       {
-        "label": lang['import'],
-        "icon": Icons.upload_file,
-        "action": () => Navigator.push(
+        'label': lang['import'],
+        'icon': Icons.upload_file,
+        'action': () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => QrFromImagePage()),
+          MaterialPageRoute<void>(
+            builder: (context) => const QrFromImagePage(),
+          ),
         ),
       },
       {
-        "label": lang['import_contact'],
-        "icon": Icons.person_add,
-        "action": () async {
+        'label': lang['import_contact'],
+        'icon': Icons.person_add,
+        'action': () async {
           await importContacts(context);
         },
       },
@@ -69,13 +81,13 @@ class OptionsListPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: currentColors['bg'],
-      appBar: AppBarCustom("Actions QR"),
+      appBar: const AppBarCustom('Actions QR'),
       body: Center(
         child: ListView.separated(
           shrinkWrap: true,
           padding: const EdgeInsets.symmetric(horizontal: 40),
           itemCount: buttons.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 20),
+          separatorBuilder: (_, _) => const SizedBox(height: 20),
           itemBuilder: (context, index) {
             final btn = buttons[index];
             return ElevatedButton.icon(
@@ -83,12 +95,12 @@ class OptionsListPage extends StatelessWidget {
                 backgroundColor: currentColors['button-color'],
                 minimumSize: const Size(double.infinity, 50),
               ),
-              icon: Icon(btn["icon"] as IconData?, color: Colors.white),
+              icon: Icon(btn['icon'] as IconData?, color: Colors.white),
               label: Text(
-                btn["label"] as String,
-                style: TextStyle(color: Colors.white, fontSize: 16),
+                btn['label'] as String,
+                style: const TextStyle(color: Colors.white, fontSize: 16),
               ),
-              onPressed: () => (btn["action"] as void Function())(),
+              onPressed: () => (btn['action'] as void Function())(),
             );
           },
         ),

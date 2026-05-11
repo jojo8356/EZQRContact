@@ -1,15 +1,18 @@
 import 'package:ai_barcode_scanner/ai_barcode_scanner.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
+import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/pages/qr_card_view_page.dart';
 import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/tools/contacts.dart';
-import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/tools/tools.dart';
 import 'package:qr_code_app/tools/vcard.dart';
 
+/// Page launching the camera-based QR scanner. On detection, parses the
+/// payload as a vCard or stores it as a SimpleQR row, then navigates back.
 class QRScannerPage extends StatefulWidget {
+  /// Creates the scanner page.
   const QRScannerPage({super.key});
 
   @override
@@ -21,19 +24,20 @@ class _QRScannerPageState extends State<QRScannerPage> {
 
   @override
   Widget build(BuildContext context) {
-    final lang = LangProvider.get('pages')['QR']['scanner'];
+    final lang = (LangProvider.getMap('pages')['QR']
+        as Map<String, dynamic>)['scanner'] as Map<String, dynamic>;
     return Scaffold(
-      appBar: AppBarCustom(lang['title']),
+      appBar: AppBarCustom(lang['title'] as String),
       backgroundColor: currentColors['bg'],
       body: Center(
         child: ElevatedButton(
           onPressed: () async {
             await Navigator.of(context).push(
-              MaterialPageRoute(
+              MaterialPageRoute<void>(
                 builder: (context) => SafeArea(
                   child: AiBarcodeScanner(
-                    borderColor: currentColors['text'],
-                    overlayColor: currentColors['bg'],
+                    borderColor: currentColors['text'] ?? Colors.white,
+                    overlayColor: currentColors['bg'] ?? Colors.black,
                     hideGalleryButton: true,
                     hideSheetDragHandler: true,
                     hideSheetTitle: true,
@@ -55,7 +59,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
                         ),
                       ],
                     ),
-                    onDetect: (BarcodeCapture capture) async {
+                    onDetect: (capture) async {
                       if (_scanned) return;
                       _scanned = true;
 
@@ -84,9 +88,9 @@ class _QRScannerPageState extends State<QRScannerPage> {
             backgroundColor: WidgetStatePropertyAll(
               currentColors['button-color'],
             ),
-            foregroundColor: WidgetStatePropertyAll(Colors.white),
+            foregroundColor: const WidgetStatePropertyAll(Colors.white),
           ),
-          child: Text(lang['scan']),
+          child: Text(lang['scan'] as String),
         ),
       ),
     );

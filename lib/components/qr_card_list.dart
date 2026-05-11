@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/qr_card.dart';
 
+/// Lazy-loading scrollable list of [QRCard]s. Loads 8 items on first
+/// build then 2 more whenever the user nears the bottom; keeps only the
+/// last 12 in memory to bound RAM usage on large collections.
 class QRCardListView extends StatefulWidget {
-  final List<Map<String, dynamic>> allItems;
-  final Future<void> Function() refreshData;
-
+  /// Creates the list. [refreshData] is forwarded to each card so they
+  /// can ask the parent to re-query the database after destructive ops.
   const QRCardListView({
-    super.key,
     required this.allItems,
     required this.refreshData,
+    super.key,
   });
+
+  /// Full pool of items already fetched from the DB.
+  final List<Map<String, dynamic>> allItems;
+
+  /// Callback re-running the DB query that produced [allItems].
+  final Future<void> Function() refreshData;
 
   @override
   State<QRCardListView> createState() => _QRCardListViewState();
@@ -35,11 +43,11 @@ class _QRCardListViewState extends State<QRCardListView> {
   }
 
   void _loadMore({bool initial = false}) {
-    int toLoad = initial ? 8 : 2; // 8 éléments au départ, 2 ensuite
+    final toLoad = initial ? 8 : 2; // 8 éléments au départ, 2 ensuite
     final total = widget.allItems.length;
     if (_loadedCount >= total) return;
 
-    int nextLoad = _loadedCount + toLoad;
+    var nextLoad = _loadedCount + toLoad;
     if (nextLoad > total) nextLoad = total;
 
     setState(() {

@@ -7,9 +7,10 @@ import 'package:qr_code_app/data/db/database.dart';
 /// QRs (URLs, free text). Story 1.1d will switch the app from the legacy
 /// `QRDatabase` to this repository.
 class SimpleQRRepository {
-  final QRDatabase _db;
 
+  /// Creates a repository bound to [_db].
   SimpleQRRepository(this._db);
+  final QRDatabase _db;
 
   /// Inserts a new SimpleQR row. The SQL column is named `text`, but on
   /// the Dart side it is exposed as `qrText` to avoid colliding with

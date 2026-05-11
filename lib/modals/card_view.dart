@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/close_button.dart';
 import 'package:qr_code_app/components/vcard_view.dart';
@@ -5,29 +7,32 @@ import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
+/// Opens the read-only viewing dialog for [data]: a structured vCard
+/// preview when [isVCard] is true, or the raw text otherwise.
 Future<void> showDataDialog(
   BuildContext context,
   Map<String, dynamic> data, {
   required bool isVCard,
 }) async {
-  final cardView = LangProvider.get('pages')['QR']['card view'];
+  final cardView = (LangProvider.getMap('pages')['QR']
+      as Map<String, dynamic>)['card view'] as Map<String, dynamic>;
   if (!context.mounted) return;
 
   final content = isVCard
       ? VCardView(controllers: mapToControllers(data))
       : Text(
-          data['text'] ?? "",
+          (data['text'] as String?) ?? '',
           textAlign: TextAlign.center,
           style: TextStyle(color: currentColors['popup-text']),
         );
 
   final title = Text(
-    cardView[isVCard ? 'vcard' : 'simple'],
+    cardView[isVCard ? 'vcard' : 'simple'] as String,
     textAlign: isVCard ? TextAlign.start : TextAlign.center,
     style: TextStyle(color: currentColors['popup-text']),
   );
 
-  showDialog(
+  unawaited(showDialog<void>(
     context: context,
     builder: (_) => AlertDialog(
       backgroundColor: currentColors['popup-background'],
@@ -45,5 +50,5 @@ Future<void> showDataDialog(
       ),
       actions: [cancelButton(context, currentColors)],
     ),
-  );
+  ));
 }

@@ -3,10 +3,14 @@ import 'package:flutter_contacts/contact.dart';
 import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/providers/lang.dart';
 
+/// Full-screen multi-select list of device contacts. Pops back the
+/// `List<Contact>` chosen by the user (or empty when cancelled).
 class MultiContactPickerPage extends StatefulWidget {
-  final List<Contact> contacts;
+  /// Creates the picker for the given [contacts].
+  const MultiContactPickerPage({required this.contacts, super.key});
 
-  const MultiContactPickerPage({super.key, required this.contacts});
+  /// All device contacts the user can pick from.
+  final List<Contact> contacts;
 
   @override
   State<MultiContactPickerPage> createState() => _MultiContactPickerPageState();
@@ -14,7 +18,8 @@ class MultiContactPickerPage extends StatefulWidget {
 
 class _MultiContactPickerPageState extends State<MultiContactPickerPage> {
   final Map<int, bool> selectedMap = {};
-  final lang = LangProvider.get('pages')['contact']['import'];
+  final lang = (LangProvider.getMap('pages')['contact']
+      as Map<String, dynamic>)['import'] as Map<String, dynamic>;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +31,10 @@ class _MultiContactPickerPageState extends State<MultiContactPickerPage> {
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
-        title: Text(lang['title'], style: TextStyle(color: textColor)),
+        title: Text(
+          lang['title'] as String,
+          style: TextStyle(color: textColor),
+        ),
         backgroundColor: bgColor,
         iconTheme: IconThemeData(color: textColor),
         elevation: 0,
@@ -44,14 +52,15 @@ class _MultiContactPickerPageState extends State<MultiContactPickerPage> {
               secondary: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  c.photo != null
-                      ? CircleAvatar(backgroundImage: MemoryImage(c.photo!))
-                      : CircleAvatar(
-                          backgroundColor: darkProv.isDarkMode
-                              ? Colors.grey[900]
-                              : Colors.grey[300],
-                          child: Icon(Icons.person, color: textColor),
-                        ),
+                  if (c.photo != null)
+                    CircleAvatar(backgroundImage: MemoryImage(c.photo!))
+                  else
+                    CircleAvatar(
+                      backgroundColor: darkProv.isDarkMode
+                          ? Colors.grey[900]
+                          : Colors.grey[300],
+                      child: Icon(Icons.person, color: textColor),
+                    ),
                 ],
               ),
 
@@ -64,7 +73,7 @@ class _MultiContactPickerPageState extends State<MultiContactPickerPage> {
       ),
       bottomNavigationBar: Container(
         color: bgColor,
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8),
         child: Row(
           children: [
             ElevatedButton(
@@ -75,7 +84,7 @@ class _MultiContactPickerPageState extends State<MultiContactPickerPage> {
               ),
               onPressed: () => Navigator.pop(context, <Contact>[]),
               child: Text(
-                lang['buttons']['cancel'],
+                (lang['buttons'] as Map<String, dynamic>)['cancel'] as String,
                 style: TextStyle(color: textColor),
               ),
             ),
@@ -96,7 +105,7 @@ class _MultiContactPickerPageState extends State<MultiContactPickerPage> {
                 Navigator.pop(context, chosen);
               },
               child: Text(
-                lang['buttons']['validate'],
+                (lang['buttons'] as Map<String, dynamic>)['validate'] as String,
                 style: TextStyle(color: textColor),
               ),
             ),

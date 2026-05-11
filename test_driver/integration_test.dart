@@ -10,16 +10,17 @@ Future<void> main() async {
   await integrationDriver(
     onScreenshot:
         (
-          String screenshotName,
-          List<int> screenshotBytes, [
-          Map<String, Object?>? args,
+          screenshotName,
+          screenshotBytes, [
+          args,
         ]) async {
           final outDir = Directory('docs/screenshots');
-          if (!await outDir.exists()) {
+          if (!outDir.existsSync()) {
             await outDir.create(recursive: true);
           }
           final file = File('${outDir.path}/$screenshotName.png');
           await file.writeAsBytes(screenshotBytes);
+          // Driver-side log; goes to stdout consumed by capture_screenshots.sh.
           // ignore: avoid_print
           print('Saved ${file.path} (${screenshotBytes.length} bytes)');
           return true;

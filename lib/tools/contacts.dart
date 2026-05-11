@@ -3,6 +3,9 @@ import 'dart:typed_data';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+/// Wrapper around `flutter_contacts` providing the small subset of
+/// device-contacts operations EZQRContact needs (permission, lookup by
+/// name, conversion to/from the legacy `Map<String, dynamic>` shape).
 class PhoneContacts {
   /// Vérifie et demande la permission contacts
   static Future<bool> verifyPermission() async {
@@ -16,7 +19,7 @@ class PhoneContacts {
   /// Récupère tous les contacts avec propriétés et comptes
   static Future<List<Contact>> getAll() async {
     await verifyPermission();
-    return await FlutterContacts.getContacts(
+    return FlutterContacts.getContacts(
       withProperties: true,
       withAccounts: true,
     );
@@ -25,10 +28,10 @@ class PhoneContacts {
   /// Récupère l'ID d'un contact selon prénom et/ou nom
   static Future<String?> getId({String? prenom, String? nom}) async {
     final contacts = await getAll();
-    for (var contact in contacts) {
+    for (final contact in contacts) {
       final first = contact.name.first;
       final last = contact.name.last;
-      bool match = (prenom != null && nom != null)
+      final match = (prenom != null && nom != null)
           ? (first == prenom && last == nom)
           : prenom != null
           ? first == prenom
@@ -41,7 +44,7 @@ class PhoneContacts {
   /// Vérifie si un contact existe
   static Future<bool> exists({String? prenom, String? nom}) async {
     if ((prenom == null || prenom.isEmpty) && (nom == null || nom.isEmpty)) {
-      throw Exception("Donner au moins prénom ou nom");
+      throw Exception('Donner au moins prénom ou nom');
     }
     final contacts = await getAll();
     return contacts.any((c) {
@@ -87,7 +90,7 @@ class PhoneContacts {
     'adr_home': c.addresses
         .firstWhere(
           (a) => a.label == AddressLabel.home,
-          orElse: () => Address('', label: AddressLabel.home),
+          orElse: () => Address(''),
         )
         .address,
     'email': c.emails.isNotEmpty ? c.emails.first.address : '',
@@ -100,7 +103,7 @@ class PhoneContacts {
     String? nom,
   }) async {
     if ((prenom == null || prenom.isEmpty) && (nom == null || nom.isEmpty)) {
-      throw Exception("Donner au moins prénom ou nom");
+      throw Exception('Donner au moins prénom ou nom');
     }
     final contacts = await getAll();
     final contact = contacts.firstWhere((c) {
@@ -117,30 +120,32 @@ class PhoneContacts {
 
   /// Ajoute un contact à l'appareil
   static Future<void> add(Map<String, dynamic> data) async {
+    String s(String key) => (data[key] as String?) ?? '';
+    String? sn(String key) => data[key] as String?;
     final newContact = Contact()
-      ..name.first = data['prenom'] ?? ''
-      ..name.last = data['nom'] ?? ''
-      ..name.middle = data['nom2']
-      ..name.prefix = data['prefixe']
-      ..name.suffix = data['suffixe']
+      ..name.first = s('prenom')
+      ..name.last = s('nom')
+      ..name.middle = sn('nom2') ?? ''
+      ..name.prefix = sn('prefixe') ?? ''
+      ..name.suffix = sn('suffixe') ?? ''
       ..organizations = [
         if (data['org'] != null || data['job'] != null)
-          Organization(company: data['org'] ?? '', title: data['job'] ?? ''),
+          Organization(company: s('org'), title: s('job')),
       ]
       ..emails = [
-        if (data['email'] != null) Email(data['email'], label: EmailLabel.home),
+        if (data['email'] != null) Email(s('email')),
       ]
       ..phones = [
         if (data['tel_work'] != null)
-          Phone(data['tel_work'], label: PhoneLabel.work),
+          Phone(s('tel_work'), label: PhoneLabel.work),
         if (data['tel_home'] != null)
-          Phone(data['tel_home'], label: PhoneLabel.home),
+          Phone(s('tel_home'), label: PhoneLabel.home),
       ]
       ..addresses = [
         if (data['adr_work'] != null)
-          Address(data['adr_work'], label: AddressLabel.work),
+          Address(s('adr_work'), label: AddressLabel.work),
         if (data['adr_home'] != null)
-          Address(data['adr_home'], label: AddressLabel.home),
+          Address(s('adr_home')),
       ];
 
     await newContact.insert();
@@ -151,15 +156,14 @@ class PhoneContacts {
     final prenom = data['prenom']?.toString();
     final nom = data['nom']?.toString();
     if ((prenom == null || prenom.isEmpty) && (nom == null || nom.isEmpty)) {
-      throw Exception("Donner au moins prénom ou nom pour modifier un contact");
+      throw Exception('Donner au moins prénom ou nom pour modifier un contact');
     }
 
     final contactId = await getId(prenom: prenom, nom: nom);
-    if (contactId == null) throw Exception("Contact introuvable");
+    if (contactId == null) throw Exception('Contact introuvable');
 
     final contact = await FlutterContacts.getContact(
       contactId,
-      withProperties: true,
       withAccounts: true,
     );
     if (contact == null) return;
@@ -179,7 +183,7 @@ class PhoneContacts {
 
     if (data['email'] != null) {
       contact.emails = [
-        Email(data['email'].toString(), label: EmailLabel.home),
+        Email(data['email'].toString()),
       ];
     }
 
@@ -200,7 +204,7 @@ class PhoneContacts {
     }
     if (data['adr_home'] != null) {
       addresses.add(
-        Address(data['adr_home'].toString(), label: AddressLabel.home),
+        Address(data['adr_home'].toString()),
       );
     }
     if (addresses.isNotEmpty) contact.addresses = addresses;
@@ -213,26 +217,30 @@ class PhoneContacts {
     return contacts.map(contactToMap).toList();
   }
 
+  /// Returns a display title for a stored entry. [input] must contain a
+  /// `type` (`'vcard'` or `'simple'`) and a `data` map. Falls back to '' on
+  /// unknown types or empty fields.
   static String getTitle(Map<String, dynamic> input) {
     final type = input['type'];
     final data = input['data'];
 
     if (type == 'vcard' && data is Map<String, dynamic>) {
-      final prenom = data['prenom'] ?? '';
-      final nom = data['nom'] ?? '';
-      final org = data['org'] ?? '';
+      final prenom = (data['prenom'] as String?) ?? '';
+      final nom = (data['nom'] as String?) ?? '';
+      final org = (data['org'] as String?) ?? '';
       if (prenom.isNotEmpty && nom.isNotEmpty) return '$prenom $nom';
       if (prenom.isNotEmpty || nom.isNotEmpty) return '$prenom$nom';
       return org;
     }
 
     if (type == 'simple' && data is Map<String, dynamic>) {
-      return data['text'] ?? '';
+      return (data['text'] as String?) ?? '';
     }
 
     return '';
   }
 
+  /// Returns the contact photo bytes, or null when [c] has no photo set.
   static Future<Uint8List?> getPhoto(Contact c) async {
     final photo = c.photo;
     return photo;

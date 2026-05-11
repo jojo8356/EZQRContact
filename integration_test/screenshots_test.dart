@@ -11,12 +11,14 @@
 //   3. Si l'action timeout (3s par défaut) → log et continue avec la suivante
 // Comme ça, dès que l'app crash, le test s'arrête au lieu de bloquer 10 min.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/main.dart' as app;
 import 'package:qr_code_app/providers/darkmode.dart';
-import 'package:qr_code_app/data/db/database.dart';
 
 // Insert sample QR/VCard rows so the Collection page is not empty when
 // captured. Uses raw insert (no saveQrCode) to avoid the file system
@@ -75,7 +77,7 @@ class AppDeadException implements Exception {
 }
 
 void main() {
-  final IntegrationTestWidgetsFlutterBinding binding =
+  final binding =
       IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   bool isAppAlive(WidgetTester tester) {
@@ -84,6 +86,7 @@ void main() {
 
   void abortIfDead(WidgetTester tester) {
     if (!isAppAlive(tester)) {
+      // Test-only diagnostic output, must reach the screenshot driver log.
       // ignore: avoid_print
       print('[abort] app is dead, stopping test');
       throw AppDeadException();
@@ -108,12 +111,14 @@ void main() {
       abortIfDead(tester);
       await tester.pumpAndSettle(timeout);
       await binding.takeScreenshot(name);
+      // Test-only diagnostic output, must reach the screenshot driver log.
       // ignore: avoid_print
       print('[ok] captured $name');
       return true;
     } on AppDeadException {
       rethrow;
-    } catch (e) {
+    } on Exception catch (e) {
+      // Test-only diagnostic output, must reach the screenshot driver log.
       // ignore: avoid_print
       print('[skip] $name: $e');
       return false;
@@ -128,7 +133,7 @@ void main() {
   //   camera permission dialog that can freeze or kill the engine.
 
   testWidgets('home, vcard form, collection (light)', (
-    WidgetTester tester,
+    tester,
   ) async {
     DarkModeProvider().setDarkMode(false);
 
@@ -156,13 +161,13 @@ void main() {
       'collection',
       before: () async {
         final ctx = tester.element(find.byType(Navigator).first);
-        Navigator.of(ctx).pushNamed('/collection');
+        unawaited(Navigator.of(ctx).pushNamed('/collection'));
       },
     );
   });
 
   testWidgets('home and collection in dark mode', (
-    WidgetTester tester,
+    tester,
   ) async {
     DarkModeProvider().setDarkMode(true);
 
@@ -180,7 +185,7 @@ void main() {
       'collection-dark',
       before: () async {
         final ctx = tester.element(find.byType(Navigator).first);
-        Navigator.of(ctx).pushNamed('/collection');
+        unawaited(Navigator.of(ctx).pushNamed('/collection'));
       },
     );
   });
@@ -188,7 +193,7 @@ void main() {
   // Isolated test: if the camera permission dialog kills the engine, only
   // this test fails and the screenshots from the other tests are kept.
   testWidgets('scanner (may fail without camera permission)', (
-    WidgetTester tester,
+    tester,
   ) async {
     DarkModeProvider().setDarkMode(false);
 

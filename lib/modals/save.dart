@@ -1,24 +1,29 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/close_button.dart';
 import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
+/// Prompts the user for a filename, then saves [originalPath] as a PNG
+/// via the platform file picker. Defaults the name to a timestamp.
 Future<void> showSaveDialog(BuildContext context, String originalPath) async {
-  final TextEditingController nameController = TextEditingController(
+  final nameController = TextEditingController(
     text: 'QR_${DateTime.now().millisecondsSinceEpoch}',
   );
   String? fileName;
-  final lang = LangProvider.get('pages')['QR']['save'];
+  final lang = (LangProvider.getMap('pages')['QR']
+      as Map<String, dynamic>)['save'] as Map<String, dynamic>;
 
-  await showDialog(
+  await showDialog<void>(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text(lang['title']),
+      title: Text(lang['title'] as String),
       content: TextField(
         controller: nameController,
         decoration: InputDecoration(
-          labelText: lang['input deco'],
+          labelText: lang['input deco'] as String?,
           border: const OutlineInputBorder(),
         ),
       ),
@@ -29,7 +34,7 @@ Future<void> showSaveDialog(BuildContext context, String originalPath) async {
             fileName = nameController.text.trim();
             Navigator.pop(context);
           },
-          child: Text(lang['button']),
+          child: Text(lang['button'] as String),
         ),
       ],
     ),
@@ -37,6 +42,6 @@ Future<void> showSaveDialog(BuildContext context, String originalPath) async {
 
   // Sauvegarder seulement si on a choisi un nom
   if (fileName != null && fileName!.isNotEmpty) {
-    saveFile(originalPath, fileName!);
+    unawaited(saveFile(originalPath, fileName!));
   }
 }

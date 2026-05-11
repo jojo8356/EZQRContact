@@ -1,6 +1,6 @@
 // Hide drift's `isNull` / `isNotNull` SQL expression builders so we use
 // the matcher package versions in `expect(...)` calls.
-import 'package:drift/drift.dart' hide isNull, isNotNull;
+import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -97,8 +97,6 @@ void main() {
       nom: 'Martin',
       prenom: 'Jean',
       org: 'OldCo',
-      telWork: '',
-      job: '',
     ));
 
     await repo.mergeIfExists(sample(

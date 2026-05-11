@@ -1,14 +1,17 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/providers/darkmode.dart';
 
+/// Shows a fullscreen interactive image viewer for the file at [path].
+/// No-op when [path] is null/empty or the underlying file is missing.
 Future<void> showImageDialog(BuildContext context, String? path) async {
   final darkProv = DarkModeProvider();
   if (path == null || path.isEmpty) return;
   if (!context.mounted) return;
 
-  showDialog(
+  unawaited(showDialog<void>(
     context: context,
     barrierColor: Colors.black54,
     builder: (context) => Dialog(
@@ -16,10 +19,9 @@ Future<void> showImageDialog(BuildContext context, String? path) async {
       insetPadding: const EdgeInsets.all(10),
       child: GestureDetector(
         onTap: () => Navigator.of(context).pop(),
-        child: FutureBuilder<bool>(
-          future: File(path).exists(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData || !snapshot.data!) {
+        child: Builder(
+          builder: (context) {
+            if (!File(path).existsSync()) {
               return const Center(child: CircularProgressIndicator());
             }
 
@@ -37,5 +39,5 @@ Future<void> showImageDialog(BuildContext context, String? path) async {
         ),
       ),
     ),
-  );
+  ));
 }

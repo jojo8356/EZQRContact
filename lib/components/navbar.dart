@@ -1,12 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 
+/// Bottom navigation bar shown on the four root pages of the app.
+/// Highlights the entry matching [currentRoute].
 class Navbar extends StatelessWidget {
-  final String currentRoute;
+  /// Creates the bottom navigation bar.
+  const Navbar({required this.currentRoute, super.key});
 
-  const Navbar({super.key, required this.currentRoute});
+  /// Name of the route currently displayed (e.g. `/options`, `/history`).
+  final String currentRoute;
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +24,7 @@ class Navbar extends StatelessWidget {
         return ValueListenableBuilder<String>(
           valueListenable: LangProvider.notifier,
           builder: (context, value, _) {
-            final lang = LangProvider.get('bottom menu');
+            final lang = LangProvider.getMap('bottom menu');
 
             // 🔹 On applique un Theme local pour forcer la couleur
             return Theme(
@@ -27,10 +33,10 @@ class Navbar extends StatelessWidget {
                   backgroundColor: currentColors['bg'],
                   unselectedItemColor: DarkModeProvider().isDarkMode
                       ? const Color.fromARGB(255, 102, 53, 187)
-                      : Color.fromARGB(255, 161, 107, 255),
+                      : const Color.fromARGB(255, 161, 107, 255),
                   selectedItemColor: !DarkModeProvider().isDarkMode
                       ? const Color.fromARGB(255, 102, 53, 187)
-                      : Color.fromARGB(255, 161, 107, 255),
+                      : const Color.fromARGB(255, 161, 107, 255),
                   type: BottomNavigationBarType.fixed,
                 ),
               ),
@@ -39,25 +45,27 @@ class Navbar extends StatelessWidget {
                 onTap: (index) {
                   final route = _getRouteFromIndex(index);
                   if (route != currentRoute) {
-                    Navigator.pushReplacementNamed(context, route);
+                    unawaited(
+                      Navigator.pushReplacementNamed(context, route),
+                    );
                   }
                 },
                 items: [
                   BottomNavigationBarItem(
                     icon: const Icon(Icons.home),
-                    label: lang['home'],
+                    label: lang['home'] as String?,
                   ),
                   BottomNavigationBarItem(
                     icon: const Icon(Icons.style),
-                    label: lang['collection'],
+                    label: lang['collection'] as String?,
                   ),
                   BottomNavigationBarItem(
                     icon: const Icon(Icons.history),
-                    label: lang['history'],
+                    label: lang['history'] as String?,
                   ),
                   BottomNavigationBarItem(
                     icon: const Icon(Icons.settings),
-                    label: lang['settings'],
+                    label: lang['settings'] as String?,
                   ),
                 ],
               ),

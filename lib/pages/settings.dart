@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/navbar.dart';
@@ -6,7 +8,10 @@ import 'package:qr_code_app/modals/social_networks.dart';
 import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 
+/// Settings page exposing language selection, dark-mode toggle, and links
+/// to the help guide and the developer's social networks.
 class SettingsPage extends StatefulWidget {
+  /// Creates the settings page.
   const SettingsPage({super.key});
 
   @override
@@ -22,7 +27,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
-    _loadLangs();
+    unawaited(_loadLangs());
 
     // 🔹 écoute les changements de langue
     _langListener = () {
@@ -55,32 +60,32 @@ class _SettingsPageState extends State<SettingsPage> {
     return AnimatedBuilder(
       animation: darkProv,
       builder: (context, _) {
-        final lang = LangProvider.get('options');
+        final lang = LangProvider.getMap('options');
 
         final buttons = [
           {
-            "label": lang['guide'],
-            "icon": Icons.book,
-            "action": (BuildContext context) async =>
-                await showGuidePopup(context, fromButton: true),
+            'label': lang['guide'],
+            'icon': Icons.book,
+            'action': (BuildContext context) async =>
+                showGuidePopup(context, fromButton: true),
           },
           {
-            "label": lang['about'],
-            "icon": Icons.person,
-            "action": (BuildContext context) async =>
-                await showSharePopup(context),
+            'label': lang['about'],
+            'icon': Icons.person,
+            'action': (BuildContext context) async =>
+                showSharePopup(context),
           },
           {
-            "label": lang['mode'],
-            "icon": Icons.brightness_6,
-            "action": (BuildContext context) {
+            'label': lang['mode'],
+            'icon': Icons.brightness_6,
+            'action': (BuildContext context) {
               darkProv.toggle(); // plus besoin de setState
             },
           },
         ];
 
         return Scaffold(
-          appBar: AppBarCustom(lang['mode'] ?? 'Options'),
+          appBar: AppBarCustom((lang['mode'] as String?) ?? 'Options'),
           backgroundColor: currentColors['bg'],
           body: Center(
             child: _langs.isEmpty
@@ -109,15 +114,13 @@ class _SettingsPageState extends State<SettingsPage> {
                                         bottom: 20,
                                       ), // 🔹 margin-bottom: 20px
                                       child: Align(
-                                        alignment: Alignment
-                                            .center, // centré horizontalement
                                         child: IntrinsicWidth(
                                           child: DropdownButton<String>(
                                             value: _selectedLang,
-                                            isDense:
-                                                true, // réduit la hauteur et padding
-                                            underline:
-                                                Container(), // supprime la ligne
+                                            // réduit la hauteur et padding
+                                            isDense: true,
+                                            // supprime la ligne
+                                            underline: Container(),
                                             dropdownColor: currentColors['bg'],
                                             style: TextStyle(
                                               color: currentColors['text'],
@@ -140,9 +143,8 @@ class _SettingsPageState extends State<SettingsPage> {
                                                 .toList(),
                                             onChanged: (newValue) async {
                                               if (newValue != null) {
-                                                await LangProvider.changeLanguage(
-                                                  newValue,
-                                                );
+                                                await LangProvider
+                                                    .changeLanguage(newValue);
                                               }
                                             },
                                           ),
@@ -168,18 +170,18 @@ class _SettingsPageState extends State<SettingsPage> {
                                         ),
                                       ),
                                       icon: Icon(
-                                        btn["icon"] as IconData?,
+                                        btn['icon'] as IconData?,
                                         color: Colors.white,
                                       ),
                                       label: Text(
-                                        btn["label"] as String,
+                                        btn['label'] as String,
                                         style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 16,
                                         ),
                                       ),
                                       onPressed: () =>
-                                          (btn["action"] as Function)(context),
+                                          (btn['action'] as Function)(context),
                                     ),
                                   );
                                 }),

@@ -6,16 +6,18 @@ import 'package:qr_code_app/tools/tools.dart';
 
 /// Singleton pour stocker les traductions et notifier l'UI
 class LangProvider {
+
+  /// Returns the singleton instance.
+  factory LangProvider() => _instance;
+
+  LangProvider._internal();
   static final LangProvider _instance = LangProvider._internal();
   static Map<String, dynamic>? _translations;
   static String _currentLang = 'en';
 
-  // 🔹 Notifier pour prévenir l'UI
+  /// Notifier listeners can subscribe to in order to rebuild on language
+  /// changes. Holds the active language code (e.g. `'en'`, `'fr'`).
   static final ValueNotifier<String> notifier = ValueNotifier(_currentLang);
-
-  LangProvider._internal();
-
-  factory LangProvider() => _instance;
 
   /// Initialise la langue depuis les fichiers JSON
   static Future<void> init({String? lang}) async {
@@ -24,8 +26,34 @@ class LangProvider {
     notifier.value = _currentLang; // notifier l'UI
   }
 
-  /// 🔹 Récupère une traduction
-  static get(String key) {
+  /// 🔹 Récupère une traduction (typée String)
+  static String getString(String key) {
+    final value = _translations?[key];
+    return value is String ? value : key;
+  }
+
+  /// 🔹 Récupère une section de traductions (typée Map)
+  static Map<String, dynamic> getMap(String key) {
+    final value = _translations?[key];
+    return value is Map<String, dynamic> ? value : <String, dynamic>{};
+  }
+
+  /// 🔹 Récupère une traduction via un chemin pointé "a.b.c"
+  static String t(String path) {
+    final parts = path.split('.');
+    dynamic node = _translations;
+    for (final p in parts) {
+      if (node is Map) {
+        node = node[p];
+      } else {
+        return path;
+      }
+    }
+    return node is String ? node : path;
+  }
+
+  /// 🔹 Récupère une traduction (legacy, retourne dynamic)
+  static dynamic get(String key) {
     return _translations?[key] ?? key;
   }
 

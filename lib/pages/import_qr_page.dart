@@ -8,7 +8,10 @@ import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
+/// Page letting the user pick an image from the gallery and scan it for
+/// embedded QR codes via the platform image picker.
 class QrFromImagePage extends StatefulWidget {
+  /// Creates the page.
   const QrFromImagePage({super.key});
 
   @override
@@ -22,7 +25,7 @@ class _QrFromImagePageState extends State<QrFromImagePage> {
     try {
       final picker = ImagePicker();
       await picker.pickImage(source: ImageSource.gallery);
-    } catch (e) {
+    } on Exception catch (e) {
       debugPrint('Erreur lors du scan image: $e');
     }
     if (!mounted) return;
@@ -32,16 +35,17 @@ class _QrFromImagePageState extends State<QrFromImagePage> {
   @override
   Widget build(BuildContext context) {
     final darkProv = DarkModeProvider();
-    final lang = LangProvider.get('pages')['QR']['import'];
+    final lang = (LangProvider.getMap('pages')['QR']
+        as Map<String, dynamic>)['import'] as Map<String, dynamic>;
 
     return Scaffold(
       backgroundColor: currentColors['bg'], // fond noir
-      appBar: AppBarCustom(lang['title']),
+      appBar: AppBarCustom(lang['title'] as String),
       body: Center(
         child: AnimatedSubmitButton(
           isDark: darkProv.isDarkMode,
           onPressed: pickAndDecodeImage,
-          label: lang['pick'],
+          label: lang['pick'] as String,
         ),
       ),
     );

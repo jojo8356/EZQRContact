@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 
+/// Outlined button with a small "punch" scale and color-flash animation
+/// triggered on press, used by every form submit screen of the app.
 class AnimatedSubmitButton extends StatefulWidget {
-  final bool isDark;
-  final VoidCallback onPressed;
-  final String label;
-
+  /// Creates the animated submit button.
   const AnimatedSubmitButton({
-    super.key,
     required this.isDark,
     required this.onPressed,
     required this.label,
+    super.key,
   });
+
+  /// True when the app is in dark mode (shifts the flash background).
+  final bool isDark;
+
+  /// Callback invoked at the end of the press animation.
+  final VoidCallback onPressed;
+
+  /// Text label displayed inside the button.
+  final String label;
 
   @override
   State<AnimatedSubmitButton> createState() => _AnimatedSubmitButtonState();
@@ -19,7 +27,7 @@ class AnimatedSubmitButton extends StatefulWidget {
 
 class _AnimatedSubmitButtonState extends State<AnimatedSubmitButton>
     with SingleTickerProviderStateMixin {
-  double _scale = 1.0;
+  double _scale = 1;
   Color? _bgColor;
 
   @override
@@ -28,17 +36,17 @@ class _AnimatedSubmitButtonState extends State<AnimatedSubmitButton>
     _bgColor = currentColors['bg'];
   }
 
-  void _onTap() async {
+  Future<void> _onTap() async {
     // petite animation de "punch"
     setState(() => _scale = 1.1);
-    await Future.delayed(const Duration(milliseconds: 100));
+    await Future<void>.delayed(const Duration(milliseconds: 100));
     setState(() => _scale = 1.0);
 
     // flash couleur
     setState(
       () => _bgColor = widget.isDark ? Colors.grey[800] : Colors.grey[300],
     );
-    await Future.delayed(const Duration(milliseconds: 100));
+    await Future<void>.delayed(const Duration(milliseconds: 100));
     setState(() => _bgColor = currentColors['bg']);
 
     widget.onPressed();

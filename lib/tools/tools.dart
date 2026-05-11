@@ -8,36 +8,43 @@ import 'package:http/http.dart' as http;
 import 'package:qr_code_app/providers/lang.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Returns true when the first-run guide has not yet been displayed.
 Future<bool> shouldShowGuide() async {
   final prefs = await SharedPreferences.getInstance();
   final hasShown = prefs.getInt('guideShown') ?? 0;
   return hasShown == 0;
 }
 
+/// Persists the fact that the first-run guide has been displayed.
 Future<void> markGuideShown() async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.setInt('guideShown', 1);
 }
 
+/// Builds a map of [TextEditingController]s pre-filled from the legacy
+/// `Map<String, dynamic>` VCard payload, one controller per known field.
 Map<String, TextEditingController> mapToControllers(Map<String, dynamic> data) {
+  String s(String key) => (data[key] as String?) ?? '';
   return {
-    "nom": TextEditingController(text: data['nom'] ?? ""),
-    "prenom": TextEditingController(text: data['prenom'] ?? ""),
-    "nom2": TextEditingController(text: data['nom2'] ?? ""),
-    "prefixe": TextEditingController(text: data['prefixe'] ?? ""),
-    "suffixe": TextEditingController(text: data['suffixe'] ?? ""),
-    "org": TextEditingController(text: data['org'] ?? ""),
-    "job": TextEditingController(text: data['job'] ?? ""),
-    "photo": TextEditingController(text: data['photo'] ?? ""),
-    "tel_work": TextEditingController(text: data['tel_work'] ?? ""),
-    "tel_home": TextEditingController(text: data['tel_home'] ?? ""),
-    "adr_work": TextEditingController(text: data['adr_work'] ?? ""),
-    "adr_home": TextEditingController(text: data['adr_home'] ?? ""),
-    "email": TextEditingController(text: data['email'] ?? ""),
+    'nom': TextEditingController(text: s('nom')),
+    'prenom': TextEditingController(text: s('prenom')),
+    'nom2': TextEditingController(text: s('nom2')),
+    'prefixe': TextEditingController(text: s('prefixe')),
+    'suffixe': TextEditingController(text: s('suffixe')),
+    'org': TextEditingController(text: s('org')),
+    'job': TextEditingController(text: s('job')),
+    'photo': TextEditingController(text: s('photo')),
+    'tel_work': TextEditingController(text: s('tel_work')),
+    'tel_home': TextEditingController(text: s('tel_home')),
+    'adr_work': TextEditingController(text: s('adr_work')),
+    'adr_home': TextEditingController(text: s('adr_home')),
+    'email': TextEditingController(text: s('email')),
   };
 }
 
-Widget buildItemAvatar(bool isVCard, String photo) {
+/// Returns the leading avatar for a list/card item: a photo for vCards
+/// (or a person icon when [photo] is empty) and a QR icon otherwise.
+Widget buildItemAvatar({required bool isVCard, required String photo}) {
   if (isVCard) {
     if (photo.isNotEmpty) {
       return CircleAvatar(backgroundImage: NetworkImage(photo), radius: 25);
@@ -49,42 +56,49 @@ Widget buildItemAvatar(bool isVCard, String photo) {
   }
 }
 
+/// Pushes [page] on the navigator and returns the value popped back, if any.
 Future<dynamic> redirect(BuildContext context, Widget page) {
   return Navigator.push(context, MaterialPageRoute(builder: (_) => page));
 }
 
+/// Builds the list of `{label, controller}` records used by the VCard form.
+/// Labels come from the active language pack at `VCard Input.<key>`.
 List<Map<String, dynamic>> buildFields(
   Map<String, TextEditingController> controllers,
 ) {
-  final lang = LangProvider.get('VCard Input');
+  final lang = LangProvider.getMap('VCard Input');
   return [
-    {"label": lang['nom'], "controller": controllers["nom"]},
-    {"label": lang['prenom'], "controller": controllers["prenom"]},
-    {"label": lang['nom2'], "controller": controllers["nom2"]},
-    {"label": lang['prefixe'], "controller": controllers["prefixe"]},
-    {"label": lang['suffixe'], "controller": controllers["suffixe"]},
-    {"label": lang['org'], "controller": controllers["org"]},
-    {"label": lang['job'], "controller": controllers["job"]},
-    {"label": lang['photo'], "controller": controllers["photo"]},
-    {"label": lang['tel_work'], "controller": controllers["tel_work"]},
-    {"label": lang['tel_home'], "controller": controllers["tel_home"]},
-    {"label": lang['adr_work'], "controller": controllers["adr_work"]},
-    {"label": lang['adr_home'], "controller": controllers["adr_home"]},
-    {"label": lang['email'], "controller": controllers["email"]},
+    {'label': lang['nom'], 'controller': controllers['nom']},
+    {'label': lang['prenom'], 'controller': controllers['prenom']},
+    {'label': lang['nom2'], 'controller': controllers['nom2']},
+    {'label': lang['prefixe'], 'controller': controllers['prefixe']},
+    {'label': lang['suffixe'], 'controller': controllers['suffixe']},
+    {'label': lang['org'], 'controller': controllers['org']},
+    {'label': lang['job'], 'controller': controllers['job']},
+    {'label': lang['photo'], 'controller': controllers['photo']},
+    {'label': lang['tel_work'], 'controller': controllers['tel_work']},
+    {'label': lang['tel_home'], 'controller': controllers['tel_home']},
+    {'label': lang['adr_work'], 'controller': controllers['adr_work']},
+    {'label': lang['adr_home'], 'controller': controllers['adr_home']},
+    {'label': lang['email'], 'controller': controllers['email']},
   ];
 }
 
+/// Returns the keys of [dict] as a List.
 List<String> getKeys(Map<String, dynamic> dict) {
   return dict.keys.toList();
 }
 
+/// Reads the current text of every controller into a flat `Map<String,String>`.
 Map<String, String> extractValues(
   Map<String, TextEditingController> controllers,
 ) {
   final keys = getKeys(controllers);
-  return {for (var key in keys) key: controllers[key]!.text};
+  return {for (final key in keys) key: controllers[key]!.text};
 }
 
+/// Reads [originalPath] from disk and prompts the user to save it as
+/// `<fileName>.png` via the platform file picker.
 Future<void> saveFile(String originalPath, String fileName) async {
   final fileBytes = await File(originalPath).readAsBytes();
 
@@ -96,11 +110,13 @@ Future<void> saveFile(String originalPath, String fileName) async {
   );
 }
 
+/// Loads an asset image at [path] as raw bytes.
 Future<Uint8List> loadAssetImage(String path) async {
-  final ByteData data = await rootBundle.load(path);
+  final data = await rootBundle.load(path);
   return data.buffer.asUint8List();
 }
 
+/// Returns today's date formatted as `dd/MM/yyyy`.
 String getDateDays() {
   final now = DateTime.now();
   final day = now.day.toString().padLeft(2, '0');
@@ -110,9 +126,11 @@ String getDateDays() {
   return '$day/$month/$year';
 }
 
+/// Returns the names of every `.json` file bundled under [folderPath]
+/// in the Flutter asset manifest.
 Future<List<String>> getJsonFiles(String folderPath) async {
   final manifestContent = await rootBundle.loadString('AssetManifest.json');
-  final Map<String, dynamic> manifestMap = json.decode(manifestContent);
+  final manifestMap = json.decode(manifestContent) as Map<String, dynamic>;
 
   final jsonFiles = manifestMap.keys
       .where((path) => path.startsWith(folderPath) && path.endsWith('.json'))
@@ -122,6 +140,8 @@ Future<List<String>> getJsonFiles(String folderPath) async {
   return jsonFiles;
 }
 
+/// Returns true when [url] resolves to an `image/*` content-type via HEAD.
+/// Returns false on any network error or non-image response.
 Future<bool> isImageUrl(String url) async {
   try {
     final response = await http.head(Uri.parse(url));
@@ -131,7 +151,7 @@ Future<bool> isImageUrl(String url) async {
         return contentType.startsWith('image/');
       }
     }
-  } catch (e) {
+  } on Exception catch (_) {
     // URL invalide ou problème réseau
     return false;
   }

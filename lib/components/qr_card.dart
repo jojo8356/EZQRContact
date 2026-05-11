@@ -4,17 +4,25 @@ import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/tools/contacts.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
+/// Tile-style widget representing a single QR or VCard row, expandable to
+/// reveal the [OptionsQR] action grid.
 class QRCard extends StatefulWidget {
-  final Map<String, dynamic> data;
-  final bool isVCard;
-  final Future<void> Function() onRefresh;
-
+  /// Creates a QR card. [onRefresh] is invoked after destructive actions.
   const QRCard({
-    super.key,
     required this.data,
     required this.isVCard,
     required this.onRefresh,
+    super.key,
   });
+
+  /// Legacy row payload for the QR or VCard.
+  final Map<String, dynamic> data;
+
+  /// True when [data] represents a vCard contact.
+  final bool isVCard;
+
+  /// Callback invoked after a destructive action mutates the database.
+  final Future<void> Function() onRefresh;
 
   @override
   State<QRCard> createState() => _QRCardState();
@@ -30,7 +38,7 @@ class _QRCardState extends State<QRCard> {
       'type': widget.isVCard ? 'vcard' : 'simple',
       'data': widget.data,
     });
-    final photo = widget.data['photo'] ?? '';
+    final photo = (widget.data['photo'] as String?) ?? '';
 
     return Card(
       color: darkProv.isDarkMode ? Colors.white30 : Colors.white,
@@ -39,7 +47,7 @@ class _QRCardState extends State<QRCard> {
       child: Column(
         children: [
           ListTile(
-            leading: buildItemAvatar(widget.isVCard, photo),
+            leading: buildItemAvatar(isVCard: widget.isVCard, photo: photo),
             title: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

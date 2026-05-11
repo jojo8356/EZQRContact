@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 
+/// Themed [AppBar] that auto-rebuilds on dark-mode changes via [darkProv].
 class AppBarCustom extends StatelessWidget implements PreferredSizeWidget {
-  final String title;
-
+  /// Creates a custom app bar showing [title].
   const AppBarCustom(this.title, {super.key});
+
+  /// Title text displayed in the app bar.
+  final String title;
 
   @override
   Widget build(BuildContext context) {

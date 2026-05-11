@@ -18,23 +18,22 @@
 //
 // Le backup auto (`_backupDatabaseIfPossible`) n'est pas testé ici car il
 // dépend de `sqflite.getDatabasesPath()` qui requiert un binding Flutter.
-// Validation manuelle sur device : voir 1-1d-migration-v1-vers-v2-avec-backup.md.
+// Validation manuelle sur device : voir
+// 1-1d-migration-v1-vers-v2-avec-backup.md.
 
-import 'package:drift/drift.dart' hide isNull, isNotNull;
+import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:sqlite3/sqlite3.dart' as raw_sqlite;
-
 import 'package:qr_code_app/data/db/database.dart';
+import 'package:sqlite3/sqlite3.dart' as raw_sqlite;
 
 /// Creates a raw in-memory SQLite database with the exact v1 schema and
 /// `PRAGMA user_version = 1` set. Returns the open Database; the caller
 /// must wrap it in `NativeDatabase.opened(...)` before passing it to
 /// `QRDatabase.forTesting(...)`.
 raw_sqlite.Database createV1Database() {
-  final db = raw_sqlite.sqlite3.openInMemory();
-
-  db.execute('''
+  final db = raw_sqlite.sqlite3.openInMemory()
+    ..execute('''
     CREATE TABLE SimpleQR(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       text TEXT NOT NULL,
@@ -42,9 +41,8 @@ raw_sqlite.Database createV1Database() {
       deleted INTEGER DEFAULT 0,
       date_deleted TEXT
     );
-  ''');
-
-  db.execute('''
+  ''')
+    ..execute('''
     CREATE TABLE VCard(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       nom TEXT,
@@ -66,12 +64,11 @@ raw_sqlite.Database createV1Database() {
       deleted INTEGER DEFAULT 0,
       date_deleted TEXT
     );
-  ''');
-
-  // Drift uses PRAGMA user_version to track schema version, identical to
-  // what sqflite did in v1. Setting it to 1 forces Drift to run
-  // MigrationStrategy.onUpgrade when QRDatabase opens with schemaVersion 2.
-  db.execute('PRAGMA user_version = 1');
+  ''')
+    // Drift uses PRAGMA user_version to track schema version, identical to
+    // what sqflite did in v1. Setting it to 1 forces Drift to run
+    // MigrationStrategy.onUpgrade when QRDatabase opens with schemaVersion 2.
+    ..execute('PRAGMA user_version = 1');
 
   return db;
 }
@@ -82,28 +79,28 @@ void main() {
     late QRDatabase db;
 
     setUp(() async {
-      raw = createV1Database();
-
       // Seed v1 data BEFORE opening with Drift (Drift takes ownership).
-      raw.execute(
-        "INSERT INTO VCard(nom, prenom, org, tel_work, email) "
-        "VALUES ('Dupont', 'Marie', 'Acme Corp', '+33612345678', 'marie@example.com')",
-      );
-      raw.execute(
-        "INSERT INTO VCard(nom, prenom, org, clone) "
-        "VALUES ('Martin', 'Jean', 'TechCo', 0)",
-      );
-      raw.execute(
-        "INSERT INTO VCard(nom, prenom, deleted, date_deleted) "
-        "VALUES ('Trashed', 'Old', 1, '2026-05-01')",
-      );
-      raw.execute(
-        "INSERT INTO SimpleQR(text) VALUES ('https://example.com')",
-      );
-      raw.execute(
-        "INSERT INTO SimpleQR(text, deleted, date_deleted) "
-        "VALUES ('deleted url', 1, '2026-05-01')",
-      );
+      raw = createV1Database()
+        ..execute(
+          'INSERT INTO VCard(nom, prenom, org, tel_work, email) '
+          "VALUES ('Dupont', 'Marie', 'Acme Corp', "
+          "'+33612345678', 'marie@example.com')",
+        )
+        ..execute(
+          'INSERT INTO VCard(nom, prenom, org, clone) '
+          "VALUES ('Martin', 'Jean', 'TechCo', 0)",
+        )
+        ..execute(
+          'INSERT INTO VCard(nom, prenom, deleted, date_deleted) '
+          "VALUES ('Trashed', 'Old', 1, '2026-05-01')",
+        )
+        ..execute(
+          "INSERT INTO SimpleQR(text) VALUES ('https://example.com')",
+        )
+        ..execute(
+          'INSERT INTO SimpleQR(text, deleted, date_deleted) '
+          "VALUES ('deleted url', 1, '2026-05-01')",
+        );
 
       db = QRDatabase.forTesting(NativeDatabase.opened(raw));
     });
@@ -154,8 +151,9 @@ void main() {
       expect(deleted.first['text'], 'deleted url');
     });
 
-    test('AC-3 step 3: deleted v1 vcards are still accessible via getDeletedVCards',
-        () async {
+    test(
+        'AC-3 step 3: deleted v1 vcards are still accessible '
+        'via getDeletedVCards', () async {
       final deleted = await db.getDeletedVCards();
       expect(deleted.length, 1);
       expect(deleted.first['nom'], 'Trashed');
@@ -231,11 +229,11 @@ void main() {
       // Build a fresh raw DB at schema v2 directly (no v1 data, no
       // migration needed). Verifies onUpgrade does NOT touch a DB that is
       // already at the target version.
-      final freshRaw = raw_sqlite.sqlite3.openInMemory();
-      freshRaw.execute('PRAGMA user_version = 2');
-      // Manually create the v2 tables. Drift's openConnection skips
-      // onCreate when tables are already there.
-      freshRaw.execute('''
+      final freshRaw = raw_sqlite.sqlite3.openInMemory()
+        ..execute('PRAGMA user_version = 2')
+        // Manually create the v2 tables. Drift's openConnection skips
+        // onCreate when tables are already there.
+        ..execute('''
         CREATE TABLE SimpleQR(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           text TEXT NOT NULL,
@@ -243,8 +241,8 @@ void main() {
           deleted INTEGER NOT NULL DEFAULT 0,
           date_deleted TEXT
         );
-      ''');
-      freshRaw.execute('''
+      ''')
+        ..execute('''
         CREATE TABLE VCard(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           nom TEXT NOT NULL DEFAULT '',
@@ -269,8 +267,8 @@ void main() {
           event_id INTEGER REFERENCES events(id),
           captured_at TEXT
         );
-      ''');
-      freshRaw.execute('''
+      ''')
+        ..execute('''
         CREATE TABLE events(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT NOT NULL,

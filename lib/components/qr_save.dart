@@ -1,14 +1,17 @@
 import 'dart:io';
 import 'dart:ui';
+
+import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:flutter/material.dart';
 
+/// Renders [data] to a 2048×2048 PNG QR code and writes it to the app
+/// documents directory as `<id>.png`. Returns the absolute file path.
+/// Throws when [data] is not a valid QR payload (translated message).
 Future<String> saveQrCode(String data, int id) async {
   final qrValidationResult = QrValidator.validate(
     data: data,
-    version: QrVersions.auto,
     errorCorrectionLevel: QrErrorCorrectLevel.M,
   );
 
@@ -17,18 +20,14 @@ Future<String> saveQrCode(String data, int id) async {
     final painter = QrPainter.withQr(
       qr: qrCode!,
       gapless: true,
-      dataModuleStyle: QrDataModuleStyle(
+      dataModuleStyle: const QrDataModuleStyle(
         color: Colors.black, // carrés de données
-      ),
-      eyeStyle: QrEyeStyle(
-        eyeShape: QrEyeShape.square, // forme des yeux
-        color: Colors.black, // couleur des yeux
       ),
     );
 
     final pictureRecorder = PictureRecorder();
     final canvas = Canvas(pictureRecorder);
-    final size = const Size(2048, 2048);
+    const size = Size(2048, 2048);
 
     final paint = Paint()..color = Colors.white;
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
@@ -43,6 +42,6 @@ Future<String> saveQrCode(String data, int id) async {
 
     return path;
   } else {
-    throw Exception(LangProvider.get('pages')['QR']['scanner']['invalid qr']);
+    throw Exception(LangProvider.t('pages.QR.scanner.invalid qr'));
   }
 }

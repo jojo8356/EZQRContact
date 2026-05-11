@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -7,19 +8,22 @@ import 'package:qr_code_app/components/close_button.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Shows the markdown-rendered first-run guide as a dialog. Persists a
+/// "seen" flag in SharedPreferences after the first display unless
+/// [fromButton] is true (manual re-open from the settings page).
 Future<void> showGuidePopup(
   BuildContext context, {
   bool fromButton = false,
 }) async {
   final prefs = await SharedPreferences.getInstance();
-  bool seen = prefs.getBool('seenGuide') ?? false;
+  final seen = prefs.getBool('seenGuide') ?? false;
   final lang = PlatformDispatcher.instance.locale.languageCode;
 
   if (!seen || fromButton) {
     final data = await rootBundle.loadString('assets/GUIDEME.$lang.md');
     if (!context.mounted) return;
 
-    showDialog(
+    unawaited(showDialog<void>(
       context: context,
       builder: (_) => AnimatedBuilder(
         animation: darkProv,
@@ -50,7 +54,7 @@ Future<void> showGuidePopup(
           );
         },
       ),
-    );
+    ));
 
     if (!fromButton) {
       await prefs.setBool('seenGuide', true);

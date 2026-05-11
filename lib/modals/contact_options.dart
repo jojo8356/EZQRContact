@@ -1,11 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/close_button.dart';
+import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/providers/lang.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/tools/contacts.dart';
-import 'package:qr_code_app/data/db/database.dart';
 import 'package:toastification/toastification.dart';
 
+/// Shows a fill-colored toast at the top-right of [context] using
+/// `toastification`. Defaults to a success-checkmark icon.
 void showToast({
   required BuildContext context,
   required String title,
@@ -37,7 +41,6 @@ void showToast({
         color: Color(0x07000000),
         blurRadius: 16,
         offset: Offset(0, 16),
-        spreadRadius: 0,
       ),
     ],
     showProgressBar: true,
@@ -47,6 +50,8 @@ void showToast({
   );
 }
 
+/// Builds the action buttons of the vCard contact-options dialog.
+/// Each entry of [buttons] must contain `icon`, `title`, and `action`.
 List<Widget> generateButtons({
   required List<Map<String, dynamic>> buttons,
   required BuildContext context,
@@ -78,16 +83,15 @@ List<Widget> generateButtons({
             color: color,
           );
 
-          Navigator.pushReplacementNamed(dialogContext, '/home');
+          unawaited(Navigator.pushReplacementNamed(dialogContext, '/home'));
         },
       ),
     );
   });
 }
 
-final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
-    GlobalKey<ScaffoldMessengerState>();
-
+/// Opens the vCard contact-options dialog for [data] (the row payload).
+/// No-op when [isVCard] is false.
 Future<void> showVCardPopup(
   BuildContext context,
   Map<String, dynamic> data, {
@@ -97,31 +101,32 @@ Future<void> showVCardPopup(
   if (!isVCard) return;
   if (!context.mounted) return;
 
-  final lang = LangProvider.get("pages")['contact']['options'];
-  final buttonsLang = lang['buttons'];
+  final lang = (LangProvider.getMap('pages')['contact']
+      as Map<String, dynamic>)['options'] as Map<String, dynamic>;
+  final buttonsLang = lang['buttons'] as Map<String, dynamic>;
   final buttons = [
     {
-      "title": buttonsLang['replace'],
-      "icon": Icons.sync,
-      "action": () async {
-        final vcard = await db.getVCardById(data['id']) ?? {};
+      'title': buttonsLang['replace'] as String,
+      'icon': Icons.sync,
+      'action': () async {
+        final vcard = await db.getVCardById(data['id'] as int) ?? {};
         await PhoneContacts.update(vcard);
       },
     },
     {
-      "title": buttonsLang['clone'],
-      "icon": Icons.copy,
-      "action": () async {
-        await db.cloneVCard(data['id']);
+      'title': buttonsLang['clone'] as String,
+      'icon': Icons.copy,
+      'action': () async {
+        await db.cloneVCard(data['id'] as int);
       },
     },
     {
-      "title": buttonsLang['empty input'],
-      "icon": Icons.edit,
-      "action": () async {
+      'title': buttonsLang['empty input'] as String,
+      'icon': Icons.edit,
+      'action': () async {
         final vcard = await PhoneContacts.getByName(
-          nom: data['nom'],
-          prenom: data['prenom'],
+          nom: data['nom'] as String?,
+          prenom: data['prenom'] as String?,
         );
         await db.modifContact(vcard ?? {});
       },
@@ -132,15 +137,18 @@ Future<void> showVCardPopup(
   final textColor = currentColors['text'];
   final buttonColor = currentColors['button-color'] ?? Colors.white;
 
-  showDialog(
+  unawaited(showDialog<void>(
     context: context,
     builder: (dialogContext) {
       return AlertDialog(
         backgroundColor: bgColor,
         actionsPadding: const EdgeInsets.fromLTRB(0, 0, 16, 8),
-        insetPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 12),
         contentPadding: const EdgeInsets.fromLTRB(0, 16, 0, 0),
-        title: Text(lang['title'], style: TextStyle(color: textColor)),
+        title: Text(
+          lang['title'] as String,
+          style: TextStyle(color: textColor),
+        ),
         content: SingleChildScrollView(
           child: Column(
             children: generateButtons(
@@ -155,5 +163,5 @@ Future<void> showVCardPopup(
         actions: [cancelButton(dialogContext, currentColors)],
       );
     },
-  );
+  ));
 }

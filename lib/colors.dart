@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
 
-enum ThemeModeType { whiteMode, blackMode }
+/// Discriminator for the available theme palettes.
+enum ThemeModeType {
+  /// Light theme palette.
+  whiteMode,
 
-final appColorsEnum = {
+  /// Dark theme palette.
+  blackMode,
+}
+
+/// Color palettes used across the app, keyed by [ThemeModeType] and then
+/// by semantic role (`bg`, `text`, `popup-*`, `button-color`, ...).
+final Map<ThemeModeType, Map<String, Color>> appColorsEnum = {
   ThemeModeType.whiteMode: {
     'popup-text': Colors.black,
     'popup-h1': Colors.black,
@@ -17,7 +26,7 @@ final appColorsEnum = {
     'popup-h1': Colors.white,
     'popup-h2': Colors.white70,
     'popup-background': Colors.blueGrey,
-    'button-color': Color(0xFF0369A1),
+    'button-color': const Color(0xFF0369A1),
     'bg': Colors.black,
     'text': Colors.white,
   },
