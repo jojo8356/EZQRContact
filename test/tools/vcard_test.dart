@@ -410,4 +410,107 @@ void main() {
       expect(v.email, 'jane@doe.com');
     });
   });
+
+  group('VCard.clean() — sanitization hardening (Story 2.3)', () {
+    final v = VCard();
+
+    test('null input → empty string', () {
+      expect(v.clean(null), '');
+    });
+
+    test('empty input → empty string', () {
+      expect(v.clean(''), '');
+    });
+
+    test('plain ASCII passes through unchanged', () {
+      expect(v.clean('Hello World'), 'Hello World');
+    });
+
+    test('strips semicolons (vCard component separator)', () {
+      expect(v.clean('Mar;tin Dupont'), 'Martin Dupont');
+    });
+
+    test('strips LF line breaks (would inject new content lines)', () {
+      expect(v.clean('Mar;tin\nDupont'), 'MartinDupont');
+    });
+
+    test('strips CRLF and bare CR', () {
+      expect(v.clean('A\r\nB\rC'), 'ABC');
+    });
+
+    test('strips NUL byte and other C0 controls', () {
+      expect(v.clean('foo barbaz'), 'foobarbaz');
+    });
+
+    test('preserves TAB (U+0009) — valid in vCard text-value', () {
+      expect(v.clean('A\tB'), 'A\tB');
+    });
+
+    test('strips DEL (U+007F)', () {
+      expect(v.clean('foobar'), 'foobar');
+    });
+
+    test('preserves emojis (supplementary plane)', () {
+      expect(v.clean('Johan 🚀'), 'Johan 🚀');
+      expect(v.clean('Mary Poppins ✨'), 'Mary Poppins ✨');
+    });
+
+    test('preserves accents and CJK', () {
+      expect(v.clean('Émilie Müller 中文'), 'Émilie Müller 中文');
+    });
+
+    test('drops unpaired surrogate halves', () {
+      // Build a string with an unpaired high surrogate. Dart accepts it
+      // in a String literal; clean() must drop it.
+      final lone = String.fromCharCode(0xD800);
+      expect(v.clean('A${lone}B'), 'AB');
+    });
+
+    test('drops U+FFFE and U+FFFF non-characters', () {
+      final fffe = String.fromCharCode(0xFFFE);
+      final ffff = String.fromCharCode(0xFFFF);
+      expect(v.clean('A${fffe}B${ffff}C'), 'ABC');
+    });
+
+    test('SQL-like injection attempt remains a literal string (no escape)',
+        () {
+      // Just a string — clean() doesn't escape, but doesn't break either.
+      expect(v.clean("'; DROP TABLE users;--"), "' DROP TABLE users--");
+    });
+
+    test('HTML/script-like input is preserved literally', () {
+      // We don't render HTML, so we keep the chars as-is. They appear
+      // verbatim in the QR — that's intentional for fidelity.
+      expect(v.clean('<script>alert(1)</script>'), '<script>alert(1)</script>');
+    });
+
+    test('mixed malicious payload: semicolons, newlines, NUL, surrogates', () {
+      final lone = String.fromCharCode(0xD801);
+      final raw = 'A;\nB\rC D${lone}EF';
+      expect(v.clean(raw), 'ABCDEF');
+    });
+
+    test('only-malicious input collapses to empty', () {
+      expect(v.clean(';;\n\r '), '');
+    });
+
+    test('semicolons inside vCard generation are sanitized away', () {
+      final vc = VCard(
+        nom: 'Du;pont',
+        prenom: 'Jea\nn',
+        rev: '20260101T000000Z',
+      );
+      final out = vc.toVCard();
+      // The N line should be `N:Dupont;Jean;;;` after sanitization (no
+      // extra `;` to break the 5-component contract).
+      expect(out, contains('N:Dupont;Jean;;;\r\n'));
+      // No bare LF must survive — searched by line: every `\n` must be
+      // preceded by `\r`.
+      for (var i = 0; i < out.length; i++) {
+        if (out.codeUnitAt(i) == 0x0A) {
+          expect(out.codeUnitAt(i - 1), 0x0D, reason: 'bare LF at $i');
+        }
+      }
+    });
+  });
 }

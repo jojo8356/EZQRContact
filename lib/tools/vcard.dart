@@ -206,30 +206,26 @@ class VCard {
     return '${iso}Z';
   }
 
-  /// Strips characters that would corrupt vCard serialization: the `;`
-  /// component separator (replaced by a space), `\r`/`\n` line breaks
-  /// (stripped), and Unicode C0 control characters (U+0000–U+001F) except
-  /// the horizontal tab. Returns '' for null inputs.
+  /// Strips characters that would corrupt vCard serialization or violate
+  /// the encoding contract:
+  /// - `;` (vCard component separator) — stripped (story 2.3 spec).
+  /// - `\r`, `\n`, `\r\n` (would inject new content lines) — stripped.
+  /// - C0 control characters (U+0000–U+001F) except TAB (U+0009) — dropped.
+  /// - DEL (U+007F) — dropped.
+  /// - Unpaired UTF-16 surrogates (U+D800–U+DFFF) — dropped (invalid UTF-8).
+  /// - Non-character code points U+FFFE / U+FFFF — dropped.
   ///
-  /// Story 2.3 hardening: also drops UTF-8 surrogate halves to avoid
-  /// invalid UTF-8 sequences in the final QR payload. Emojis and printable
-  /// non-ASCII Unicode (accents, CJK, etc.) are preserved.
+  /// Emojis and printable non-ASCII Unicode (accents, CJK, supplementary
+  /// planes) are preserved. Returns '' for null or empty input.
   String clean(String? value) {
     if (value == null || value.isEmpty) return '';
 
-    // Drop CR/LF (would inject new content lines), then collapse doubled
-    // semicolons before stripping single ones to preserve the legacy
-    // `replaceAll(';;', '')` semantics (used to remove placeholder empty
-    // ADR components like `;;Street;...`).
-    var out = value
-        .replaceAll('\r\n', '')
-        .replaceAll('\n', '')
-        .replaceAll('\r', '');
-    out = out.replaceAll(';;', '');
-    out = out.replaceAll(';', ' ');
-
     final buffer = StringBuffer();
-    for (final rune in out.runes) {
+    for (final rune in value.runes) {
+      // Drop CR/LF — would inject new content lines.
+      if (rune == 0x0A || rune == 0x0D) continue;
+      // Drop semicolons — would prematurely close vCard components.
+      if (rune == 0x3B) continue;
       // Drop C0 controls except TAB (U+0009).
       if (rune < 0x20 && rune != 0x09) continue;
       // Drop DEL.

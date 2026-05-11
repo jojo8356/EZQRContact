@@ -37,6 +37,7 @@
 generated: 2026-05-06
 last_updated: 2026-05-11
 # story-1-4 done — 2026-05-11
+# epic-2 done — 2026-05-11 (stories 2-1, 2-2, 2-3)
 project: EZQRContact
 project_key: NOKEY
 tracking_system: file-system
@@ -73,10 +74,10 @@ development_status:
   # ==========================================================================
   # Epic 2: Refactor génération VCard (P0)
   # ==========================================================================
-  epic-2: in-progress
+  epic-2: done
   2-1-refacto-vcard-model-generation-vcard-3-0: done
   2-2-parser-vcard-dual-version-3-0-et-4-0: done
-  2-3-sanitization-renforcee: backlog
+  2-3-sanitization-renforcee: done
   epic-2-retrospective: optional
 
   # ==========================================================================
