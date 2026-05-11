@@ -75,7 +75,7 @@ development_status:
   # ==========================================================================
   epic-2: in-progress
   2-1-refacto-vcard-model-generation-vcard-3-0: done
-  2-2-parser-vcard-dual-version-3-0-et-4-0: backlog
+  2-2-parser-vcard-dual-version-3-0-et-4-0: done
   2-3-sanitization-renforcee: backlog
   epic-2-retrospective: optional
 

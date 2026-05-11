@@ -95,7 +95,14 @@ class VCard {
       final propPart = line.substring(0, colonIdx);
       final value = line.substring(colonIdx + 1);
       final segments = propPart.split(';');
-      final name = segments.first.toUpperCase();
+      var name = segments.first.toUpperCase();
+      // Apple Contacts exports group related properties with an
+      // `itemN.` prefix (e.g. `item1.ADR`, `item1.X-ABLabel`). The
+      // prefix carries no semantic value for our subset, strip it.
+      final dotIdx = name.indexOf('.');
+      if (dotIdx != -1 && RegExp(r'^ITEM\d+$').hasMatch(name.substring(0, dotIdx))) {
+        name = name.substring(dotIdx + 1);
+      }
       final params = segments.skip(1).map((s) => s.toUpperCase()).toList();
 
       if (name == 'N') {

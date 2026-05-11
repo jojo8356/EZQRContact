@@ -208,4 +208,206 @@ void main() {
       expect(VCardSettingsProvider.useVCard4, isTrue);
     });
   });
+
+  group('VCard.parse() — dual-version (Story 2.2)', () {
+    test('iCloud-style vCard 3.0 export (Mac Contacts)', () {
+      // Apple Contacts → Export vCard produces 3.0 with item* groupings,
+      // ENCODING=b photos, and X-ABLabel. We don't need the X-ABLabels —
+      // just the core fields routing correctly.
+      const vcard =
+          'BEGIN:VCARD\r\n'
+          'VERSION:3.0\r\n'
+          'N:Polsinelli;Johan;;;\r\n'
+          'FN:Johan Polsinelli\r\n'
+          'ORG:Cycloth;\r\n'
+          'TITLE:Founder\r\n'
+          'TEL;type=CELL;type=VOICE;type=pref:+33611111111\r\n'
+          'TEL;type=WORK;type=VOICE:+33422222222\r\n'
+          'item1.ADR;type=HOME;type=pref:;;15 rue Garibaldi;Lyon;;69007;FR\r\n'
+          'item1.X-ABLabel:_\$!<HomeAddress>!\$_\r\n'
+          'EMAIL;type=INTERNET;type=HOME;type=pref:johan@example.com\r\n'
+          'REV:2026-05-11T10:00:00Z\r\n'
+          'END:VCARD\r\n';
+      final v = VCard.parse(vcard);
+      expect(v.nom, 'Polsinelli');
+      expect(v.prenom, 'Johan');
+      expect(v.org, 'Cycloth;');
+      expect(v.job, 'Founder');
+      expect(v.telWork, '+33422222222');
+      expect(v.telHome, '+33611111111');
+      expect(v.adrHome, contains('15 rue Garibaldi'));
+      expect(v.email, 'johan@example.com');
+    });
+
+    test('Google Contacts vCard 3.0 export', () {
+      // Google Contacts → Export emits 3.0 with TYPE=WORK and TYPE=CELL,
+      // PHOTO;ENCODING=b;TYPE=JPEG for embedded photos.
+      const vcard =
+          'BEGIN:VCARD\r\n'
+          'VERSION:3.0\r\n'
+          'N:Doe;Jane;;;\r\n'
+          'FN:Jane Doe\r\n'
+          'ORG:Acme Corp\r\n'
+          'TITLE:CEO\r\n'
+          'EMAIL;TYPE=INTERNET:jane.doe@acme.com\r\n'
+          'TEL;TYPE=CELL:+15551234567\r\n'
+          'TEL;TYPE=WORK:+15559876543\r\n'
+          'ADR;TYPE=WORK:;;1 Infinite Loop;Cupertino;CA;95014;USA\r\n'
+          'PHOTO;ENCODING=b;TYPE=JPEG:/9j/4AAQSkZJRg==\r\n'
+          'END:VCARD\r\n';
+      final v = VCard.parse(vcard);
+      expect(v.nom, 'Doe');
+      expect(v.prenom, 'Jane');
+      expect(v.org, 'Acme Corp');
+      expect(v.job, 'CEO');
+      expect(v.telWork, '+15559876543');
+      expect(v.telHome, '+15551234567');
+      expect(v.adrWork, contains('1 Infinite Loop'));
+      expect(v.email, 'jane.doe@acme.com');
+      expect(v.photo, startsWith('data:image/jpeg;base64,'));
+      expect(v.photo, contains('/9j/4AAQSkZJRg=='));
+    });
+
+    test('Outlook vCard 2.1 export', () {
+      // Older Outlook / Windows Address Book emit 2.1 with TEL;WORK
+      // (no TYPE= prefix) and CHARSET=UTF-8 on some fields. We don't
+      // implement QUOTED-PRINTABLE → fixture uses ASCII only.
+      const vcard =
+          'BEGIN:VCARD\r\n'
+          'VERSION:2.1\r\n'
+          'N:Smith;John;;;\r\n'
+          'FN:John Smith\r\n'
+          'ORG:Outlook Inc.\r\n'
+          'TITLE:Manager\r\n'
+          'TEL;WORK;VOICE:+442011112222\r\n'
+          'TEL;CELL;VOICE:+447900111222\r\n'
+          'EMAIL;PREF;INTERNET:john.smith@outlook.test\r\n'
+          'ADR;WORK:;;221B Baker Street;London;;NW1 6XE;UK\r\n'
+          'END:VCARD\r\n';
+      final v = VCard.parse(vcard);
+      expect(v.nom, 'Smith');
+      expect(v.prenom, 'John');
+      expect(v.org, 'Outlook Inc.');
+      expect(v.telWork, '+442011112222');
+      expect(v.telHome, '+447900111222');
+      expect(v.email, 'john.smith@outlook.test');
+      expect(v.adrWork, contains('221B Baker Street'));
+    });
+
+    test('EZQRContact 3.0 round-trip', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      await VCardSettingsProvider.init();
+      final original = VCard(
+        nom: 'Polsinelli',
+        prenom: 'Johan',
+        org: 'Cycloth',
+        job: 'Fondateur',
+        telWork: '+33611111111',
+        telHome: '+33622222222',
+        adrHome: '15 rue Garibaldi 69007 Lyon',
+        email: 'johan@cycloth.com',
+        photo: 'data:image/jpeg;base64,/9j/4AAQAB==',
+        rev: '20260511T100000Z',
+      );
+      final parsed = VCard.parse(original.toVCard());
+      expect(parsed.nom, original.nom);
+      expect(parsed.prenom, original.prenom);
+      expect(parsed.org, original.org);
+      expect(parsed.job, original.job);
+      expect(parsed.telWork, original.telWork);
+      expect(parsed.telHome, original.telHome);
+      expect(parsed.adrHome, contains('15 rue Garibaldi'));
+      expect(parsed.email, original.email);
+      expect(parsed.photo, startsWith('data:image/jpeg;base64,'));
+    });
+
+    test('EZQRContact 4.0 round-trip (useVCard4=true)', () async {
+      SharedPreferences.setMockInitialValues(
+        <String, Object>{'use_vcard4': true},
+      );
+      await VCardSettingsProvider.init();
+      addTearDown(() async => VCardSettingsProvider.setUseVCard4(false));
+
+      final original = VCard(
+        nom: 'Doe',
+        prenom: 'Jane',
+        telHome: '+33611111111',
+        email: 'jane@doe.com',
+        rev: '20260511T100000Z',
+      );
+      final out = original.toVCard();
+      expect(out, contains('VERSION:4.0'));
+      expect(out, contains('VALUE=uri:tel:'));
+
+      final parsed = VCard.parse(out);
+      expect(parsed.nom, 'Doe');
+      expect(parsed.prenom, 'Jane');
+      // The 4.0 emits tel:+33...; parser strips the URI scheme.
+      expect(parsed.telHome, '+33611111111');
+      expect(parsed.email, 'jane@doe.com');
+    });
+
+    test('vCard 4.0 with TEL;VALUE=uri:tel: prefix', () {
+      const vcard =
+          'BEGIN:VCARD\r\n'
+          'VERSION:4.0\r\n'
+          'N:Doe;Jane;;;\r\n'
+          'FN:Jane Doe\r\n'
+          'TEL;TYPE=work,voice;VALUE=uri:tel:+33611111111\r\n'
+          'EMAIL:jane@doe.com\r\n'
+          'END:VCARD\r\n';
+      final v = VCard.parse(vcard);
+      expect(v.telWork, '+33611111111');
+      expect(v.email, 'jane@doe.com');
+    });
+
+    test('line unfolding RFC 6350 §3.2 (continuation lines)', () {
+      // A PHOTO base64 split onto 3 physical lines (folded with " " after
+      // CRLF). The unfolder must reconstruct the single logical line
+      // before parsing.
+      const vcard =
+          'BEGIN:VCARD\r\n'
+          'VERSION:3.0\r\n'
+          'N:Long;Photo;;;\r\n'
+          'FN:Photo Long\r\n'
+          'PHOTO;ENCODING=b;TYPE=JPEG:/9j/4AAQSkZJRgABAQAAAQABAAD/2w\r\n'
+          ' BDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgKCgkICQkKDA8MCgsO\r\n'
+          ' CwkJDRENDg8QEBEQCgwSExIQEw8QEBD/2wBDAQMDAwQDBAgEBAg==\r\n'
+          'END:VCARD\r\n';
+      final v = VCard.parse(vcard);
+      expect(v.nom, 'Long');
+      expect(v.prenom, 'Photo');
+      expect(v.photo, startsWith('data:image/jpeg;base64,'));
+      // The full base64 (with no spaces left over) must be reconstructed.
+      expect(v.photo, contains('/9j/4AAQSkZJRgABAQAAAQABAAD/2w'));
+      expect(v.photo, contains('BDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgK'));
+      expect(v.photo, isNot(contains(' ')));
+    });
+
+    test('VERSION header absent → defaults to 3.0 best-effort', () {
+      const vcard =
+          'BEGIN:VCARD\r\n'
+          'N:Doe;Jane;;;\r\n'
+          'FN:Jane Doe\r\n'
+          'TEL;TYPE=WORK:+33611111111\r\n'
+          'END:VCARD\r\n';
+      final v = VCard.parse(vcard);
+      expect(v.nom, 'Doe');
+      expect(v.telWork, '+33611111111');
+    });
+
+    test('mixed LF terminators (no CR) still parse', () {
+      const vcard =
+          'BEGIN:VCARD\n'
+          'VERSION:3.0\n'
+          'N:Doe;Jane;;;\n'
+          'FN:Jane Doe\n'
+          'EMAIL:jane@doe.com\n'
+          'END:VCARD\n';
+      final v = VCard.parse(vcard);
+      expect(v.nom, 'Doe');
+      expect(v.prenom, 'Jane');
+      expect(v.email, 'jane@doe.com');
+    });
+  });
 }
