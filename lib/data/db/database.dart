@@ -389,10 +389,13 @@ bool _mapDeepEquals(Map<String, dynamic> a, Map<String, dynamic> b) {
 
 /// Returns soft-deleted entries from both SimpleQR and VCard tables, each
 /// tagged with a `'type'` key (`'simple'` or `'vcard'`).
-Future<List<Map<String, dynamic>>> getAllDeletedQRs() async {
-  final db = QRDatabase();
-  final deletedSimple = await db.getDeletedSimpleQR();
-  final deletedVCard = await db.getDeletedVCards();
+///
+/// The optional [db] parameter allows injecting a [QRDatabase] instance for
+/// testing (e.g. an in-memory DB). When omitted the global singleton is used.
+Future<List<Map<String, dynamic>>> getAllDeletedQRs([QRDatabase? db]) async {
+  final database = db ?? QRDatabase();
+  final deletedSimple = await database.getDeletedSimpleQR();
+  final deletedVCard = await database.getDeletedVCards();
   return [
     ...deletedSimple.map((e) => {'type': 'simple', 'data': e}),
     ...deletedVCard.map((e) => {'type': 'vcard', 'data': e}),
