@@ -220,6 +220,12 @@ class VCard {
   String clean(String? value) {
     if (value == null || value.isEmpty) return '';
 
+    // Strip literal \n and \r escape sequences (backslash + n/r) that arrive
+    // from clipboard pastes or JSON-formatted sources. These are distinct from
+    // the actual CR/LF code-points handled by the rune loop below.
+    // ignore: parameter_assignments
+    value = value.replaceAll(r'\n', '').replaceAll(r'\r', '');
+
     final buffer = StringBuffer();
     for (final rune in value.runes) {
       // Drop CR/LF — would inject new content lines.

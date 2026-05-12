@@ -512,5 +512,38 @@ void main() {
         }
       }
     });
+
+    // Regression — manual test 11.2: literal \n pasted from clipboard.
+    test('literal \\n sequence in org is stripped from vCard output', () {
+      final vc = VCard(
+        nom: 'Doe',
+        prenom: 'Jane',
+        // r'\n' = backslash + n (two chars), as pasted from clipboard.
+        org: r'Acme\nCorp',
+        rev: '20260101T000000Z',
+      );
+      expect(vc.toVCard(), contains('ORG:AcmeCorp\r\n'));
+    });
+
+    test('literal \\r\\n sequence in org is stripped from vCard output', () {
+      final vc = VCard(
+        nom: 'Doe',
+        prenom: 'Jane',
+        org: 'Acme\r\nCorp',
+        rev: '20260101T000000Z',
+      );
+      expect(vc.toVCard(), contains('ORG:AcmeCorp\r\n'));
+    });
+
+    test('clean strips literal \\n escape sequence', () {
+      final v = VCard();
+      // Raw string: backslash + n, not a newline.
+      expect(v.clean(r'Acme\nCorp'), 'AcmeCorp');
+    });
+
+    test('clean strips literal \\r escape sequence', () {
+      final v = VCard();
+      expect(v.clean(r'Acme\rCorp'), 'AcmeCorp');
+    });
   });
 }
