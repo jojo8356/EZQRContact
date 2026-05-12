@@ -59,12 +59,13 @@ class QRDatabase extends _$QRDatabase {
   late final SimpleQRRepository simpleQrs = SimpleQRRepository(this);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) async {
           await m.createAll();
+          await _createActiveIndexes();
         },
         onUpgrade: (m, from, to) async {
           if (from == 1 && to >= 2) {
@@ -104,8 +105,29 @@ class QRDatabase extends _$QRDatabase {
                 deleted = COALESCE(deleted, 0)
             ''');
           }
+          if (from <= 2 && to >= 3) {
+            await _createActiveIndexes();
+          }
         },
       );
+
+  // Covering indexes for the hot path: WHERE deleted=0 ORDER BY id DESC.
+  // IF NOT EXISTS makes this idempotent (safe to call from onCreate too).
+  Future<void> _createActiveIndexes() async {
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_simple_qr_active'
+      ' ON SimpleQR(deleted, id)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_vcard_active'
+      ' ON VCard(deleted, id)',
+    );
+  }
+
+  /// Forces the underlying SQLite connection open so that the first real
+  /// query doesn't pay the cold-open penalty (~400 ms). Call once from
+  /// main() right after runApp().
+  Future<void> warmUp() => customSelect('SELECT 1').get();
 
   Future<void> _backupDatabaseIfPossible() async {
     try {

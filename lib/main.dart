@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/pages/actions_list_page.dart';
 import 'package:qr_code_app/pages/historique_page.dart';
 import 'package:qr_code_app/pages/qr_card_view_page.dart';
@@ -19,6 +22,9 @@ void main() async {
   ]);
   Perf.end('startup.total');
   runApp(const MyApp());
+  // Open the SQLite connection in the background so the collection page
+  // never pays the cold-open penalty (~400 ms) on first load.
+  unawaited(QRDatabase().warmUp());
 }
 
 /// Root widget. Sets up the [MaterialApp] with the four named routes.

@@ -1,12 +1,17 @@
 import 'dart:async';
 
+import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
+import 'package:qr_code_app/components/app_switch.dart';
 import 'package:qr_code_app/components/navbar.dart';
 import 'package:qr_code_app/modals/guide.dart';
 import 'package:qr_code_app/modals/social_networks.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
+import 'package:qr_code_app/providers/vcard_settings_provider.dart';
+import 'package:qr_code_app/tools/perf.dart';
+
 
 /// Settings page exposing language selection, dark-mode toggle, and links
 /// to the help guide and the developer's social networks.
@@ -21,6 +26,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   String _selectedLang = LangProvider.currentLanguage();
   List<String> _langs = [];
+  bool _useVCard4 = VCardSettingsProvider.useVCard4;
 
   late final VoidCallback _langListener;
 
@@ -45,7 +51,33 @@ class _SettingsPageState extends State<SettingsPage> {
     super.dispose();
   }
 
+  DropdownMenuItem<String> _langItem(String lang) => DropdownMenuItem(
+        value: lang,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CountryFlag.fromLanguageCode(
+              lang,
+              theme: const ImageTheme(
+                width: 28,
+                height: 20,
+                shape: RoundedRectangle(3),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              lang.toUpperCase(),
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      );
+
   Future<void> _loadLangs() async {
+    Perf.start('page.settings.loadLangs');
     final langs = await LangProvider.getAll();
     setState(() {
       _langs = langs;
@@ -53,6 +85,7 @@ class _SettingsPageState extends State<SettingsPage> {
         _selectedLang = _langs.first;
       }
     });
+    Perf.end('page.settings.loadLangs');
   }
 
   @override
@@ -143,19 +176,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                               fontWeight: FontWeight.bold,
                                             ),
                                             items: _langs
-                                                .map(
-                                                  (lang) => DropdownMenuItem(
-                                                    value: lang,
-                                                    child: Text(
-                                                      lang.toUpperCase(),
-                                                      style: const TextStyle(
-                                                        fontSize: 18,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                )
+                                                .map(_langItem)
                                                 .toList(),
                                             onChanged: (newValue) async {
                                               if (newValue != null) {
@@ -201,6 +222,45 @@ class _SettingsPageState extends State<SettingsPage> {
                                     ),
                                   );
                                 }),
+                                // section header "VCard"
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 24,
+                                    bottom: 4,
+                                  ),
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      (lang['vcard_section'] as String?)
+                                          ?? 'VCard',
+                                      style: TextStyle(
+                                        color: currentColors['text'],
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                // toggle vCard 4.0
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(
+                                    (lang['vcard4'] as String?)
+                                        ?? 'Format vCard 4.0',
+                                    style: TextStyle(
+                                      color: currentColors['text'],
+                                    ),
+                                  ),
+                                  trailing: AppSwitch(
+                                    value: _useVCard4,
+                                    onChanged: (value) async {
+                                      await VCardSettingsProvider.setUseVCard4(
+                                        value,
+                                      );
+                                      setState(() => _useVCard4 = value);
+                                    },
+                                  ),
+                                ),
                                 const Spacer(),
                               ],
                             ),

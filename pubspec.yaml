@@ -20,10 +20,12 @@ environment:
 dependencies:
   ai_barcode_scanner: ^6.0.1
   collection: ^1.19.1
+  country_flags: ^4.1.2
   drift: ^2.33.0
   drift_sqflite: ^2.0.1
   file_picker: ^10.3.2
   file_saver: ^0.3.1
+  flex_color_picker: ^3.6.1
   flutter:
     sdk: flutter
   flutter_contacts: ^1.1.9+2
