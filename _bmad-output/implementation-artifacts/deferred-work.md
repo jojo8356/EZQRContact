@@ -33,7 +33,7 @@ Tous les findings ci-dessous sont **pré-existants** (pas causés par le commit 
 - **`saveFile` pas de check d'existence du fichier source** [`lib/tools/tools.dart:103`] — `PathNotFoundException` silencieuse car appelée via `unawaited(saveFile(...))`.
 - **`createSimpleQR`/`createVCard` pas transactionnels avec `saveQrCode`** [`lib/data/db/database.dart`] — DB row créé avant écriture du fichier ; si l'écriture throw, row orphelin avec `path=null`.
 - **`updateVCardPath`/`saveQrCode` pas atomiques** — kill app entre rendering PNG et `UPDATE` → fichier orphelin sur disk.
-- **`pickAndDecodeImage` ne décode jamais l'image** [`lib/pages/import_qr_page.dart:21-27`] — flow mort, picker ouvert mais résultat ignoré.
+- ~~**`pickAndDecodeImage` ne décode jamais l'image**~~ — **Résolu** (2026-05-12). `import_qr_page.dart` corrigé : résultat `XFile?` lu, `MobileScannerController.analyzeImage()` utilisé pour décoder, vCard/SimpleQR persistés selon le payload. Clé i18n `pages.QR.import.no qr found` ajoutée (EN + FR).
 - **`Navbar` `Navigator.pushReplacementNamed` unawaited** [`lib/components/navbar.dart:48`] — double-tap rapide sur deux onglets queue deux replacements.
 - **`importContacts` pas de `mounted` check entre `verifyPermission()` et `getContacts()`** [`lib/tools/import_contact.dart:13-15`] — pré-existant, race au permission dialog.
 - **`Navigator.pop(context, chosen)` sans `mounted` guard** [`lib/components/contact_app.dart:99-105`] — double-tap Validate pop deux fois.

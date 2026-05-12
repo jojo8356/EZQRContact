@@ -45,7 +45,8 @@
       "import": {
         "title": "Convert a QR code to Text",
         "pick": "Choose an Image",
-        "default result": "Result"
+        "default result": "Result",
+        "no qr found": "No QR code found in this image"
       },
       "generator": {
         "simple": {

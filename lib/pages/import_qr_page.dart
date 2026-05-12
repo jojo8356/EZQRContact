@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/btn.animated.dart';
+import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/pages/qr_card_view_page.dart';
 import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
+import 'package:qr_code_app/tools/contacts.dart';
 import 'package:qr_code_app/tools/tools.dart';
+import 'package:qr_code_app/tools/vcard.dart';
 
-/// Page letting the user pick an image from the gallery and scan it for
-/// embedded QR codes via the platform image picker.
+/// Page letting the user pick an image from the gallery and decode any
+/// embedded QR code. Detected vCards are saved as a VCard row; any other
+/// payload is stored as a SimpleQR row.
 class QrFromImagePage extends StatefulWidget {
   /// Creates the page.
   const QrFromImagePage({super.key});
@@ -19,17 +24,53 @@ class QrFromImagePage extends StatefulWidget {
 }
 
 class _QrFromImagePageState extends State<QrFromImagePage> {
-  String? qrResult;
+  bool _processing = false;
 
   Future<void> pickAndDecodeImage() async {
+    if (_processing) return;
+    setState(() => _processing = true);
+
     try {
       final picker = ImagePicker();
-      await picker.pickImage(source: ImageSource.gallery);
+      final file = await picker.pickImage(source: ImageSource.gallery);
+      if (file == null) return; // user cancelled
+
+      final controller = MobileScannerController();
+      BarcodeCapture? capture;
+      try {
+        capture = await controller.analyzeImage(file.path);
+      } finally {
+        await controller.dispose();
+      }
+
+      if (!mounted) return;
+
+      final rawValue = capture?.barcodes.firstOrNull?.rawValue;
+      if (rawValue == null || rawValue.isEmpty) {
+        final lang = LangProvider.section('pages.QR.import');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(lang['no qr found'] as String)),
+        );
+        return;
+      }
+
+      if (VCard.isVCard(rawValue)) {
+        final vcard = VCard.parse(rawValue);
+        await PhoneContacts.verifyPermission();
+        final map = await vcard.toMap();
+        await PhoneContacts.add(map);
+        await createVCard(map);
+      } else {
+        await createSimpleQR(rawValue);
+      }
+
+      if (!mounted) return;
+      await redirect(context, const Collection());
     } on Exception catch (e) {
       debugPrint('Erreur lors du scan image: $e');
+    } finally {
+      if (mounted) setState(() => _processing = false);
     }
-    if (!mounted) return;
-    await redirect(context, const Collection());
   }
 
   @override
@@ -38,7 +79,7 @@ class _QrFromImagePageState extends State<QrFromImagePage> {
     final lang = LangProvider.section('pages.QR.import');
 
     return Scaffold(
-      backgroundColor: currentColors['bg'], // fond noir
+      backgroundColor: currentColors['bg'],
       appBar: AppBarCustom(lang['title'] as String),
       body: Center(
         child: AnimatedSubmitButton(
