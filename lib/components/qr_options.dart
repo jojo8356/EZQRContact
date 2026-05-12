@@ -45,6 +45,13 @@ class OptionsQR extends StatelessWidget {
         },
       },
       {
+        'icon': Icons.data_object,
+        'color': null,
+        'onPressed': () async {
+          await showRawTextDialog(context, data, isVCard: isVCard);
+        },
+      },
+      {
         'icon': Icons.qr_code,
         'color': null,
         'onPressed': () async {

@@ -70,7 +70,10 @@
       },
       "card view": {
         "vcard": "Informations VCard",
-        "simple": "QR code Texte"
+        "simple": "QR code Texte",
+        "raw": "Texte brut",
+        "copy": "Copier",
+        "copied": "Copié !"
       }
     },
     "history": {
