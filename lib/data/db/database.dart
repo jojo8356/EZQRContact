@@ -12,6 +12,8 @@ import 'package:qr_code_app/data/db/tables/vcards.dart';
 import 'package:qr_code_app/data/repositories/simple_qr_repository.dart';
 import 'package:qr_code_app/data/repositories/vcard_repository.dart';
 import 'package:qr_code_app/tools/contacts.dart';
+import 'package:qr_code_app/tools/perf.dart';
+import 'package:qr_code_app/tools/vcard.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 
 part 'database.g.dart';
@@ -153,14 +155,20 @@ class QRDatabase extends _$QRDatabase {
 
   /// Returns all non-deleted SimpleQR rows as legacy maps.
   Future<List<Map<String, dynamic>>> getAllSimpleQR() async {
+    Perf.start('db.getAllSimpleQR');
     final rows = await simpleQrs.getAllActive();
-    return rows.map(_simpleQrToLegacyMap).toList();
+    final result = rows.map(_simpleQrToLegacyMap).toList();
+    Perf.end('db.getAllSimpleQR');
+    return result;
   }
 
   /// Returns all non-deleted VCard rows as legacy maps.
   Future<List<Map<String, dynamic>>> getAllVCards() async {
+    Perf.start('db.getAllVCards');
     final rows = await vcards.getAllActive();
-    return rows.map(_vcardToLegacyMap).toList();
+    final result = rows.map(_vcardToLegacyMap).toList();
+    Perf.end('db.getAllVCards');
+    return result;
   }
 
   /// Soft-deletes a SimpleQR row by id.
@@ -323,6 +331,7 @@ VCardsCompanion _mapToVCardCompanion(Map<String, dynamic> data) {
     dateDeleted: data['date_deleted'] == null
         ? const Value.absent()
         : Value(data['date_deleted'].toString()),
+    visualConfig: str('visual_config'),
   );
 }
 
@@ -355,11 +364,62 @@ Future<int> createVCard(Map<String, dynamic> vcardData) async {
   final db = QRDatabase();
   vcardData['clone'] = '0';
   final id = await db.insertVCard(vcardData);
-  final directory = await getApplicationDocumentsDirectory();
-  final path = '${directory.path}/$id.png';
-  await saveQrCode(path, id);
+  final vcardStr = VCard.fromMap(vcardData).toVCard();
+  final path = await saveQrCode(vcardStr, id);
   await db.updateVCardPath(id, path);
   return id;
+}
+
+/// Inserts [contacts] in a single DB transaction and generates all QR images
+/// in parallel via [compute] isolates. Returns the inserted IDs in order.
+///
+/// For bulk imports this is dramatically faster than N sequential [createVCard]
+/// calls: inserts are batched in one SQLite transaction, PNG encoding runs
+/// concurrently across CPU cores, and file writes are parallelised.
+///
+/// [db] and [baseDir] are injection points for unit tests; production code
+/// omits them (defaults to the singleton DB and the app documents directory).
+Future<List<int>> createVCardsBatch(
+  List<Map<String, dynamic>> contacts, {
+  QRDatabase? db,
+  String? baseDir,
+}) async {
+  if (contacts.isEmpty) return [];
+  final database = db ?? QRDatabase();
+
+  // One SQLite transaction avoids N separate COMMIT round-trips.
+  final ids = await database.transaction(() async {
+    final result = <int>[];
+    for (final data in contacts) {
+      result.add(await database.insertVCard({...data, 'clone': '0'}));
+    }
+    return result;
+  });
+
+  // Pre-compute paths (synchronous, IDs are already known).
+  final dir   = baseDir ?? (await getApplicationDocumentsDirectory()).path;
+  final paths = [for (final id in ids) '$dir/$id.png'];
+
+  // Generate PNG bytes + write files concurrently. compute() runs each encode
+  // in its own isolate, so all CPU cores contribute simultaneously.
+  await Future.wait([
+    for (var i = 0; i < contacts.length; i++)
+      _genQrAndSave(contacts[i], paths[i]),
+  ]);
+
+  // One SQLite transaction for all path updates.
+  await database.transaction(() async {
+    for (var i = 0; i < ids.length; i++) {
+      await database.updateVCardPath(ids[i], paths[i]);
+    }
+  });
+
+  return ids;
+}
+
+Future<void> _genQrAndSave(Map<String, dynamic> data, String path) async {
+  final bytes = await buildQrBytes(VCard.fromMap(data).toVCard());
+  await File(path).writeAsBytes(bytes, flush: true);
 }
 
 /// Adds [vcardData] to the device contacts then persists it as a VCard row.
@@ -393,13 +453,16 @@ bool _mapDeepEquals(Map<String, dynamic> a, Map<String, dynamic> b) {
 /// The optional [db] parameter allows injecting a [QRDatabase] instance for
 /// testing (e.g. an in-memory DB). When omitted the global singleton is used.
 Future<List<Map<String, dynamic>>> getAllDeletedQRs([QRDatabase? db]) async {
+  Perf.start('db.getAllDeletedQRs');
   final database = db ?? QRDatabase();
   final deletedSimple = await database.getDeletedSimpleQR();
   final deletedVCard = await database.getDeletedVCards();
-  return [
+  final result = [
     ...deletedSimple.map((e) => {'type': 'simple', 'data': e}),
     ...deletedVCard.map((e) => {'type': 'vcard', 'data': e}),
   ];
+  Perf.end('db.getAllDeletedQRs');
+  return result;
 }
 
 // `getDateDays` was previously imported from tools/tools.dart by the legacy

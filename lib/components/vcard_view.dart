@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qr_code_app/providers/darkmode.dart';
+import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
 /// Read-only contact card rendered from a set of vCard form controllers,
@@ -14,13 +14,9 @@ class VCardView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fields = buildFields(controllers);
-    final darkProv = DarkModeProvider();
-
-    final bgColor = darkProv.isDarkMode ? Colors.white12 : Colors.white;
-    final textColor = darkProv.isDarkMode ? Colors.white : Colors.black;
-    final secondaryTextColor = darkProv.isDarkMode
-        ? Colors.white70
-        : Colors.black54;
+    final bgColor = currentColors['surface']!;
+    final textColor = currentColors['text']!;
+    final secondaryTextColor = currentColors['text-muted']!;
 
     return Card(
       color: bgColor, // fond adaptatif
