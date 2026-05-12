@@ -14,11 +14,6 @@
         android:usesCleartextTraffic="true"
     >
 
-        <!-- Désactiver Impeller -->
-        <meta-data
-            android:name="io.flutter.embedding.android.EnableImpeller"
-            android:value="false" />
-
         <activity
             android:name=".MainActivity"
             android:exported="true"
