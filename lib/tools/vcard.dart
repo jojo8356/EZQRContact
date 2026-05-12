@@ -436,9 +436,10 @@ class VCard {
     var offset = 0;
     var isFirst = true;
     while (offset < bytes.length) {
-      // First segment uses full 75; continuations also 75 (the leading
-      // space is in addition, that's compliant).
-      var take = limit;
+      // First physical line: 75 octets of content.
+      // Continuation lines: leading space counts toward the 75-octet
+      // limit (RFC 6350 §3.2), so content is capped at 74 octets.
+      var take = isFirst ? limit : limit - 1;
       if (offset + take > bytes.length) take = bytes.length - offset;
 
       // Don't split a multi-byte UTF-8 sequence: back off until we land
