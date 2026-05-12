@@ -104,6 +104,9 @@ identité visuelle perso (couleurs, logo).
 - **FR-4.3** : Le QR scanné est parsé : si VCard détectée, sauvegarde
   automatique en local DB.
 - **FR-4.4** : Si non-VCard, fallback "texte simple" (table SimpleQR).
+- **FR-4.5** : Le contenu d'un QR scanné n'est jamais auto-exécuté —
+  URLs, deep links et URIs restent du texte jusqu'à action explicite de
+  l'utilisateur. Voir **NFR-9** pour les règles de sécurité complètes.
 
 ### FR-5 — Capture de la config visuelle du QR scanné (différenciateur)
 - **FR-5.1** : Lorsqu'un QR VCard est scanné, l'app extrait sa config
@@ -252,6 +255,62 @@ contributeur et donne l'impression d'un projet non maintenu.
 externes que Johan ne contrôle pas (ex: warnings du NDK Google sur des
 APIs internes, warnings d'AAPT2 hors du code projet) sont acceptés tant
 que documentés.
+
+### NFR-9 — Sécurité des contenus QR (Content Safety)
+
+**Contexte** : Un QR code est un vecteur d'injection de contenu arbitraire.
+Son payload peut contenir une URL malveillante, un deep link non sollicité,
+un `javascript:` URI, ou toute chaîne de caractères conçue pour tromper
+l'utilisateur ou déclencher un comportement non intentionnel de l'app. Sans
+traitement strict, une app QR peut devenir un pont involontaire entre un QR
+physique hostile et l'OS de l'utilisateur.
+
+**Principe fondamental** : tout payload QR est traité comme du **texte brut
+non fiable** jusqu'à action explicite de l'utilisateur. L'app ne joue jamais
+le rôle d'un navigateur ou d'un lanceur de commandes.
+
+- **NFR-9.1 — Pas d'exécution automatique** : le contenu d'un QR scanné
+  (caméra ou image galerie) n'est **jamais** auto-exécuté ni auto-ouvert.
+  Cela inclut : les URLs (pas d'`url_launcher` automatique), les deep links
+  (pas de `Navigator` déclenché par le payload), les `javascript:` URIs, les
+  `tel:` / `mailto:` URIs, et tout schéma custom.
+
+- **NFR-9.2 — Classification texte uniquement** : l'app distingue deux types
+  de payload, et uniquement deux :
+  1. **vCard** — détecté via `VCard.isVCard()` (présence de `BEGIN:VCARD`) ;
+     parsé et proposé à l'import contact.
+  2. **Texte simple** — tout le reste ; stocké tel quel comme `SimpleQR`.
+  Aucune autre interprétation sémantique (URL, QR de paiement, WiFi, etc.)
+  ne déclenche de comportement spécial sans action utilisateur consciente.
+
+- **NFR-9.3 — Sanitisation obligatoire avant persistance** : tout champ issu
+  d'un payload QR externe passe par `VCard.clean()` avant insertion en base.
+  Les caractères de contrôle (C0, DEL, surrogates, `;`, CR/LF) sont
+  supprimés. Aucun champ raw non sanitisé ne touche la base Drift.
+
+- **NFR-9.4 — Affichage texte brut** : les payloads `SimpleQR` sont affichés
+  comme du texte (`Text` widget Flutter), jamais rendus comme HTML, Markdown
+  cliquable ou lien tappable automatique. Si une URL est détectée dans un
+  payload texte, l'utilisateur doit appuyer explicitement sur un bouton
+  "Ouvrir le lien" pour que `url_launcher` soit appelé.
+
+- **NFR-9.5 — Pas de résolution réseau implicite** : l'app ne fait aucune
+  requête réseau à partir du contenu d'un QR sans consentement explicite.
+  Exception : `isImageUrl()` dans `VCard.toMap()` fait un HEAD request sur
+  le champ `photo` — ce comportement est acceptable car l'URL photo vient
+  d'un formulaire rempli par l'utilisateur lui-même, pas d'un QR tiers.
+
+- **NFR-9.6 — Longueur maximale appliquée** : un payload dépassant la
+  capacité maximale d'un QR (2 953 octets en correction M) est rejeté avec
+  un message d'erreur localisé, jamais tronqué silencieusement (troncature
+  silencieuse produirait un vCard corrompu importable partiellement).
+
+**Périmètre** : NFR-9 s'applique à **tout** payload QR traité par l'app,
+qu'il soit reçu (scan caméra, import galerie) ou issu des propres formulaires
+de l'app. Aucune source n'est considérée implicitement de confiance — le
+contenu des champs texte peut avoir été modifié entre la saisie et
+l'affichage (mémoire corrompue, injection via presse-papiers, etc.).
+Principe : **sécurité > confiance, toujours**.
 
 ---
 
