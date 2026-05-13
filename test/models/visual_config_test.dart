@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:qr_code_app/models/qr_layout.dart';
 import 'package:qr_code_app/models/visual_config.dart';
 
 void main() {
@@ -116,6 +117,32 @@ void main() {
         logoBase64: 'data',
       );
       expect(() => jsonDecode(config.toJson()), returnsNormally);
+    });
+
+    test('layout defaults to minimal', () {
+      const config = VisualConfig();
+      expect(config.layout, QrLayout.minimal);
+    });
+
+    test('layout round-trips through JSON', () {
+      const config = VisualConfig(layout: QrLayout.modern);
+      final restored = VisualConfig.fromJson(config.toJson());
+      expect(restored.layout, QrLayout.modern);
+    });
+
+    test('unknown layout string falls back to minimal', () {
+      final config = VisualConfig.fromJson(
+        '{"primaryColor":"#000000","layout":"unknown_value"}',
+      );
+      expect(config.layout, QrLayout.minimal);
+    });
+
+    test('all layouts serialize/deserialize correctly', () {
+      for (final layout in QrLayout.values) {
+        final config = VisualConfig(layout: layout);
+        final restored = VisualConfig.fromJson(config.toJson());
+        expect(restored.layout, layout);
+      }
     });
   });
 }

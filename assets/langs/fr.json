@@ -62,7 +62,15 @@
         "primary_color": "Couleur primaire",
         "logo": "Logo",
         "add_logo": "Ajouter un logo",
-        "remove_logo": "Supprimer le logo"
+        "remove_logo": "Supprimer le logo",
+        "layout": "Layout",
+        "layout_minimal": "Minimal",
+        "layout_classic": "Classique",
+        "layout_modern": "Moderne",
+        "photo": "Photo",
+        "photo_camera": "Caméra",
+        "photo_gallery": "Galerie",
+        "photo_too_large": "Photo trop volumineuse, choisissez une autre image"
       },
       "scanner": {
         "title": "Scanner de QR code",

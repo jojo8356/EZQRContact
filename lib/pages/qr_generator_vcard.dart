@@ -8,11 +8,13 @@ import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/btn.animated.dart';
 import 'package:qr_code_app/components/qr_save.dart';
 import 'package:qr_code_app/data/db/database.dart';
+import 'package:qr_code_app/models/qr_layout.dart';
 import 'package:qr_code_app/models/visual_config.dart';
 import 'package:qr_code_app/pages/qr_card_view_page.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/tools/contacts.dart';
+import 'package:qr_code_app/tools/photo.dart';
 import 'package:qr_code_app/tools/tools.dart';
 import 'package:qr_code_app/tools/vcard.dart';
 
@@ -37,7 +39,6 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
     'suffixe',
     'org',
     'job',
-    'photo',
     'tel_work',
     'tel_home',
     'adr_work',
@@ -52,6 +53,8 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
 
   Color _primaryColor = Colors.black;
   Uint8List? _logoBytes;
+  QrLayout _layout = QrLayout.minimal;
+  String? _photoDataUri;
 
   Future<void> _pickColor(BuildContext ctx, String label) async {
     final picked = await showColorPickerDialog(
@@ -87,6 +90,60 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
     setState(() => _logoBytes = bytes);
   }
 
+  Future<void> _pickPhoto() async {
+    final source = await _askPhotoSource();
+    if (source == null) return;
+    final picker = ImagePicker();
+    final file = await picker.pickImage(
+      source: source,
+      maxWidth: 1024,
+      maxHeight: 1024,
+    );
+    if (file == null) return;
+    final bytes = await file.readAsBytes();
+    final uri = await compressPhotoForVCard(bytes);
+    if (!mounted) return;
+    if (uri == null) {
+      final lang = LangProvider.section('pages.QR.generator');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            (lang['photo_too_large'] as String?) ??
+                'Photo non compressible',
+          ),
+        ),
+      );
+      return;
+    }
+    setState(() => _photoDataUri = uri);
+  }
+
+  Future<ImageSource?> _askPhotoSource() async {
+    final lang = LangProvider.section('pages.QR.generator');
+    return showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (ctx) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.camera_alt),
+            title: Text(
+              (lang['photo_camera'] as String?) ?? 'Caméra',
+            ),
+            onTap: () => Navigator.pop(ctx, ImageSource.camera),
+          ),
+          ListTile(
+            leading: const Icon(Icons.photo_library),
+            title: Text(
+              (lang['photo_gallery'] as String?) ?? 'Galerie',
+            ),
+            onTap: () => Navigator.pop(ctx, ImageSource.gallery),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final fields = buildFields(controllers);
@@ -112,7 +169,7 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                // — Apparence section ————————————————————————————————
+                // — Apparence section —————————————————————————————
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
@@ -125,11 +182,66 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                   ),
                 ),
                 const SizedBox(height: 12),
+                // Photo row
+                Row(
+                  children: [
+                    Text(
+                      (lang['photo'] as String?) ?? 'Photo',
+                      style: TextStyle(color: currentColors['text']),
+                    ),
+                    const Spacer(),
+                    if (_photoDataUri != null) ...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: Image.memory(
+                          base64Decode(
+                            _photoDataUri!.split(',').last,
+                          ),
+                          width: 36,
+                          height: 36,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: () =>
+                            setState(() => _photoDataUri = null),
+                        child: Icon(
+                          Icons.close,
+                          color: currentColors['text'],
+                          size: 20,
+                        ),
+                      ),
+                    ] else
+                      GestureDetector(
+                        onTap: _pickPhoto,
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: isDark
+                                  ? Colors.white38
+                                  : Colors.black26,
+                            ),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Icon(
+                            Icons.add_a_photo_outlined,
+                            color: currentColors['text'],
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 12),
                 // Color picker row
                 Row(
                   children: [
                     Text(
-                      (lang['primary_color'] as String?) ?? 'Couleur primaire',
+                      (lang['primary_color'] as String?) ??
+                          'Couleur primaire',
                       style: TextStyle(color: currentColors['text']),
                     ),
                     const Spacer(),
@@ -145,7 +257,9 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                         decoration: BoxDecoration(
                           color: _primaryColor,
                           border: Border.all(
-                            color: isDark ? Colors.white38 : Colors.black26,
+                            color: isDark
+                                ? Colors.white38
+                                : Colors.black26,
                           ),
                           borderRadius: BorderRadius.circular(6),
                         ),
@@ -208,18 +322,66 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                       ),
                   ],
                 ),
+                const SizedBox(height: 12),
+                // Layout section label
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    (lang['layout'] as String?) ?? 'Layout',
+                    style: TextStyle(
+                      color: currentColors['text'],
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Layout picker
+                SegmentedButton<QrLayout>(
+                  selected: {_layout},
+                  onSelectionChanged: (sel) =>
+                      setState(() => _layout = sel.first),
+                  segments: [
+                    ButtonSegment(
+                      value: QrLayout.minimal,
+                      icon: const Icon(Icons.view_headline),
+                      label: Text(
+                        (lang['layout_minimal'] as String?) ??
+                            'Minimal',
+                      ),
+                    ),
+                    ButtonSegment(
+                      value: QrLayout.classic,
+                      icon: const Icon(Icons.credit_card),
+                      label: Text(
+                        (lang['layout_classic'] as String?) ??
+                            'Classic',
+                      ),
+                    ),
+                    ButtonSegment(
+                      value: QrLayout.modern,
+                      icon: const Icon(Icons.style),
+                      label: Text(
+                        (lang['layout_modern'] as String?) ??
+                            'Modern',
+                      ),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 24),
                 AnimatedSubmitButton(
                   isDark: isDark,
                   label: lang['submit button'] as String,
                   onPressed: () async {
                     final data = extractValues(controllers);
+                    data['photo'] = _photoDataUri ?? '';
                     final logoBase64 = _logoBytes != null
                         ? base64Encode(_logoBytes!)
                         : null;
                     data['visual_config'] = VisualConfig(
                       primaryColor: _primaryColor,
                       logoBase64: logoBase64,
+                      layout: _layout,
                     ).toJson();
                     final vcard = VCard.fromMap(data);
                     final id = await createVCard(data);
@@ -265,7 +427,8 @@ Widget input(Map<String, dynamic> f) {
         borderSide: BorderSide(color: textColor, width: 2),
       ),
       labelText: f['label'] as String,
-      labelStyle: TextStyle(color: isDark ? Colors.white70 : Colors.black87),
+      labelStyle:
+          TextStyle(color: isDark ? Colors.white70 : Colors.black87),
     ),
   );
 }

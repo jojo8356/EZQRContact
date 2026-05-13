@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:ui';
 
+import 'package:qr_code_app/models/qr_layout.dart';
+
 /// Persisted visual customisation for a VCard entry.
 /// Stored as JSON in the `visual_config` DB column.
 class VisualConfig {
@@ -8,15 +10,18 @@ class VisualConfig {
   const VisualConfig({
     this.primaryColor = const Color(0xFF000000),
     this.logoBase64,
+    this.layout = QrLayout.minimal,
   });
 
   /// Creates a [VisualConfig] from a JSON string.
   factory VisualConfig.fromJson(String json) {
     final map = jsonDecode(json) as Map<String, dynamic>;
     final hex = map['primaryColor'] as String? ?? '#000000';
+    final layoutStr = map['layout'] as String?;
     return VisualConfig(
       primaryColor: _hexToColor(hex),
       logoBase64: map['logoBase64'] as String?,
+      layout: _parseLayout(layoutStr),
     );
   }
 
@@ -37,11 +42,25 @@ class VisualConfig {
   /// Null means no logo.
   final String? logoBase64;
 
+  /// Visual layout variant for the rendered vCard card.
+  final QrLayout layout;
+
   /// Serialises this config to a JSON string for DB storage.
   String toJson() {
-    final map = <String, dynamic>{'primaryColor': _colorToHex(primaryColor)};
+    final map = <String, dynamic>{
+      'primaryColor': _colorToHex(primaryColor),
+      'layout': layout.name,
+    };
     if (logoBase64 != null) map['logoBase64'] = logoBase64;
     return jsonEncode(map);
+  }
+
+  static QrLayout _parseLayout(String? value) {
+    if (value == null) return QrLayout.minimal;
+    return QrLayout.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => QrLayout.minimal,
+    );
   }
 
   static Color _hexToColor(String hex) {

@@ -62,11 +62,14 @@ Future<dynamic> redirect(BuildContext context, Widget page) {
 
 /// Builds the list of `{label, controller}` records used by the VCard form.
 /// Labels come from the active language pack at `VCard Input.<key>`.
+/// Fields whose key is absent from [controllers] are silently omitted, so
+/// callers that manage photo via a dedicated widget can simply omit the
+/// `'photo'` key from their controllers map.
 List<Map<String, dynamic>> buildFields(
   Map<String, TextEditingController> controllers,
 ) {
   final lang = LangProvider.getMap('VCard Input');
-  return [
+  final all = <Map<String, dynamic>>[
     {'label': lang['nom'], 'controller': controllers['nom']},
     {'label': lang['prenom'], 'controller': controllers['prenom']},
     {'label': lang['nom2'], 'controller': controllers['nom2']},
@@ -75,12 +78,27 @@ List<Map<String, dynamic>> buildFields(
     {'label': lang['org'], 'controller': controllers['org']},
     {'label': lang['job'], 'controller': controllers['job']},
     {'label': lang['photo'], 'controller': controllers['photo']},
-    {'label': lang['tel_work'], 'controller': controllers['tel_work']},
-    {'label': lang['tel_home'], 'controller': controllers['tel_home']},
-    {'label': lang['adr_work'], 'controller': controllers['adr_work']},
-    {'label': lang['adr_home'], 'controller': controllers['adr_home']},
+    {
+      'label': lang['tel_work'],
+      'controller': controllers['tel_work'],
+    },
+    {
+      'label': lang['tel_home'],
+      'controller': controllers['tel_home'],
+    },
+    {
+      'label': lang['adr_work'],
+      'controller': controllers['adr_work'],
+    },
+    {
+      'label': lang['adr_home'],
+      'controller': controllers['adr_home'],
+    },
     {'label': lang['email'], 'controller': controllers['email']},
   ];
+  return all
+      .where((f) => f['controller'] != null)
+      .toList();
 }
 
 /// Returns the keys of [dict] as a List.
