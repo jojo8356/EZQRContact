@@ -141,6 +141,20 @@
     "contacts_denied_body": "Permission was denied. Please enable contacts access in the app Settings.",
     "open_settings": "Open Settings"
   },
+  "pdf_export": {
+    "title": "Export PDF",
+    "select_mode": "Select",
+    "cancel_select": "Cancel",
+    "selected_count": "%s selected",
+    "export_button": "Export PDF (%s)",
+    "layout_1pp": "1 per page",
+    "layout_2x2": "2×2 per page",
+    "generate": "Generate PDF",
+    "generating": "Generating…",
+    "no_selection": "Select at least one contact",
+    "no_contacts": "No contacts to export",
+    "captured_on": "Captured on %s"
+  },
   "events": {
     "title": "Events",
     "new_event": "New event",

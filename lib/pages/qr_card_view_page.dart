@@ -6,6 +6,7 @@ import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/navbar.dart';
 import 'package:qr_code_app/components/qr_card_list.dart';
 import 'package:qr_code_app/data/db/database.dart';
+import 'package:qr_code_app/pages/pdf_export_page.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 
@@ -79,6 +80,16 @@ class _CollectionState extends State<Collection> {
         return Scaffold(
           backgroundColor: currentColors['bg'],
           appBar: AppBarCustom(lang['title'] as String),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute<void>(builder: (_) => const PdfExportPage()),
+            ),
+            backgroundColor: currentColors['button-color'],
+            foregroundColor: Colors.white,
+            tooltip: 'Export PDF',
+            child: const Icon(Icons.picture_as_pdf),
+          ),
           body: Column(
             children: [
               const ActiveEventBanner(),

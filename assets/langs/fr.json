@@ -141,6 +141,20 @@
     "contacts_denied_body": "La permission a été refusée. Activez l'accès aux contacts dans les Paramètres de l'application.",
     "open_settings": "Ouvrir les Paramètres"
   },
+  "pdf_export": {
+    "title": "Exporter PDF",
+    "select_mode": "Sélectionner",
+    "cancel_select": "Annuler",
+    "selected_count": "%s sélectionné(s)",
+    "export_button": "Exporter PDF (%s)",
+    "layout_1pp": "1 par page",
+    "layout_2x2": "2×2 par page",
+    "generate": "Générer le PDF",
+    "generating": "Génération en cours…",
+    "no_selection": "Sélectionner au moins un contact",
+    "no_contacts": "Aucun contact à exporter",
+    "captured_on": "Capturé le %s"
+  },
   "events": {
     "title": "Événements",
     "new_event": "Nouvel événement",
