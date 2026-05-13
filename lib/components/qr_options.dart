@@ -5,6 +5,7 @@ import 'package:qr_code_app/modals/contact_options.dart';
 import 'package:qr_code_app/modals/qr_view.dart';
 import 'package:qr_code_app/modals/save.dart';
 import 'package:qr_code_app/providers/darkmode.dart';
+import 'package:qr_code_app/providers/lang_provider.dart';
 
 /// Collapsible grid of action buttons attached to a QRCard: view, open
 /// the rendered QR image, delete, download, and (for vCards) sync to the
@@ -36,10 +37,12 @@ class OptionsQR extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final darkProv = DarkModeProvider();
+    final semLang = LangProvider.section('semantics');
     final actions = [
       {
         'icon': Icons.remove_red_eye,
         'color': null,
+        'semanticsKey': 'btn_view_card',
         'onPressed': () async {
           await showDataDialog(context, data, isVCard: isVCard);
         },
@@ -47,6 +50,7 @@ class OptionsQR extends StatelessWidget {
       {
         'icon': Icons.data_object,
         'color': null,
+        'semanticsKey': 'btn_view_raw',
         'onPressed': () async {
           await showRawTextDialog(context, data, isVCard: isVCard);
         },
@@ -54,6 +58,7 @@ class OptionsQR extends StatelessWidget {
       {
         'icon': Icons.qr_code,
         'color': null,
+        'semanticsKey': 'btn_view_qr',
         'onPressed': () async {
           final path = data['path'] as String?;
           if (path != null && path.isNotEmpty) {
@@ -65,6 +70,7 @@ class OptionsQR extends StatelessWidget {
         {
           'icon': Icons.delete,
           'color': darkProv.isDarkMode ? Colors.red : Colors.redAccent,
+          'semanticsKey': 'btn_delete',
           'onPressed': () async {
             await deleteQR(isVCard: isVCard, id: data['id'] as int);
             await onRefresh();
@@ -73,6 +79,7 @@ class OptionsQR extends StatelessWidget {
       {
         'icon': Icons.download,
         'color': darkProv.isDarkMode ? Colors.indigo : Colors.blue,
+        'semanticsKey': 'btn_download',
         'onPressed': () async {
           final path = isVCard
               ? await QRDatabase().getPathFromVCard(data['id'] as int)
@@ -86,6 +93,7 @@ class OptionsQR extends StatelessWidget {
         {
           'icon': Icons.contact_emergency,
           'color': darkProv.isDarkMode ? Colors.green : Colors.lightGreen,
+          'semanticsKey': 'btn_add_contact',
           'onPressed': () async {
             await showVCardPopup(context, data, isVCard: true);
             await onRefresh();
@@ -105,16 +113,23 @@ class OptionsQR extends StatelessWidget {
           mainAxisSpacing: 10,
           crossAxisSpacing: 40,
           children: actions.map((a) {
-            return ElevatedButton(
-              onPressed: a['onPressed']! as VoidCallback,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: a['color'] as Color?,
-                padding: EdgeInsets.zero,
-                fixedSize: const Size(60, 60),
-              ),
-              child: Icon(
-                a['icon']! as IconData,
-                color: a['color'] != null ? Colors.white : null,
+            final key = a['semanticsKey'] as String?;
+            final label =
+                key == null ? null : semLang[key] as String?;
+            return Semantics(
+              label: label,
+              button: true,
+              child: ElevatedButton(
+                onPressed: a['onPressed']! as VoidCallback,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: a['color'] as Color?,
+                  padding: EdgeInsets.zero,
+                  fixedSize: const Size(60, 60),
+                ),
+                child: Icon(
+                  a['icon']! as IconData,
+                  color: a['color'] != null ? Colors.white : null,
+                ),
               ),
             );
           }).toList(),

@@ -8,6 +8,7 @@ import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/btn.animated.dart';
 import 'package:qr_code_app/components/qr_save.dart';
 import 'package:qr_code_app/data/db/database.dart';
+import 'package:qr_code_app/modals/contact_options.dart';
 import 'package:qr_code_app/models/qr_layout.dart';
 import 'package:qr_code_app/models/visual_config.dart';
 import 'package:qr_code_app/pages/qr_card_view_page.dart';
@@ -394,6 +395,12 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                     await PhoneContacts.verifyPermission();
                     await PhoneContacts.add(data);
                     if (!context.mounted) return;
+                    showToast(
+                      context: context,
+                      title: lang['card_ready'] as String,
+                      color: Colors.white,
+                      icon: Icons.share,
+                    );
                     await redirect(context, const Collection());
                   },
                 ),

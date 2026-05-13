@@ -61,6 +61,7 @@
         },
         "vcard": "Générateur de QR code type VCard",
         "submit button": "Générer QR code",
+      "card_ready": "Votre carte est prête, partagez-la !",
         "appearance": "Apparence",
         "primary_color": "Couleur primaire",
         "logo": "Logo",
@@ -134,6 +135,18 @@
     "collection": "Collection",
     "history": "Historique",
     "settings": "Options"
+  },
+  "semantics": {
+    "qr_image": "QR code de votre carte. Double-tap pour agrandir.",
+    "btn_view_card": "Voir la carte de visite",
+    "btn_view_raw": "Voir le texte brut",
+    "btn_view_qr": "Afficher le QR code. Double-tap pour agrandir.",
+    "btn_delete": "Supprimer ce contact",
+    "btn_download": "Télécharger le QR code",
+    "btn_add_contact": "Ajouter aux contacts du téléphone",
+    "btn_scan": "Scanner un QR code",
+    "btn_generate": "Générer le QR code",
+    "btn_share_back": "Partager ma carte en retour"
   },
   "empty": "Aucuns QR code trouvés",
   "permissions": {

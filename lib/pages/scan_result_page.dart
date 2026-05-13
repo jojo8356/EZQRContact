@@ -100,16 +100,21 @@ class _ScanResultPageState extends State<ScanResultPage> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: currentColors['button-color'],
-                      foregroundColor: Colors.white,
+                  child: Semantics(
+                    label: LangProvider.section('semantics')['btn_share_back']
+                        as String?,
+                    button: true,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: currentColors['button-color'],
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () async {
+                        Navigator.pop(ctx);
+                        await _showMyQr();
+                      },
+                      child: Text(lang['reciprocal_share'] as String),
                     ),
-                    onPressed: () async {
-                      Navigator.pop(ctx);
-                      await _showMyQr();
-                    },
-                    child: Text(lang['reciprocal_share'] as String),
                   ),
                 ),
               ],
@@ -345,14 +350,19 @@ class _ScanResultPageState extends State<ScanResultPage> {
             ),
             const SizedBox(height: 16),
             if (!_contactsAdded)
-              ElevatedButton.icon(
-                icon: const Icon(Icons.contacts),
-                label: Text(lang['add_to_contacts'] as String),
-                onPressed: _addToPhoneContacts,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: currentColors['button-color'],
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 48),
+              Semantics(
+                label: LangProvider.section('semantics')['btn_add_contact']
+                    as String?,
+                button: true,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.contacts),
+                  label: Text(lang['add_to_contacts'] as String),
+                  onPressed: _addToPhoneContacts,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: currentColors['button-color'],
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 48),
+                  ),
                 ),
               ),
             if (_contactsAdded)

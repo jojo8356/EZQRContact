@@ -61,6 +61,7 @@
         },
         "vcard": "VCard QR code Generator",
         "submit button": "Generate QR code",
+      "card_ready": "Your card is ready, share it!",
         "appearance": "Appearance",
         "primary_color": "Primary color",
         "logo": "Logo",
@@ -179,5 +180,17 @@
     "s2_body": "Customize color, logo and layout.",
     "s3_title": "Scan. Save. Export.",
     "s3_body": "Find all your contacts in one place."
+  },
+  "semantics": {
+    "qr_image": "QR code of your card. Double-tap to enlarge.",
+    "btn_view_card": "View the contact card",
+    "btn_view_raw": "View raw text",
+    "btn_view_qr": "Show QR code. Double-tap to enlarge.",
+    "btn_delete": "Delete this contact",
+    "btn_download": "Download QR code",
+    "btn_add_contact": "Add to phone contacts",
+    "btn_scan": "Scan a QR code",
+    "btn_generate": "Generate QR code",
+    "btn_share_back": "Share my card in return"
   }
 }
