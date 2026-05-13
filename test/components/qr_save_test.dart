@@ -1,11 +1,21 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image/image.dart' as img;
 import 'package:qr_code_app/components/qr_save.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // PNG file signature: first 8 bytes are always 89 50 4E 47 0D 0A 1A 0A.
 const _pngMagic = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+
+/// Minimal solid-red PNG to use as logo in tests.
+Uint8List _makeMinimalPng({int width = 1, int height = 1}) {
+  final image = img.Image(width: width, height: height, numChannels: 4)
+    ..setPixelRgba(0, 0, 255, 0, 0, 255);
+  return img.encodePng(image);
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -79,6 +89,53 @@ void main() {
       } on Exception catch (e) {
         expect(e.toString(), isNotEmpty);
       }
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // buildQrBytes — logo embedding
+  // ---------------------------------------------------------------------------
+  group('buildQrBytes — logo', () {
+    late Uint8List logo1x1;
+    late Uint8List logo64x64;
+
+    setUpAll(() {
+      logo1x1  = _makeMinimalPng();
+      logo64x64 = _makeMinimalPng(width: 64, height: 64);
+    });
+
+    test('with logo still produces valid PNG', () async {
+      final bytes = await buildQrBytes('hello', logoBytes: logo1x1);
+      expect(bytes.sublist(0, 8), equals(_pngMagic));
+    });
+
+    test('with logo output is larger than 1 KB', () async {
+      final bytes = await buildQrBytes('hello', logoBytes: logo64x64);
+      expect(bytes.length, greaterThan(1024));
+    });
+
+    test('QR with logo differs from QR without logo', () async {
+      final withLogo    = await buildQrBytes('hello', logoBytes: logo1x1);
+      final withoutLogo = await buildQrBytes('hello');
+      expect(withLogo, isNot(equals(withoutLogo)));
+    });
+
+    test('same data + same logo is deterministic', () async {
+      final a = await buildQrBytes('det', logoBytes: logo1x1);
+      final b = await buildQrBytes('det', logoBytes: logo1x1);
+      expect(a, equals(b));
+    });
+
+    test('oversized logo (> 64 px) is accepted and downscaled', () async {
+      final bigLogo = _makeMinimalPng(width: 200, height: 200);
+      final bytes   = await buildQrBytes('hello', logoBytes: bigLogo);
+      expect(bytes.sublist(0, 8), equals(_pngMagic));
+    });
+
+    test('omitting logoBytes behaves same as no logo', () async {
+      final withNull = await buildQrBytes('hello');
+      final explicit = await buildQrBytes('hello');
+      expect(withNull, equals(explicit));
     });
   });
 

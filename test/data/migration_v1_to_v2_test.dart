@@ -119,9 +119,9 @@ void main() {
       // Force migration by querying.
       await db.getAllVCards();
 
-      // After migration, PRAGMA user_version must be 2.
+      // After migration, PRAGMA user_version must equal the current schema (3).
       final result = raw.select('PRAGMA user_version');
-      expect(result.first['user_version'], 2);
+      expect(result.first['user_version'], 3);
     });
 
     test('AC-3 step 1: VCard rows from v1 are preserved', () async {
@@ -320,13 +320,12 @@ void main() {
       expect((await db.select(db.events).get()).length, 1);
     });
 
-    test('fresh install starts at schema version 2', () async {
+    test('fresh install starts at schema version 3', () async {
       // Force the schema to be created.
       await db.select(db.vCards).get();
 
       // Open another connection and verify version via Drift's internal API.
-      // The schemaVersion getter in QRDatabase is 2.
-      expect(db.schemaVersion, 2);
+      expect(db.schemaVersion, 3);
     });
   });
 }

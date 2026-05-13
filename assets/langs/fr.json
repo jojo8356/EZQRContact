@@ -13,7 +13,9 @@
     "guide": "Lire guide",
     "about": "À Propos de nous",
     "mode": "Changer de mode",
-    "appearance": "Apparence"
+    "appearance": "Apparence",
+    "vcard_section": "VCard",
+    "vcard4": "Format vCard 4.0"
   },
   "pages": {
     "contact": {
@@ -30,6 +32,7 @@
       },
       "import": {
         "title": "Sélectionner des Contacts",
+        "importing": "Importation en cours...",
         "buttons": {
           "cancel": "Annuler",
           "validate": "Valider"
@@ -54,7 +57,12 @@
           "input": "Entrez Votre Texte"
         },
         "vcard": "Générateur de QR code type VCard",
-        "submit button": "Générer QR code"
+        "submit button": "Générer QR code",
+        "appearance": "Apparence",
+        "primary_color": "Couleur primaire",
+        "logo": "Logo",
+        "add_logo": "Ajouter un logo",
+        "remove_logo": "Supprimer le logo"
       },
       "scanner": {
         "title": "Scanner de QR code",
@@ -101,5 +109,10 @@
     "history": "Historique",
     "settings": "Options"
   },
-  "empty": "Aucuns QR code trouvés"
+  "empty": "Aucuns QR code trouvés",
+  "permissions": {
+    "contacts_denied_title": "Accès aux contacts requis",
+    "contacts_denied_body": "La permission a été refusée. Activez l'accès aux contacts dans les Paramètres de l'application.",
+    "open_settings": "Ouvrir les Paramètres"
+  }
 }

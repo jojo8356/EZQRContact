@@ -35,7 +35,8 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-06
-last_updated: 2026-05-11
+last_updated: 2026-05-12 # story-3-1 review
+# story-3-1 ready-for-dev — 2026-05-12
 # story-1-5 ready-for-dev — 2026-05-11
 # story-1-4 done — 2026-05-11
 # epic-2 done — 2026-05-11 (stories 2-1, 2-2, 2-3)
@@ -84,9 +85,9 @@ development_status:
   # ==========================================================================
   # Epic 3: Personnalisation visuelle de la carte (P1)
   # ==========================================================================
-  epic-3: backlog
-  3-1-color-picker-couleur-primaire: backlog
-  3-2-logo-center-embed-dans-le-qr: backlog
+  epic-3: in-progress
+  3-1-color-picker-couleur-primaire: review
+  3-2-logo-center-embed-dans-le-qr: in-progress
   3-3-trois-layouts-de-carte-au-choix: backlog
   3-4-photo-de-profil-capture-upload-resize: backlog
   3-5-recompression-progressive-si-photo-200kb: backlog

@@ -516,7 +516,7 @@ void main() {
     });
 
     // Regression — manual test 11.2: literal \n pasted from clipboard.
-    test('literal \\n sequence in org is stripped from vCard output', () {
+    test(r'literal \n sequence in org is stripped from vCard output', () {
       final vc = VCard(
         nom: 'Doe',
         prenom: 'Jane',
@@ -527,7 +527,7 @@ void main() {
       expect(vc.toVCard(), contains('ORG:AcmeCorp\r\n'));
     });
 
-    test('literal \\r\\n sequence in org is stripped from vCard output', () {
+    test(r'literal \r\n sequence in org is stripped from vCard output', () {
       final vc = VCard(
         nom: 'Doe',
         prenom: 'Jane',
@@ -537,13 +537,13 @@ void main() {
       expect(vc.toVCard(), contains('ORG:AcmeCorp\r\n'));
     });
 
-    test('clean strips literal \\n escape sequence', () {
+    test(r'clean strips literal \n escape sequence', () {
       final v = VCard();
       // Raw string: backslash + n, not a newline.
       expect(v.clean(r'Acme\nCorp'), 'AcmeCorp');
     });
 
-    test('clean strips literal \\r escape sequence', () {
+    test(r'clean strips literal \r escape sequence', () {
       final v = VCard();
       expect(v.clean(r'Acme\rCorp'), 'AcmeCorp');
     });
@@ -557,7 +557,7 @@ void main() {
         'Bâtiment Horizon, 250 avenue des Champs-Élysées, '
         'Bureau 42, 75008 Paris, France';
 
-    VCard _vc() => VCard(
+    VCard vc() => VCard(
           nom: 'Doe',
           prenom: 'Jane',
           adrWork: longAddr,
@@ -565,11 +565,11 @@ void main() {
         );
 
     test('long ADR line is folded (CRLF + space continuation present)', () {
-      expect(_vc().toVCard(), contains('\r\n '));
+      expect(vc().toVCard(), contains('\r\n '));
     });
 
     test('no physical line exceeds 75 octets', () {
-      final out = _vc().toVCard();
+      final out = vc().toVCard();
       // Split on CRLF to get physical lines; the final empty segment
       // after the last CRLF is harmless.
       for (final line in out.split('\r\n')) {
@@ -580,7 +580,7 @@ void main() {
     });
 
     test('unfolding recovers the full address without byte loss', () {
-      final out = _vc().toVCard();
+      final out = vc().toVCard();
       // RFC 2425 unfold: remove every CRLF followed by a single space.
       final unfolded = out.replaceAll('\r\n ', '');
       expect(unfolded, contains(longAddr));
@@ -588,7 +588,7 @@ void main() {
 
     test('same guarantees hold for vCard 4.0', () async {
       await VCardSettingsProvider.setUseVCard4(true);
-      final out = _vc().toVCard();
+      final out = vc().toVCard();
       await VCardSettingsProvider.setUseVCard4(false);
 
       expect(out, contains('\r\n '));
