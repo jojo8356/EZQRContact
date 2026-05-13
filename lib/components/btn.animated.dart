@@ -44,9 +44,7 @@ class _AnimatedSubmitButtonState extends State<AnimatedSubmitButton>
     setState(() => _scale = 1.0);
 
     // flash couleur
-    setState(
-      () => _bgColor = widget.isDark ? Colors.grey[800] : Colors.grey[300],
-    );
+    setState(() => _bgColor = currentColors['surface']);
     await Future<void>.delayed(const Duration(milliseconds: 100));
     if (!mounted) return;
     setState(() => _bgColor = currentColors['bg']);

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:qr_code_app/tools/perf.dart';
 import 'package:qr_code_app/tools/tools.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -95,7 +96,10 @@ class LangProvider {
 
   /// 🔹 Récupère toutes les traductions
   static Future<List<String>> getAll() async {
-    final files = await getJsonFiles('assets/langs');
+    final files = await Perf.measure(
+      'lang.getAll (AssetManifest)',
+      () => getJsonFiles('assets/langs'),
+    );
     return files.map((f) => f.replaceAll('.json', '')).toList();
   }
 
@@ -126,10 +130,12 @@ class LangProvider {
   /// corrompue `zz`), fallback silencieux sur [_kFallbackLang] pour éviter
   /// un crash au démarrage.
   static Future<void> _loadTranslations(String lang) async {
+    Perf.start('lang.loadTranslations ($lang)');
     final fileLang = 'assets/langs/$lang.json';
     try {
       final jsonString = await rootBundle.loadString(fileLang);
       _translations = json.decode(jsonString) as Map<String, dynamic>;
+      Perf.end('lang.loadTranslations ($lang)');
       // `rootBundle.loadString` throws `FlutterError` (a subclass of `Error`)
       // when an asset is missing. Catching `Error` is normally an anti-pattern
       // but here it's the official API surface for "asset not found" — no
@@ -145,6 +151,7 @@ class LangProvider {
         'assets/langs/$_kFallbackLang.json',
       );
       _translations = json.decode(jsonString) as Map<String, dynamic>;
+      Perf.end('lang.loadTranslations ($lang)');
     }
   }
 

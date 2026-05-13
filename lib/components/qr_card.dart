@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/qr_options.dart';
 import 'package:qr_code_app/providers/darkmode.dart';
+import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/tools/contacts.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
@@ -41,7 +42,7 @@ class _QRCardState extends State<QRCard> {
     final photo = (widget.data['photo'] as String?) ?? '';
 
     return Card(
-      color: darkProv.isDarkMode ? Colors.white30 : Colors.white,
+      color: currentColors['surface'],
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 3,
       child: Column(
@@ -55,7 +56,7 @@ class _QRCardState extends State<QRCard> {
                   titleText,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: darkProv.isDarkMode ? Colors.white70 : Colors.black,
+                    color: currentColors['text-muted'],
                   ),
                 ),
                 if (widget.data['date_deleted'] != null)
@@ -72,7 +73,7 @@ class _QRCardState extends State<QRCard> {
             ),
             trailing: Icon(
               expanded ? Icons.expand_less : Icons.expand_more,
-              color: darkProv.isDarkMode ? Colors.white : Colors.black,
+              color: currentColors['text'],
             ),
             onTap: () {
               setState(() => expanded = !expanded);

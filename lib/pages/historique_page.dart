@@ -7,6 +7,7 @@ import 'package:qr_code_app/components/qr_card.dart';
 import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
+import 'package:qr_code_app/tools/perf.dart';
 
 /// Page listing the soft-deleted QR / VCard rows ("trash" view).
 class HistoryPage extends StatefulWidget {
@@ -28,6 +29,7 @@ class _HistoryPageState extends State<HistoryPage> {
   }
 
   Future<void> _loadDeletedItems() async {
+    Perf.start('page.history.load');
     setState(() => loading = true);
 
     final merged = await getAllDeletedQRs();
@@ -36,6 +38,8 @@ class _HistoryPageState extends State<HistoryPage> {
       deletedItems = merged;
       loading = false;
     });
+    Perf.end('page.history.load');
+    Perf.mark('page.history.ready (${merged.length} items)');
   }
 
   @override

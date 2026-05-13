@@ -8,10 +8,16 @@ import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Minimal asset-manifest stub listing the two bundled language files.
-const _kFakeManifest =
-    '{"assets/langs/en.json":["assets/langs/en.json"],'
-    '"assets/langs/fr.json":["assets/langs/fr.json"]}';
+// Flutter 3.41.6+ uses AssetManifest.bin (StandardMessageCodec binary format)
+// exclusively on non-web platforms. The binary format encodes a map from asset
+// path → list of variant descriptors. For our lang assets, no variants exist.
+ByteData _buildFakeManifestBin() {
+  const codec = StandardMessageCodec();
+  return codec.encodeMessage(<String, Object?>{
+    'assets/langs/en.json': <Object?>[],
+    'assets/langs/fr.json': <Object?>[],
+  })!;
+}
 
 /// Wraps [SettingsPage] with the routes its bottom navigation bar may push.
 Widget _buildApp() {
@@ -35,31 +41,23 @@ void main() {
   });
 
   setUp(() {
-    darkProv.setDarkMode(false);
-    // Install a mock asset handler that intercepts `AssetManifest.json` so
-    // [LangProvider.getAll] can populate the language list without the real
-    // Flutter-generated manifest (not present in unit tests).
-    // PlatformAssetBundle sends the key as raw UTF-8 bytes and expects raw
-    // UTF-8 bytes back. Returning null for other keys delegates to the real
-    // platform handler which serves the actual lang JSON assets.
+    darkProv.forceSetDarkMode(false);
+    // Intercept the flutter/assets channel so [LangProvider.getAll] can
+    // populate the language list. Flutter 3.41.6+ loads AssetManifest.bin
+    // (binary codec) on non-web platforms — the old AssetManifest.json
+    // key is no longer used.
+    final fakeManifestBin = _buildFakeManifestBin();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMessageHandler('flutter/assets', (message) async {
       if (message == null) return null;
       final key = utf8.decode(message.buffer.asUint8List());
-      if (key == 'AssetManifest.json') {
-        final bytes = utf8.encode(_kFakeManifest);
-        final result = ByteData(bytes.length);
-        for (var i = 0; i < bytes.length; i++) {
-          result.setUint8(i, bytes[i]);
-        }
-        return result;
-      }
+      if (key == 'AssetManifest.bin') return fakeManifestBin;
       return null;
     });
   });
 
   tearDown(() {
-    darkProv.setDarkMode(false);
+    darkProv.forceSetDarkMode(false);
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMessageHandler('flutter/assets', null);
   });
@@ -82,7 +80,6 @@ void main() {
 
     testWidgets('AppBar is present', (tester) async {
       await pumpSettingsPage(tester);
-      // AppBarCustom renders a standard Flutter AppBar internally.
       expect(find.byType(AppBar), findsOneWidget);
     });
 
@@ -96,13 +93,14 @@ void main() {
         (tester) async {
       await pumpSettingsPage(tester);
 
-      // The last ElevatedButton corresponds to the "mode" (dark-mode) button
-      // per the order defined in the settings page buttons list.
       final buttons = find.byType(ElevatedButton);
       expect(buttons.evaluate(), isNotEmpty);
 
       await tester.tap(buttons.last);
-      await tester.pump();
+      // pumpAndSettle pumps 100 ms frames until no pending callbacks.
+      // The Ticker records _startTime on its first tick (elapsed = 0) then
+      // needs ~300 ms more, so ~4 frames of 100 ms each before it stops.
+      await tester.pumpAndSettle();
       expect(darkProv.isDarkMode, isTrue);
     });
   });

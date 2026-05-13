@@ -55,6 +55,27 @@ Séparateurs de lignes CRLF. Lignes > 75 octets repliées avec `\r\n ` (espace).
 
 **Attendu :** QR visible, scanne et retourne le texte exact saisi.
 
+### 1.5 Couleur primaire — couleur non-noire
+
+1. Onglet **Créer** > **vCard**
+2. Section **Apparence** en bas du formulaire : appuie sur le carré de couleur
+3. Sélectionne une couleur vive (ex. rouge vif `#E53935`) via le sélecteur
+4. Confirme (bouton OK dans le dialog)
+5. Génère le QR
+
+**Attendu :**
+- Le carré de couleur reflète immédiatement la couleur choisie après confirmation
+- Le QR généré s'affiche en rouge (modules et coins) sur fond blanc
+- Scanne le QR depuis l'app ou un lecteur tiers : le contenu vCard est identique au cas nominal
+
+### 1.6 Couleur primaire — persistance en base
+
+1. Génère un QR vCard avec une couleur non-noire (voir 1.5)
+2. Retourne à la liste > rouvre la fiche
+3. Vérifie la couleur stockée
+
+**Attendu :** la couleur choisie est restituée correctement (pas de retour au noir par défaut).
+
 ---
 
 ## 2. Toggle vCard 4.0
@@ -107,6 +128,12 @@ EMAIL:marie.dupont@acme.fr
 - Bouton **Retourner caméra** — bascule front/rear sans crash
 - Bouton **Torche** — allume/éteint sans crash
 
+> ⚠️ **Bug connu (KB-torch) :** sur Android, le bouton torche peut ne produire
+> aucun effet visible (lampe physique et icône inchangées). Ce bug est documenté
+> dans `docs/dev/prd-torch-camera-bug.md` et n'est pas encore corrigé. Consigner
+> le comportement observé (modèle Android, version OS) plutôt que de bloquer la
+> release sur ce point.
+
 ---
 
 ## 4. Scanner QR depuis la galerie
@@ -148,18 +175,52 @@ EMAIL:marie.dupont@acme.fr
 
 **Attendu :** contact apparu dans la liste principale avec nom, tél et email.
 
-### 5.2 Import multiple
+### 5.2 Import multiple — barre de progression
 
-1. Répète en sélectionnant 3 contacts à la fois
+1. Sélectionne **5 contacts ou plus** dans le picker > valide
 
-**Attendu :** 3 entrées créées, aucun doublon.
+**Attendu :**
+- Un dialog non-dismissible s'ouvre immédiatement avec le titre « Importation en cours… » (FR) / « Importing… » (EN)
+- La barre de progression est à `0 / N` au démarrage
+- Le compteur s'incrémente à chaque contact traité : `1 / N`, `2 / N`…
+- L'appui sur le bouton système Retour ou en dehors du dialog ne ferme pas le dialog
+- Le dialog se ferme automatiquement quand le compteur atteint `N / N`
+- Les N entrées sont présentes dans la liste principale, aucun doublon
 
-### 5.3 Refus de permission
+### 5.3 Import multiple — couleurs du dialog
 
-1. Révoque la permission contacts (Réglages > Confidentialité)
-2. Tente d'importer
+1. Répète 5.2 en **dark mode**
 
-**Attendu :** message d'erreur ou dialog de permission — pas de crash.
+**Attendu :** fond du dialog et texte respectent le thème sombre (pas de fond blanc forcé).
+
+### 5.4 Import multiple — i18n
+
+1. Passe en **English**, lance un import de 3 contacts
+
+**Attendu :** titre du dialog « Importing… » (pas le fallback dart).
+
+### 5.5 Refus de permission — dialog système (premier refus)
+
+1. Désinstalle ou efface les données de l'app pour réinitialiser les permissions
+2. Lance l'import → le dialog système de permission apparaît → appuie **Refuser**
+
+**Attendu :** retour sur la page sans crash, aucun dialog supplémentaire.
+
+### 5.6 Permission révoquée dans les Paramètres
+
+Révoque la permission contacts selon la plateforme :
+
+- **Android :** Paramètres → Applications → EZQRContact → Autorisations → Contacts → Refuser
+  *(ou Paramètres → Confidentialité → Gestionnaire d'autorisations → Contacts → EZQRContact → Refuser)*
+- **iOS :** Réglages → Confidentialité et sécurité → Contacts → désactiver EZQRContact
+
+Reviens dans l'app et tente d'importer.
+
+**Attendu :**
+- Un dialog s'affiche : titre "Accès aux contacts requis" (EN: "Contacts access required")
+- Corps expliquant que la permission a été refusée
+- Bouton **Fermer** : ferme le dialog, retour sur la page
+- Bouton **Ouvrir les Paramètres** (EN: "Open Settings") : ouvre directement la page de permissions de l'app dans les Paramètres système
 
 ---
 
@@ -309,52 +370,3 @@ EMAIL:marie.dupont@acme.fr
 
 **Attendu :** mêmes règles.
 
-### 13.3 vCard 2.1 legacy
-
-Payload de test :
-```
-BEGIN:VCARD
-VERSION:2.1
-N:Doe;John;;;
-FN:John Doe
-TEL;WORK;VOICE:+1-555-555-5555
-EMAIL;INTERNET:john@example.com
-END:VCARD
-```
-
-**Attendu :** nom, tél et email reconnus, aucun crash.
-
----
-
-## Tableau de résultats
-
-| # | Cas | iOS | Android | Notes |
-|---|-----|-----|---------|-------|
-| 1.1 | Import vCard complet 3.0 | | | |
-| 1.2 | Payload brut CRLF + folding | | | |
-| 1.3 | Champs vides | | | |
-| 1.4 | QR texte simple | | | |
-| 2.1 | Format 4.0 activé | | | |
-| 2.2 | Persistance toggle 4.0 | | | |
-| 2.3 | Retour 3.0 | | | |
-| 3.1 | Scan vCard tierce | | | |
-| 3.2 | Scan texte simple | | | |
-| 3.3 | Contrôles caméra | | | |
-| 4 | Import galerie (bug connu) | N/A | N/A | cassé |
-| 5.1 | Import contact nominal | | | |
-| 5.2 | Import multiple | | | |
-| 5.3 | Refus permission | | | |
-| 6 | Sauvegarde PNG | | | |
-| 7.1 | Corbeille vCard | | | |
-| 7.2 | Corbeille mixte | | | |
-| 8.1 | Guide first-run | | | |
-| 8.2 | Guide non-répété | | | |
-| 8.3 | Guide via paramètres | | | |
-| 9.1 | Langue FR→EN | | | |
-| 9.2 | Persistance langue | | | |
-| 10.1 | Dark mode actif | | | |
-| 11.1 | Injection `;` | | | |
-| 11.2 | Injection `\n` | | | |
-| 12 | Line folding round-trip | | | |
-| 13.1 | Parser iCloud | | | |
-| 13.3 | Parser vCard 2.1 | | | |

@@ -16,7 +16,7 @@ Future<void> showSharePopup(BuildContext context) async {
       builder: (context, _) {
         final isDark = darkProv.isDarkMode;
         return AlertDialog(
-          backgroundColor: isDark ? Colors.blueGrey : Colors.white,
+          backgroundColor: currentColors['popup-background'],
           title: Text(
             'Partager',
             style: TextStyle(color: currentColors['text']),

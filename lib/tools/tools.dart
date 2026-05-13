@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_saver/file_saver.dart';
@@ -129,15 +128,12 @@ String getDateDays() {
 /// Returns the names of every `.json` file bundled under [folderPath]
 /// in the Flutter asset manifest.
 Future<List<String>> getJsonFiles(String folderPath) async {
-  final manifestContent = await rootBundle.loadString('AssetManifest.json');
-  final manifestMap = json.decode(manifestContent) as Map<String, dynamic>;
-
-  final jsonFiles = manifestMap.keys
+  final manifest = await AssetManifest.loadFromAssetBundle(rootBundle);
+  return manifest
+      .listAssets()
       .where((path) => path.startsWith(folderPath) && path.endsWith('.json'))
       .map((path) => path.split('/').last)
       .toList();
-
-  return jsonFiles;
 }
 
 /// Returns true when [url] resolves to an `image/*` content-type via HEAD.

@@ -49,4 +49,41 @@ void main() {
       expect(VCardSettingsProvider.useVCard4, isTrue);
     });
   });
+
+  // Manuel 2.2 — Toggle ON > force-quit > relance > toggle reste ON
+  group('VCardSettingsProvider — persistance après kill', () {
+    test(
+      'toggle ON survit à un force-quit et reste ON après relance',
+      () async {
+        // 1. Utilisateur active le toggle
+        await VCardSettingsProvider.setUseVCard4(true);
+
+        // 2. Capture les prefs persistées avant de simuler le kill
+        final prefs = await SharedPreferences.getInstance();
+        final snapshot = <String, Object>{
+          'use_vcard4': prefs.getBool('use_vcard4')!,
+        };
+
+        // 3. Simule le kill : mémoire effacée → static reset
+        SharedPreferences.setMockInitialValues({});
+        await VCardSettingsProvider.init();
+        expect(
+          VCardSettingsProvider.useVCard4,
+          isFalse,
+          reason: 'contrôle : état mémoire effacé comme après kill',
+        );
+
+        // 4. Simule la relance avec prefs sauvegardées
+        SharedPreferences.setMockInitialValues(snapshot);
+        await VCardSettingsProvider.init();
+
+        // 5. Le toggle doit être ON
+        expect(
+          VCardSettingsProvider.useVCard4,
+          isTrue,
+          reason: 'le format vCard 4.0 doit survivre au force-quit',
+        );
+      },
+    );
+  });
 }

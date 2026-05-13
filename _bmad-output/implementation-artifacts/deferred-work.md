@@ -38,7 +38,7 @@ Tous les findings ci-dessous sont **pré-existants** (pas causés par le commit 
 - **`importContacts` pas de `mounted` check entre `verifyPermission()` et `getContacts()`** [`lib/tools/import_contact.dart:13-15`] — pré-existant, race au permission dialog.
 - **`Navigator.pop(context, chosen)` sans `mounted` guard** [`lib/components/contact_app.dart:99-105`] — double-tap Validate pop deux fois.
 - **`extractValues` `controllers[key]!.text`** [`lib/tools/tools.dart:114`] — race théorique si dispose pendant iteration.
-- **`AssetManifest.json` format change** [`lib/tools/tools.dart:130`] — Flutter 3.10+ a changé le schema (`v2`) ; le cast cassera si on bump Flutter.
+- ~~**`AssetManifest.json` format change**~~ — ✅ Résolu : migré vers `AssetManifest.loadFromAssetBundle()` (Flutter 3.41.6).
 - **`btn['action'] as Function)(context)` settings** [`lib/pages/settings.dart:174`] — typage Function loose.
 - **`saveQrCode` exception message fallback** [`lib/components/qr_save.dart:45`] — si la clé i18n manque, `LangProvider.t` retourne le path littéral.
 - **`data['photo'] as String?` runtime risk** [`lib/components/qr_card.dart:41`] — non-string dans le map (peu probable vu le schema Drift) throw.

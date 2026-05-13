@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
+import 'package:qr_code_app/providers/theme_globals.dart';
 
 /// Scrollable list rendering imported phone contacts as cards. Falls back
 /// to a centered "empty" message (translated) when [persons] is empty.
@@ -25,7 +26,7 @@ class PersonsList extends StatelessWidget {
         child: Text(
           lang['empty'] as String,
           style: TextStyle(
-            color: isDarkMode ? Colors.white : Colors.black,
+            color: currentColors['text'],
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
@@ -39,17 +40,17 @@ class PersonsList extends StatelessWidget {
         final person = persons[index]['data'] as Map<String, dynamic>;
 
         return Card(
-          color: isDarkMode ? Colors.grey[900] : Colors.white,
+          color: currentColors['surface'],
           child: ListTile(
             leading: const CircleAvatar(child: Icon(Icons.person)),
             title: Text(
               (person['name'] as String?) ?? lang['name_unknown'] as String,
-              style: TextStyle(color: isDarkMode ? Colors.white : Colors.black),
+              style: TextStyle(color: currentColors['text']),
             ),
             subtitle: Text(
               (person['email'] as String?) ?? lang['email_uknown'] as String,
               style: TextStyle(
-                color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+                color: currentColors['text-muted'],
               ),
             ),
           ),
