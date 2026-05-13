@@ -305,6 +305,22 @@ class QRDatabase extends _$QRDatabase {
     return id ?? 0;
   }
 
+  /// Returns the QR image path of the most recent user-created card (i.e. a
+  /// row without a `captured_at` timestamp). Returns null when none exists.
+  Future<String?> getMyCardQrPath() async {
+    final row = await (select(vCards)
+          ..where(
+            (t) =>
+                t.capturedAt.isNull() &
+                t.deleted.equals(false) &
+                t.path.isNotNull(),
+          )
+          ..orderBy([(t) => OrderingTerm.desc(t.id)])
+          ..limit(1))
+        .getSingleOrNull();
+    return row?.path;
+  }
+
   /// Duplicates a VCard row and returns the new id.
   Future<int> cloneVCard(int id) async {
     final newId = await vcards.clone(id);

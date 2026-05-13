@@ -16,6 +16,8 @@ class VCard {
 
   /// Creates a VCard with the given fields. All string fields default to ''.
   /// [rev] auto-generates a UTC ISO8601 revision marker if omitted.
+  /// [visualConfigJson] is the raw JSON from the `visual_config` DB column;
+  /// when non-null it is encoded into `X-EZQR-VISUAL` on serialisation.
   VCard({
     this.nom = '',
     this.prenom = '',
@@ -31,6 +33,7 @@ class VCard {
     this.adrHome = '',
     this.email = '',
     String? rev,
+    this.visualConfigJson,
   }) : rev = rev ?? _generateRev();
 
   /// Builds a VCard from a legacy `Map<String, dynamic>` payload, where
@@ -50,6 +53,7 @@ class VCard {
     adrHome: (data['adr_home'] as String?) ?? '',
     email: (data['email'] as String?) ?? '',
     rev: data['rev'] as String?,
+    visualConfigJson: data['visual_config'] as String?,
   );
 
   /// Parses a vCard text [vcard] into a VCard instance. Detects the
@@ -147,6 +151,12 @@ class VCard {
         if ((data['photo'] ?? '').isEmpty) data['photo'] = value;
       } else if (name == 'REV') {
         data['rev'] = value;
+      } else if (name == 'X-EZQR-VISUAL') {
+        try {
+          final decoded = utf8.decode(base64Decode(value));
+          jsonDecode(decoded); // validate JSON
+          data['visual_config'] = decoded;
+        } on Object catch (_) {}
       }
     }
 
@@ -194,6 +204,11 @@ class VCard {
 
   /// Revision marker, set automatically when not provided (vCard `REV`).
   String rev;
+
+  /// Raw JSON from the `visual_config` DB column. When non-null, encoded as
+  /// `X-EZQR-VISUAL:<base64>` in the serialised vCard (story 5-1).
+  /// Logo is stripped before embedding to keep the QR scannable.
+  String? visualConfigJson;
 
   static String _generateRev() {
     final now = DateTime.now().toUtc();
@@ -265,6 +280,10 @@ class VCard {
       'rev': clean(rev),
     };
 
+    if (visualConfigJson != null && visualConfigJson!.isNotEmpty) {
+      map['visual_config'] = visualConfigJson!;
+    }
+
     if (photo.isNotEmpty) {
       final isValid =
           await isImageUrl(photo) || photo.startsWith('data:image/');
@@ -322,6 +341,7 @@ class VCard {
     if (email.isNotEmpty) {
       lines.add('EMAIL;TYPE=INTERNET:${clean(email)}');
     }
+    _addVisualProperty(lines);
     lines
       ..add('REV:${clean(rev)}')
       ..add('END:VCARD');
@@ -363,6 +383,7 @@ class VCard {
       );
     }
     if (email.isNotEmpty) lines.add('EMAIL:${clean(email)}');
+    _addVisualProperty(lines);
     lines
       ..add('REV:${clean(rev)}')
       ..add('END:VCARD');
@@ -410,6 +431,24 @@ class VCard {
     }
     if (useV4) return 'PHOTO;VALUE=uri:$photo';
     return 'PHOTO;VALUE=URI:$photo';
+  }
+
+  /// Appends an `X-EZQR-VISUAL` property to [lines] when [visualConfigJson]
+  /// is non-null. The logo is stripped before embedding to keep the QR code
+  /// scannable (story 5-1).
+  void _addVisualProperty(List<String> lines) {
+    final json = visualConfigJson;
+    if (json == null || json.isEmpty) return;
+    try {
+      // Parse and re-serialise without logoBase64 to bound the QR payload.
+      final map = (jsonDecode(json) as Map<String, dynamic>)
+        ..remove('logoBase64');
+      final compact = jsonEncode(map);
+      final encoded = base64Encode(utf8.encode(compact));
+      lines.add('X-EZQR-VISUAL:$encoded');
+    } on Object catch (_) {
+      // Malformed JSON: skip the property rather than crashing.
+    }
   }
 
   /// Assembles content lines into the final CRLF-separated payload with

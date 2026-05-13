@@ -15,31 +15,39 @@ class VCardSettingsProvider {
   static final VCardSettingsProvider _instance =
       VCardSettingsProvider._internal();
 
-  /// Clé `SharedPreferences` qui stocke le toggle vCard 4.0.
-  /// Absente → 3.0 (défaut). Présente et `true` → 4.0.
   static const String _kPrefKey = 'use_vcard4';
+  static const String _kReciprocalKey = 'reciprocal_exchange';
 
   static bool _useVCard4 = false;
+  static bool _reciprocalExchange = false;
 
   /// True quand l'utilisateur a explicitement opt-in au format vCard 4.0.
-  /// Lecture synchrone après [init].
   static bool get useVCard4 => _useVCard4;
 
-  /// Charge l'état depuis `SharedPreferences`. Doit être appelé une fois au
-  /// démarrage de l'app (typiquement dans `main()`, à côté de
-  /// `LangProvider.init()`). Aucun side-effect réseau ou disque autre que
-  /// `SharedPreferences.getInstance()`.
+  /// True quand l'échange réciproque automatique est activé (story 5-4).
+  static bool get reciprocalExchange => _reciprocalExchange;
+
+  /// Charge les préférences depuis `SharedPreferences`. À appeler une fois
+  /// au démarrage de l'app dans `main()`.
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     _useVCard4 = prefs.getBool(_kPrefKey) ?? false;
+    _reciprocalExchange = prefs.getBool(_kReciprocalKey) ?? false;
   }
 
-  /// Met à jour la pref `use_vcard4` et persiste immédiatement. Le getter
-  /// [useVCard4] reflète la nouvelle valeur sans attendre un redémarrage.
-  // ignore: avoid_positional_boolean_parameters
+  /// Met à jour la pref `use_vcard4` et persiste immédiatement.
+  // ignore: avoid_positional_boolean_parameters — simple flag setter
   static Future<void> setUseVCard4(bool value) async {
     _useVCard4 = value;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_kPrefKey, value);
+  }
+
+  /// Met à jour la pref `reciprocal_exchange` et persiste immédiatement.
+  // ignore: avoid_positional_boolean_parameters — simple flag setter
+  static Future<void> setReciprocalExchange(bool value) async {
+    _reciprocalExchange = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_kReciprocalKey, value);
   }
 }

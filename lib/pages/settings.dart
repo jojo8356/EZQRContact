@@ -27,6 +27,7 @@ class _SettingsPageState extends State<SettingsPage> {
   String _selectedLang = LangProvider.currentLanguage();
   List<String> _langs = [];
   bool _useVCard4 = VCardSettingsProvider.useVCard4;
+  bool _reciprocalExchange = VCardSettingsProvider.reciprocalExchange;
 
   late final VoidCallback _langListener;
 
@@ -258,6 +259,45 @@ class _SettingsPageState extends State<SettingsPage> {
                                         value,
                                       );
                                       setState(() => _useVCard4 = value);
+                                    },
+                                  ),
+                                ),
+                                // section header "Échange"
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 24,
+                                    bottom: 4,
+                                  ),
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      (lang['exchange_section'] as String?)
+                                          ?? 'Échange',
+                                      style: TextStyle(
+                                        color: currentColors['text'],
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                ListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(
+                                    (lang['reciprocal_label'] as String?)
+                                        ?? 'Proposer ma carte en retour',
+                                    style: TextStyle(
+                                      color: currentColors['text'],
+                                    ),
+                                  ),
+                                  trailing: AppSwitch(
+                                    value: _reciprocalExchange,
+                                    onChanged: (value) async {
+                                      await VCardSettingsProvider
+                                          .setReciprocalExchange(value);
+                                      setState(
+                                        () => _reciprocalExchange = value,
+                                      );
                                     },
                                   ),
                                 ),

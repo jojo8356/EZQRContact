@@ -15,7 +15,9 @@
     "mode": "Change mode",
     "appearance": "Appearance",
     "vcard_section": "VCard",
-    "vcard4": "vCard 4.0 format"
+    "vcard4": "vCard 4.0 format",
+    "exchange_section": "Exchange",
+    "reciprocal_label": "Offer my card in return"
   },
   "pages": {
     "contact": {
@@ -80,7 +82,12 @@
         "result_title": "Scanned contact",
         "add_to_contacts": "Add to phone contacts",
         "contacts_added": "Added to contacts",
-        "view_collection": "View collection"
+        "view_collection": "View collection",
+        "captured_on": "Captured on %s",
+        "reciprocal_prompt": "Share your card back to %s?",
+        "reciprocal_share": "Share",
+        "reciprocal_later": "Later",
+        "no_my_card": "No card found. Create yours first."
       },
       "result": {
         "title": "Your QR code",

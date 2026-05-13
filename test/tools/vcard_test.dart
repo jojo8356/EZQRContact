@@ -598,4 +598,64 @@ void main() {
       expect(out.replaceAll('\r\n ', ''), contains(longAddr));
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // Story 5-1 / 5-2 — X-EZQR-VISUAL encode + decode
+  // ---------------------------------------------------------------------------
+  group('X-EZQR-VISUAL property (story 5-1 / 5-2)', () {
+    const visualJson =
+        '{"primaryColor":"#6600FF","layout":"minimal","logoBase64":"abc123"}';
+
+    VCard vcWithVisual() => VCard(
+          nom: 'Doe',
+          prenom: 'Jane',
+          rev: '20260101T000000Z',
+          visualConfigJson: visualJson,
+        );
+
+    test('toVCard() embeds X-EZQR-VISUAL line with logo stripped', () {
+      final out = vcWithVisual().toVCard();
+      expect(out, contains('X-EZQR-VISUAL:'));
+      // Logo must NOT appear in the embedded payload.
+      final line = out
+          .split('\r\n')
+          .map((l) => l.replaceAll('\r\n ', ''))
+          .firstWhere((l) => l.startsWith('X-EZQR-VISUAL:'));
+      final encoded = line.substring('X-EZQR-VISUAL:'.length);
+      // Strip any folding whitespace carried into the value.
+      final cleaned = encoded.replaceAll(' ', '');
+      final decoded = utf8.decode(base64Decode(cleaned));
+      final map = jsonDecode(decoded) as Map<String, dynamic>;
+      expect(map.containsKey('logoBase64'), isFalse);
+      expect(map['primaryColor'], '#6600FF');
+      expect(map['layout'], 'minimal');
+    });
+
+    test('VCard.parse() decodes X-EZQR-VISUAL into visual_config', () {
+      final vcard = vcWithVisual();
+      final raw = vcard.toVCard();
+      final parsed = VCard.parse(raw);
+      expect(parsed.visualConfigJson, isNotNull);
+      final map = jsonDecode(parsed.visualConfigJson!) as Map<String, dynamic>;
+      expect(map['primaryColor'], '#6600FF');
+      expect(map['layout'], 'minimal');
+    });
+
+    test('VCard.parse() sets visual_config to null when X-EZQR-VISUAL absent',
+        () {
+      final plain = VCard(nom: 'X', prenom: 'Y', rev: '20260101T000000Z');
+      final parsed = VCard.parse(plain.toVCard());
+      expect(parsed.visualConfigJson, isNull);
+    });
+
+    test('VCard.parse() silently ignores malformed X-EZQR-VISUAL value', () {
+      const broken =
+          'BEGIN:VCARD\r\nVERSION:3.0\r\nN:Doe;Jane;;;\r\n'
+          'FN:Jane Doe\r\nX-EZQR-VISUAL:!!!not-base64!!!\r\n'
+          'REV:20260101T000000Z\r\nEND:VCARD\r\n';
+      expect(() => VCard.parse(broken), returnsNormally);
+      final parsed = VCard.parse(broken);
+      expect(parsed.visualConfigJson, isNull);
+    });
+  });
 }

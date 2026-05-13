@@ -15,7 +15,9 @@
     "mode": "Changer de mode",
     "appearance": "Apparence",
     "vcard_section": "VCard",
-    "vcard4": "Format vCard 4.0"
+    "vcard4": "Format vCard 4.0",
+    "exchange_section": "Échange",
+    "reciprocal_label": "Proposer ma carte en retour"
   },
   "pages": {
     "contact": {
@@ -80,7 +82,12 @@
         "result_title": "Contact scanné",
         "add_to_contacts": "Ajouter aux contacts du téléphone",
         "contacts_added": "Ajouté aux contacts",
-        "view_collection": "Voir la collection"
+        "view_collection": "Voir la collection",
+        "captured_on": "Capturé le %s",
+        "reciprocal_prompt": "Partager votre carte en retour à %s ?",
+        "reciprocal_share": "Partager",
+        "reciprocal_later": "Plus tard",
+        "no_my_card": "Aucune carte trouvée. Créez la vôtre d'abord."
       },
       "result": {
         "title": "Votre QR code",
