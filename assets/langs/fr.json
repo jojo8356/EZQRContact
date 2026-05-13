@@ -122,5 +122,15 @@
     "contacts_denied_title": "Accès aux contacts requis",
     "contacts_denied_body": "La permission a été refusée. Activez l'accès aux contacts dans les Paramètres de l'application.",
     "open_settings": "Ouvrir les Paramètres"
+  },
+  "onboarding": {
+    "skip": "Passer",
+    "create_card": "Créer ma carte",
+    "s1_title": "Échangez vos contacts pros",
+    "s1_body": "Sans compte, sans cloud. Juste un QR code.",
+    "s2_title": "Créez votre carte",
+    "s2_body": "Personnalisez couleur, logo et layout.",
+    "s3_title": "Scannez. Sauvegardez. Exportez.",
+    "s3_body": "Retrouvez tous vos contacts en un seul endroit."
   }
 }

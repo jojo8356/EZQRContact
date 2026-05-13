@@ -122,5 +122,15 @@
     "contacts_denied_title": "Contacts access required",
     "contacts_denied_body": "Permission was denied. Please enable contacts access in the app Settings.",
     "open_settings": "Open Settings"
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "create_card": "Create my card",
+    "s1_title": "Exchange your professional contacts",
+    "s1_body": "No account, no cloud. Just a QR code.",
+    "s2_title": "Create your card",
+    "s2_body": "Customize color, logo and layout.",
+    "s3_title": "Scan. Save. Export.",
+    "s3_body": "Find all your contacts in one place."
   }
 }
