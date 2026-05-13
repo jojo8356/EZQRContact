@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/pages/scan_result_page.dart';
+import 'package:qr_code_app/providers/event_provider.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/tools/tools.dart';
@@ -67,9 +68,13 @@ class _QRScannerPageState extends State<QRScannerPage> {
 
                       if (VCard.isVCard(text)) {
                         final vcard = VCard.parse(text);
+                        final activeEvent = EventProvider().activeEvent;
                         final map = await vcard.toMap()
                           ..['captured_at'] =
                               DateTime.now().toIso8601String();
+                        if (activeEvent != null) {
+                          map['event_id'] = activeEvent.id.toString();
+                        }
                         final id = await createVCard(map);
 
                         if (context.mounted) {

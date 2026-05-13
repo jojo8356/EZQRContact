@@ -7,7 +7,8 @@
     "vcard": "VCard QR code",
     "scanner": "Scan a QR code",
     "import": "Import a QR code",
-    "import_contact": "Import contact"
+    "import_contact": "Import contact",
+    "events": "Events"
   },
   "options": {
     "guide": "Read guide",
@@ -139,6 +140,21 @@
     "contacts_denied_title": "Contacts access required",
     "contacts_denied_body": "Permission was denied. Please enable contacts access in the app Settings.",
     "open_settings": "Open Settings"
+  },
+  "events": {
+    "title": "Events",
+    "new_event": "New event",
+    "name_hint": "Event name",
+    "start_date": "Start date (optional)",
+    "end_date": "End date (optional)",
+    "create": "Create",
+    "cancel": "Cancel",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "active_badge": "Active",
+    "no_events": "No events created",
+    "banner_prefix": "Active event:",
+    "contacts_count": "%s contact(s)"
   },
   "onboarding": {
     "skip": "Skip",

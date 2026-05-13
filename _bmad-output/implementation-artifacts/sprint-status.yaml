@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-05-06
-last_updated: 2026-05-13 # stories 3-1..3-5, 7-1, 8-2, 8-3, 5-1..5-4 done
+last_updated: 2026-05-13 # stories 3-1..3-5, 7-1, 8-2, 8-3, 5-1..5-4, 6-4, 6-5 done
 # story-3-5 done — 2026-05-13
 # story-3-4 done — 2026-05-13
 # story-3-3 done — 2026-05-13
@@ -130,8 +130,8 @@ development_status:
   6-1-page-exportpdf-avec-multi-selection: backlog
   6-2-generation-pdf-1-par-page-detaille: backlog
   6-3-generation-pdf-2x2-synthetique: backlog
-  6-4-mode-evenement-actif: backlog
-  6-5-desactivation-historique-des-evenements: backlog
+  6-4-mode-evenement-actif: done
+  6-5-desactivation-historique-des-evenements: done
   epic-6-retrospective: optional
 
   # ==========================================================================

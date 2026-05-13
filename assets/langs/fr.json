@@ -7,7 +7,8 @@
     "vcard": "QR code VCard",
     "scanner": "Scanner un QR code",
     "import": "Importer un QR code",
-    "import_contact": "Importer contact"
+    "import_contact": "Importer contact",
+    "events": "Événements"
   },
   "options": {
     "guide": "Lire guide",
@@ -139,6 +140,21 @@
     "contacts_denied_title": "Accès aux contacts requis",
     "contacts_denied_body": "La permission a été refusée. Activez l'accès aux contacts dans les Paramètres de l'application.",
     "open_settings": "Ouvrir les Paramètres"
+  },
+  "events": {
+    "title": "Événements",
+    "new_event": "Nouvel événement",
+    "name_hint": "Nom de l'événement",
+    "start_date": "Début (optionnel)",
+    "end_date": "Fin (optionnel)",
+    "create": "Créer",
+    "cancel": "Annuler",
+    "activate": "Activer",
+    "deactivate": "Désactiver",
+    "active_badge": "Actif",
+    "no_events": "Aucun événement créé",
+    "banner_prefix": "Événement actif :",
+    "contacts_count": "%s contact(s)"
   },
   "onboarding": {
     "skip": "Passer",

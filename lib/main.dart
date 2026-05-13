@@ -7,6 +7,7 @@ import 'package:qr_code_app/pages/historique_page.dart';
 import 'package:qr_code_app/pages/onboarding_page.dart';
 import 'package:qr_code_app/pages/qr_card_view_page.dart';
 import 'package:qr_code_app/pages/settings.dart';
+import 'package:qr_code_app/providers/event_provider.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/onboarding_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
@@ -22,6 +23,7 @@ void main() async {
     Perf.measure('startup.lang_init', LangProvider.init),
     Perf.measure('startup.vcard_init', VCardSettingsProvider.init),
   ]);
+  unawaited(EventProvider().init());
   Perf.end('startup.total');
   runApp(const MyApp());
   // Open the SQLite connection in the background so the collection page

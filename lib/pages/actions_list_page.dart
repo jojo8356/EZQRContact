@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/components/active_event_banner.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/navbar.dart';
 import 'package:qr_code_app/modals/guide.dart';
+import 'package:qr_code_app/pages/events_page.dart';
 import 'package:qr_code_app/pages/import_qr_page.dart';
 import 'package:qr_code_app/pages/qr_generator_simple.dart';
 import 'package:qr_code_app/pages/qr_generator_vcard.dart';
@@ -78,33 +80,52 @@ class OptionsListPage extends StatelessWidget {
           await importContacts(context);
         },
       },
+      {
+        'label': lang['events'] as String? ?? 'Événements',
+        'icon': Icons.event,
+        'action': () => Navigator.push(
+          context,
+          MaterialPageRoute<void>(builder: (_) => const EventsPage()),
+        ),
+      },
     ];
 
     return Scaffold(
       backgroundColor: currentColors['bg'],
       appBar: const AppBarCustom('Actions QR'),
-      body: Center(
-        child: ListView.separated(
-          shrinkWrap: true,
-          padding: const EdgeInsets.symmetric(horizontal: 40),
-          itemCount: buttons.length,
-          separatorBuilder: (_, _) => const SizedBox(height: 20),
-          itemBuilder: (context, index) {
-            final btn = buttons[index];
-            return ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: currentColors['button-color'],
-                minimumSize: const Size(double.infinity, 50),
+      body: Column(
+        children: [
+          const ActiveEventBanner(),
+          Expanded(
+            child: Center(
+              child: ListView.separated(
+                shrinkWrap: true,
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                itemCount: buttons.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 20),
+                itemBuilder: (context, index) {
+                  final btn = buttons[index];
+                  return ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: currentColors['button-color'],
+                      minimumSize: const Size(double.infinity, 50),
+                    ),
+                    icon: Icon(
+                      btn['icon'] as IconData?,
+                      color: Colors.white,
+                    ),
+                    label: Text(
+                      btn['label'] as String,
+                      style:
+                          const TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                    onPressed: () => (btn['action'] as void Function())(),
+                  );
+                },
               ),
-              icon: Icon(btn['icon'] as IconData?, color: Colors.white),
-              label: Text(
-                btn['label'] as String,
-                style: const TextStyle(color: Colors.white, fontSize: 16),
-              ),
-              onPressed: () => (btn['action'] as void Function())(),
-            );
-          },
-        ),
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: const Navbar(currentRoute: '/options'),
     );

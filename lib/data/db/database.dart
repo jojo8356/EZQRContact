@@ -10,6 +10,7 @@ import 'package:qr_code_app/components/qr_save.dart';
 import 'package:qr_code_app/data/db/tables/events.dart';
 import 'package:qr_code_app/data/db/tables/simple_qrs.dart';
 import 'package:qr_code_app/data/db/tables/vcards.dart';
+import 'package:qr_code_app/data/repositories/event_repository.dart';
 import 'package:qr_code_app/data/repositories/simple_qr_repository.dart';
 import 'package:qr_code_app/data/repositories/vcard_repository.dart';
 import 'package:qr_code_app/tools/contacts.dart';
@@ -58,6 +59,9 @@ class QRDatabase extends _$QRDatabase {
 
   /// Typed repository for SimpleQR rows.
   late final SimpleQRRepository simpleQrs = SimpleQRRepository(this);
+
+  /// Typed repository for Event rows.
+  late final EventRepository eventRepo = EventRepository(this);
 
   @override
   int get schemaVersion => 3;
@@ -429,6 +433,12 @@ VCardsCompanion _mapToVCardCompanion(Map<String, dynamic> data) {
         : Value(data['date_deleted'].toString()),
     visualConfig: str('visual_config'),
     capturedAt: str('captured_at'),
+    eventId: () {
+      final v = data['event_id'];
+      if (v == null) return const Value<int?>.absent();
+      final n = v is int ? v : int.tryParse(v.toString());
+      return n == null ? const Value<int?>.absent() : Value(n);
+    }(),
   );
 }
 

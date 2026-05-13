@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/components/active_event_banner.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/navbar.dart';
 import 'package:qr_code_app/components/qr_card_list.dart';
@@ -80,6 +81,7 @@ class _CollectionState extends State<Collection> {
           appBar: AppBarCustom(lang['title'] as String),
           body: Column(
             children: [
+              const ActiveEventBanner(),
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
                 child: TextField(
