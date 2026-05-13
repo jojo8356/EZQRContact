@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:drift/drift.dart';
@@ -160,6 +161,63 @@ class QRDatabase extends _$QRDatabase {
   // components, and modals built before story 1.1d keep working without
   // any change. New code should use `db.vcards` / `db.simpleQrs` instead.
   // -----------------------------------------------------------------------
+
+  /// Reactive stream of all items (VCards + SimpleQRs) for the collection
+  /// view. Emits immediately and on every underlying DB change.
+  ///
+  /// When [search] is non-empty, only VCards matching nom/prenom are returned.
+  /// When [eventId] is non-null, only VCards linked to that event are returned.
+  /// When both are empty/null the full merged list is returned.
+  Stream<List<Map<String, dynamic>>> watchAllItems({
+    String search = '',
+    int? eventId,
+  }) {
+    Map<String, dynamic> toVcard(VCardRow r) =>
+        {'type': 'vcard', 'data': _vcardToLegacyMap(r)};
+    Map<String, dynamic> toSimple(SimpleQRRow r) =>
+        {'type': 'simple', 'data': _simpleQrToLegacyMap(r)};
+
+    if (search.isNotEmpty) {
+      return vcards.watchSearch(search).map(
+        (rows) => rows.map(toVcard).toList(),
+      );
+    }
+    if (eventId != null) {
+      return vcards.watchByEvent(eventId).map(
+        (rows) => rows.map(toVcard).toList(),
+      );
+    }
+
+    // No filter: combine VCards and SimpleQRs reactively.
+    List<VCardRow>? latestVCards;
+    List<SimpleQRRow>? latestSimple;
+
+    final ctrl = StreamController<List<Map<String, dynamic>>>.broadcast();
+
+    void emit() {
+      if (latestVCards == null || latestSimple == null) return;
+      ctrl.add([
+        ...latestSimple!.map(toSimple),
+        ...latestVCards!.map(toVcard),
+      ]);
+    }
+
+    final vcSub = vcards.watchActive().listen(
+      (rows) { latestVCards = rows; emit(); },
+      onError: ctrl.addError,
+    );
+    final sqSub = simpleQrs.watchActive().listen(
+      (rows) { latestSimple = rows; emit(); },
+      onError: ctrl.addError,
+    );
+
+    ctrl.onCancel = () {
+      unawaited(vcSub.cancel());
+      unawaited(sqSub.cancel());
+    };
+
+    return ctrl.stream;
+  }
 
   /// Inserts a new SimpleQR row and returns its generated id.
   Future<int> insertSimpleQR(String text, String? path) {
@@ -354,6 +412,7 @@ VCardsCompanion _mapToVCardCompanion(Map<String, dynamic> data) {
         ? const Value.absent()
         : Value(data['date_deleted'].toString()),
     visualConfig: str('visual_config'),
+    capturedAt: str('captured_at'),
   );
 }
 

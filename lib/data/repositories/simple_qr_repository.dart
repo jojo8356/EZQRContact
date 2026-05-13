@@ -27,6 +27,14 @@ class SimpleQRRepository {
         ]))
       .get();
 
+  /// Watches all non-deleted SimpleQRs, newest first. Emits on every DB change.
+  Stream<List<SimpleQRRow>> watchActive() => (_db.select(_db.simpleQRs)
+        ..where((t) => t.deleted.equals(false))
+        ..orderBy([
+          (t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc),
+        ]))
+      .watch();
+
   /// Returns a SimpleQR by id, or null if it does not exist.
   Future<SimpleQRRow?> getById(int id) =>
       (_db.select(_db.simpleQRs)..where((t) => t.id.equals(id)))

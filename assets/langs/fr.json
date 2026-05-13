@@ -75,7 +75,12 @@
       "scanner": {
         "title": "Scanner de QR code",
         "invalid qr": "QR code Invalide",
-        "scan": "Scanner QR Code"
+        "scan": "Scanner QR Code",
+        "saved": "Contact enregistré",
+        "result_title": "Contact scanné",
+        "add_to_contacts": "Ajouter aux contacts du téléphone",
+        "contacts_added": "Ajouté aux contacts",
+        "view_collection": "Voir la collection"
       },
       "result": {
         "title": "Votre QR code",
@@ -94,6 +99,11 @@
     },
     "history": {
       "title": "Historique"
+    },
+    "collection": {
+      "title": "Collection",
+      "search_hint": "Chercher par nom…",
+      "filter_all_events": "Tous les événements"
     }
   },
   "VCard Input": {

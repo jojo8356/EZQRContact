@@ -1,16 +1,16 @@
 import 'package:ai_barcode_scanner/ai_barcode_scanner.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/data/db/database.dart';
-import 'package:qr_code_app/pages/qr_card_view_page.dart';
+import 'package:qr_code_app/pages/scan_result_page.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
-import 'package:qr_code_app/tools/contacts.dart';
 import 'package:qr_code_app/tools/tools.dart';
 import 'package:qr_code_app/tools/vcard.dart';
 
-/// Page launching the camera-based QR scanner. On detection, parses the
-/// payload as a vCard or stores it as a SimpleQR row, then navigates back.
+/// Page launching the camera-based QR scanner. On vCard detection navigates
+/// to [ScanResultPage]; other payloads are saved as SimpleQR rows.
 class QRScannerPage extends StatefulWidget {
   /// Creates the scanner page.
   const QRScannerPage({super.key});
@@ -43,8 +43,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
                     appBarBuilder: (context, controller) => AppBar(
                       backgroundColor: Colors.transparent,
                       elevation: 0,
-                      foregroundColor:
-                          currentColors['text'], // 🔹 couleur des icônes
+                      foregroundColor: currentColors['text'],
                       actions: [
                         IconButton(
                           icon: const Icon(Icons.cameraswitch_rounded),
@@ -62,19 +61,26 @@ class _QRScannerPageState extends State<QRScannerPage> {
                       if (_scanned) return;
                       _scanned = true;
 
-                      final text = capture.barcodes.first.rawValue;
+                      await HapticFeedback.mediumImpact();
 
-                      if (VCard.isVCard(text ?? '')) {
-                        final vcard = VCard.parse(text ?? '');
-                        await PhoneContacts.verifyPermission();
-                        await PhoneContacts.add(await vcard.toMap());
-                        await createVCard(await vcard.toMap());
+                      final text = capture.barcodes.first.rawValue ?? '';
+
+                      if (VCard.isVCard(text)) {
+                        final vcard = VCard.parse(text);
+                        final map = await vcard.toMap()
+                          ..['captured_at'] =
+                              DateTime.now().toIso8601String();
+                        final id = await createVCard(map);
+
+                        if (context.mounted) {
+                          await redirect(
+                            context,
+                            ScanResultPage(vcardData: map, savedId: id),
+                          );
+                        }
                       } else {
-                        await createSimpleQR(text ?? '');
-                      }
-
-                      if (context.mounted) {
-                        await redirect(context, const Collection());
+                        await createSimpleQR(text);
+                        if (context.mounted) Navigator.of(context).pop();
                       }
                     },
                   ),

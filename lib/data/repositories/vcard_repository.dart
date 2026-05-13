@@ -24,6 +24,44 @@ class VCardRepository {
         ]))
       .get();
 
+  /// Watches all non-deleted VCards, newest first. Emits on every DB change.
+  Stream<List<VCardRow>> watchActive() => (_db.select(_db.vCards)
+        ..where((t) => t.deleted.equals(false))
+        ..orderBy([
+          (t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc),
+        ]))
+      .watch();
+
+  /// Watches non-deleted VCards whose nom or prenom contains [query]
+  /// (case-insensitive LIKE). Used for debounced name search (story 4-6).
+  Stream<List<VCardRow>> watchSearch(String query) {
+    final pattern = '%$query%';
+    return (_db.select(_db.vCards)
+          ..where(
+            (t) =>
+                t.deleted.equals(false) &
+                (t.nom.like(pattern) | t.prenom.like(pattern)),
+          )
+          ..orderBy([
+            (t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc),
+          ]))
+        .watch();
+  }
+
+  /// Watches non-deleted VCards linked to [eventId]. Used by the event filter
+  /// in the collection view (story 4-5).
+  Stream<List<VCardRow>> watchByEvent(int eventId) =>
+      (_db.select(_db.vCards)
+            ..where(
+              (t) =>
+                  t.deleted.equals(false) & t.eventId.equals(eventId),
+            )
+            ..orderBy([
+              (t) =>
+                  OrderingTerm(expression: t.id, mode: OrderingMode.desc),
+            ]))
+          .watch();
+
   /// Returns a VCard by id, or null if it does not exist.
   Future<VCardRow?> getById(int id) =>
       (_db.select(_db.vCards)..where((t) => t.id.equals(id)))
