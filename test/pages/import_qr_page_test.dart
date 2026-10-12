@@ -55,12 +55,12 @@ Future<void> _openImport(
 
 Future<void> _tapPick(WidgetTester tester) async {
   await tester.tap(find.byKey(const Key('import-pick-image')));
-  await tester.pump();
-  await tester.pump();
+  for (var i = 0; i < 8; i++) {
+    await tester.pump();
+  }
   // showToast arms a 3 s PausableTimer that outlives the tree.
   toastification.dismissAll();
   await tester.pump();
-  // Material route push/pop is 300 ms.
   await tester.pump(const Duration(milliseconds: 400));
 }
 

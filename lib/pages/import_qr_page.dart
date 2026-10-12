@@ -126,7 +126,8 @@ class _QrFromImagePageState extends State<QrFromImagePage> {
           title: lang['flashed'] as String,
           color: Colors.white,
         );
-        Navigator.of(context).pop();
+        if (!context.mounted) return;
+        Navigator.of(context).popUntil((route) => route.isFirst);
       }
     } on Exception catch (e) {
       debugPrint('Erreur lors du scan image: $e');
