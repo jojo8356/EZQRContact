@@ -122,8 +122,8 @@ for the test that drives the navigation.
 
 **Requirements**
 
-- Flutter SDK `^3.8.1` ([install guide](https://docs.flutter.dev/get-started/install))
-- Android SDK with `compileSdkVersion = 35` (constraint of `permission_handler 12`)
+- Flutter SDK `>=3.47.0` ([install guide](https://docs.flutter.dev/get-started/install))
+- Android SDK with `compileSdk = 37` (constraint of `permission_handler` 13)
 - Xcode 15+ for iOS builds
 
 **Run in dev mode**

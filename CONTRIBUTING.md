@@ -22,8 +22,8 @@ flutter run
 
 Requirements:
 
-- Flutter SDK `^3.8.1`
-- Android SDK with `compileSdkVersion = 35`
+- Flutter SDK `>=3.47.0`
+- Android SDK with `compileSdk = 37`
 - Xcode 15+ for iOS builds (Mac only)
 - Node.js 18+ and [pnpm](https://pnpm.io) (only for the commit-msg
   Git hook; no application code uses Node)

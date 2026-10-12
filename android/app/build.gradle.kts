@@ -17,7 +17,9 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.ezqrcontact.ezqrcontact"
-    compileSdk = flutter.compileSdkVersion
+    // permission_handler_android 13 compiles against API 37; Flutter 3.47
+    // still reports compileSdkVersion 36.
+    compileSdk = 37
     ndkVersion = "28.2.13676358"
 
     compileOptions {
