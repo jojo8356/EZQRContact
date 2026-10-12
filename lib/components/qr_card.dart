@@ -14,6 +14,7 @@ class QRCard extends StatefulWidget {
     required this.data,
     required this.isVCard,
     required this.onRefresh,
+    this.onDelete,
     super.key,
   });
 
@@ -25,6 +26,9 @@ class QRCard extends StatefulWidget {
 
   /// Callback invoked after a destructive action mutates the database.
   final Future<void> Function() onRefresh;
+
+  /// Test override for [deleteQR]. Production leaves this null.
+  final Future<void> Function(int id)? onDelete;
 
   @override
   State<QRCard> createState() => _QRCardState();
@@ -100,6 +104,7 @@ class _QRCardState extends State<QRCard> {
               data: widget.data,
               expanded: expanded,
               onRefresh: widget.onRefresh,
+              onDelete: widget.onDelete,
             ),
           ],
         ),
