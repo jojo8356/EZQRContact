@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:qr_code_app/components/qr_card.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
@@ -66,12 +65,22 @@ void main() {
     expect(find.text('Jean Martin'), findsOneWidget);
     expect(find.byType(QRCard), findsNWidgets(2));
 
+    final marieCard = find.ancestor(
+      of: find.text('Marie Dupont'),
+      matching: find.byType(QRCard),
+    );
+
     await tester.tap(find.text('Marie Dupont'));
     await tester.pumpAndSettle();
 
-    expect(find.byIcon(LucideIcons.trash), findsOneWidget);
-
-    await tester.tap(find.byKey(const Key('qr-btn-delete')));
+    // AnimatedCrossFade keeps the collapsed card's trash icon in the tree.
+    // Hit only Marie's button.
+    final trash = find.descendant(
+      of: marieCard,
+      matching: find.byKey(const Key('qr-btn-delete')),
+    );
+    expect(trash, findsOneWidget);
+    await tester.tap(trash);
     await tester.pumpAndSettle();
 
     expect(find.text('Marie Dupont'), findsNothing);
