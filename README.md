@@ -92,10 +92,8 @@ for the test that drives the navigation.
 - [`path_provider ^2.1.5`](https://pub.dev/packages/path_provider)
 
 ### QR / Scan
-- [`mobile_scanner ^6.0.2`](https://pub.dev/packages/mobile_scanner)
 - [`qr_flutter ^4.0.0`](https://pub.dev/packages/qr_flutter)
-- [`flutter_qrcode_analysis ^1.0.2`](https://pub.dev/packages/flutter_qrcode_analysis)
-- [`ai_barcode_scanner ^6.0.1`](https://pub.dev/packages/ai_barcode_scanner)
+- [`ai_barcode_scanner ^8.2.0`](https://pub.dev/packages/ai_barcode_scanner)
 
 ### Contacts and permissions
 - [`flutter_contacts ^1.1.9+2`](https://pub.dev/packages/flutter_contacts)
