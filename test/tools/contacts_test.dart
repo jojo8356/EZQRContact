@@ -4,20 +4,27 @@ import 'package:qr_code_app/tools/contacts.dart';
 
 /// Builds a fully populated [Contact] fixture used across several tests.
 Contact _buildFullContact() {
-  return Contact()
-    ..id = 'test-id'
-    ..name.first = 'Marie'
-    ..name.last = 'Dupont'
-    ..organizations = [Organization(company: 'Acme', title: 'CTO')]
-    ..phones = [
-      Phone('+33612345678', label: PhoneLabel.work),
-      Phone('+33123456789', label: PhoneLabel.home),
-    ]
-    ..emails = [Email('marie@acme.fr')]
-    ..addresses = [
-      Address('12 rue de la Paix', label: AddressLabel.work),
-      Address('5 villa des Lilas'),
-    ];
+  return const Contact(
+    id: 'test-id',
+    name: Name(first: 'Marie', last: 'Dupont'),
+    organizations: [Organization(name: 'Acme', jobTitle: 'CTO')],
+    phones: [
+      Phone(number: '+33612345678', label: Label(PhoneLabel.work)),
+      Phone(number: '+33123456789', label: Label(PhoneLabel.home)),
+    ],
+    emails: [Email(address: 'marie@acme.fr')],
+    addresses: [
+      Address(
+        street: '12 rue de la Paix',
+        formatted: '12 rue de la Paix',
+        label: Label(AddressLabel.work),
+      ),
+      Address(
+        street: '5 villa des Lilas',
+        formatted: '5 villa des Lilas',
+      ),
+    ],
+  );
 }
 
 void main() {
@@ -61,27 +68,21 @@ void main() {
     });
 
     test('contact with no phones produces empty tel_work and tel_home', () {
-      final c = Contact()
-        ..name.first = 'Test'
-        ..phones = [];
+      const c = Contact(name: Name(first: 'Test'));
       final map = PhoneContacts.contactToMap(c);
       expect(map['tel_work'], equals(''));
       expect(map['tel_home'], equals(''));
     });
 
     test('contact with no organizations produces empty org and job', () {
-      final c = Contact()
-        ..name.first = 'Test'
-        ..organizations = [];
+      const c = Contact(name: Name(first: 'Test'));
       final map = PhoneContacts.contactToMap(c);
       expect(map['org'], equals(''));
       expect(map['job'], equals(''));
     });
 
     test('contact with no emails produces empty email', () {
-      final c = Contact()
-        ..name.first = 'Test'
-        ..emails = [];
+      const c = Contact(name: Name(first: 'Test'));
       final map = PhoneContacts.contactToMap(c);
       expect(map['email'], equals(''));
     });
@@ -159,10 +160,10 @@ void main() {
     });
 
     test('two contacts produces list of two maps', () {
-      final c2 = Contact()
-        ..id = 'id2'
-        ..name.first = 'Jean'
-        ..name.last = 'Martin';
+      const c2 = Contact(
+        id: 'id2',
+        name: Name(first: 'Jean', last: 'Martin'),
+      );
       final result = PhoneContacts.toMapList([_buildFullContact(), c2]);
       expect(result.length, equals(2));
       expect(result[0]['prenom'], equals('Marie'));
