@@ -180,7 +180,7 @@ class PhoneContacts {
     }
     final emails = <Email>[];
     if (has('email')) {
-      emails.add(Email(s('email')));
+      emails.add(Email(address: s('email')));
     }
     final orgs = <Organization>[];
     if (has('org') || has('job')) {
