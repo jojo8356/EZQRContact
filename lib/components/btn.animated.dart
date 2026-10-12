@@ -5,7 +5,7 @@ import 'package:qr_code_app/theme/tokens.dart';
 /// Primary submit button with a 0.98 press scale (ENCRE "stamp", not punch).
 class AnimatedSubmitButton extends StatefulWidget {
   /// Creates the animated submit button.
-  const AnimatedSubmitButton({
+  const new({
     required this.isDark,
     required this.onPressed,
     required this.label,

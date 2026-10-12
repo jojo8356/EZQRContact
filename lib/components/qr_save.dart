@@ -165,7 +165,7 @@ Future<Uint8List> buildQrBytes(
   final cr = (color.r * 255).round().clamp(0, 255);
   final cg = (color.g * 255).round().clamp(0, 255);
   final cb = (color.b * 255).round().clamp(0, 255);
-  return compute<List<dynamic>, Uint8List>(
+  return await compute<List<dynamic>, Uint8List>(
     _renderQrPng,
     [bits, n, cr, cg, cb, logoBytes],
   );

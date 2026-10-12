@@ -10,7 +10,7 @@ import 'package:qr_code_app/tools/tools.dart';
 /// reveal the [OptionsQR] action grid.
 class QRCard extends StatefulWidget {
   /// Creates a QR card. [onRefresh] is invoked after destructive actions.
-  const QRCard({
+  const new({
     required this.data,
     required this.isVCard,
     required this.onRefresh,

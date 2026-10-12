@@ -4,7 +4,7 @@ import 'package:qr_code_app/providers/theme_globals.dart';
 /// Three QR finder-pattern corners — the ENCRE brand mark.
 class QrMark extends StatelessWidget {
   /// Creates the mark at [size] logical pixels.
-  const QrMark({this.size = 22, this.color, super.key});
+  const new({this.size = 22, this.color, super.key});
 
   /// Outer size.
   final double size;
@@ -26,7 +26,7 @@ class QrMark extends StatelessWidget {
 }
 
 class _QrMarkPainter extends CustomPainter {
-  _QrMarkPainter(this.color);
+  new(this.color);
 
   final Color color;
 
@@ -64,7 +64,7 @@ class _QrMarkPainter extends CustomPainter {
 /// EZQR wordmark used on the home app bar.
 class EzqrWordmark extends StatelessWidget {
   /// Creates the wordmark.
-  const EzqrWordmark({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {

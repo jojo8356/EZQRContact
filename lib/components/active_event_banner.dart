@@ -9,7 +9,7 @@ import 'package:qr_code_app/theme/tokens.dart';
 /// Tapping it navigates to [EventsPage].
 class ActiveEventBanner extends StatelessWidget {
   /// Creates the banner.
-  const ActiveEventBanner({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {

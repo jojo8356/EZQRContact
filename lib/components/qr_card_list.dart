@@ -7,7 +7,7 @@ import 'package:qr_code_app/components/qr_card.dart';
 class QRCardListView extends StatefulWidget {
   /// Creates the list. [refreshData] is forwarded to each card so they
   /// can ask the parent to re-query the database after destructive ops.
-  const QRCardListView({
+  const new({
     required this.allItems,
     required this.refreshData,
     super.key,

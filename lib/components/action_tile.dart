@@ -6,7 +6,7 @@ import 'package:qr_code_app/theme/tokens.dart';
 /// Home-screen action tile. Featured tiles are full-width with subtitle.
 class ActionTile extends StatelessWidget {
   /// Creates an action tile.
-  const ActionTile({
+  const new({
     required this.icon,
     required this.title,
     required this.onTap,

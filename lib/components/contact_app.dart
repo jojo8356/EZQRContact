@@ -7,7 +7,7 @@ import 'package:qr_code_app/providers/theme_globals.dart';
 /// `List<Contact>` chosen by the user (or empty when cancelled).
 class MultiContactPickerPage extends StatefulWidget {
   /// Creates the picker for the given [contacts].
-  const MultiContactPickerPage({required this.contacts, super.key});
+  const new({required this.contacts, super.key});
 
   /// All device contacts the user can pick from.
   final List<Contact> contacts;

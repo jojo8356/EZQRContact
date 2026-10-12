@@ -6,7 +6,7 @@ import 'package:qr_code_app/providers/theme_globals.dart';
 /// to a centered "empty" message (translated) when [persons] is empty.
 class PersonsList extends StatelessWidget {
   /// Creates the list with the given [persons] payload and theme flag.
-  const PersonsList({
+  const new({
     required this.persons,
     required this.isDarkMode,
     super.key,

@@ -36,7 +36,7 @@ void main() async {
 /// shows onboarding on first launch.
 class MyApp extends StatefulWidget {
   /// Creates the root widget.
-  const MyApp({super.key});
+  const new({super.key});
 
   @override
   State<MyApp> createState() => _MyAppState();

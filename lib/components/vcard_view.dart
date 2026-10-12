@@ -6,7 +6,7 @@ import 'package:qr_code_app/tools/tools.dart';
 /// shown inside the "view" dialog and the post-scan preview.
 class VCardView extends StatelessWidget {
   /// Creates the view from the given form controllers.
-  const VCardView({required this.controllers, super.key});
+  const new({required this.controllers, super.key});
 
   /// Form controllers keyed by vCard field name (`nom`, `prenom`, ...).
   final Map<String, TextEditingController> controllers;

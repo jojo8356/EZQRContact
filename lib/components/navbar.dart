@@ -11,7 +11,7 @@ import 'package:qr_code_app/theme/tokens.dart';
 /// Highlights the entry matching [currentRoute].
 class Navbar extends StatelessWidget {
   /// Creates the bottom navigation bar.
-  const Navbar({required this.currentRoute, super.key});
+  const new({required this.currentRoute, super.key});
 
   /// Name of the route currently displayed (e.g. `/options`, `/history`).
   final String currentRoute;
@@ -107,7 +107,7 @@ class Navbar extends StatelessWidget {
 }
 
 class _NavItem extends StatelessWidget {
-  const _NavItem({
+  const new({
     required this.icon,
     required this.selectedIcon,
     required this.label,

@@ -6,7 +6,7 @@ import 'package:qr_code_app/theme/tokens.dart';
 /// Themed [AppBar] that auto-rebuilds on dark-mode changes via [darkProv].
 class AppBarCustom extends StatelessWidget implements PreferredSizeWidget {
   /// Creates a custom app bar showing [title], or [titleWidget] if set.
-  const AppBarCustom(this.title, {this.titleWidget, super.key});
+  const new(this.title, {this.titleWidget, super.key});
 
   /// Title text displayed in the app bar.
   final String title;

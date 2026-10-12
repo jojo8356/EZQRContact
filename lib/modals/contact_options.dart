@@ -83,7 +83,7 @@ List<Widget> generateButtons({
             color: color,
           );
 
-          unawaited(Navigator.pushReplacementNamed(dialogContext, '/home'));
+          Navigator.pushReplacementNamed(dialogContext, '/home');
         },
       ),
     );

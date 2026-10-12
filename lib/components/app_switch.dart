@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 /// Toggle M3-like avec squish du thumb et durée d'animation configurable.
 class AppSwitch extends StatefulWidget {
   /// Creates an [AppSwitch].
-  const AppSwitch({
+  const new({
     required this.value,
     required this.onChanged,
     this.duration = const Duration(milliseconds: 300),

@@ -15,7 +15,7 @@ class OptionsQR extends StatelessWidget {
   /// Creates the options row for the QR/VCard described by [data].
   /// [onRefresh] is awaited after each destructive action so the parent
   /// list can re-query the database.
-  const OptionsQR({
+  const new({
     required this.isVCard,
     required this.data,
     required this.expanded,

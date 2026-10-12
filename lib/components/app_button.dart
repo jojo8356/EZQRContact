@@ -17,7 +17,7 @@ enum AppButtonVariant {
 /// ENCRE pressable button. Scale 0.98 on tap, never a 1.1 punch.
 class AppButton extends StatefulWidget {
   /// Creates an ENCRE button.
-  const AppButton({
+  const new({
     required this.label,
     required this.onPressed,
     this.variant = AppButtonVariant.primary,
@@ -27,7 +27,7 @@ class AppButton extends StatefulWidget {
   });
 
   /// Copper filled CTA.
-  const AppButton.primary({
+  const new primary({
     required this.label,
     required this.onPressed,
     this.icon,
@@ -36,7 +36,7 @@ class AppButton extends StatefulWidget {
   }) : variant = AppButtonVariant.primary;
 
   /// Outlined CTA.
-  const AppButton.secondary({
+  const new secondary({
     required this.label,
     required this.onPressed,
     this.icon,
@@ -45,7 +45,7 @@ class AppButton extends StatefulWidget {
   }) : variant = AppButtonVariant.secondary;
 
   /// Text-only CTA.
-  const AppButton.ghost({
+  const new ghost({
     required this.label,
     required this.onPressed,
     this.icon,

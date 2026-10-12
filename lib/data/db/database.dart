@@ -31,7 +31,7 @@ part 'database.g.dart';
 class QRDatabase extends _$QRDatabase {
 
   /// Returns the singleton [QRDatabase] instance backed by sqflite.
-  factory QRDatabase() => _instance;
+  factory() => _instance;
 
   /// Test-only constructor. Inject any [QueryExecutor] (typically
   /// `NativeDatabase.memory()` from `package:drift/native.dart`).
@@ -39,9 +39,9 @@ class QRDatabase extends _$QRDatabase {
   // ctor's `e` param name, but `executor` is the meaningful API contract
   // for callers; keep the descriptive name.
   // ignore: matching_super_parameters
-  QRDatabase.forTesting(super.executor);
+  new forTesting(super.executor);
 
-  QRDatabase._internal()
+  new _internal()
       : super(
           SqfliteQueryExecutor.inDatabaseFolder(
             path: 'qr_app.db',
@@ -225,7 +225,7 @@ class QRDatabase extends _$QRDatabase {
 
   /// Inserts a new SimpleQR row and returns its generated id.
   Future<int> insertSimpleQR(String text, String? path) {
-    Value<String?> pathValue = const Value.absent();
+    var pathValue = const Value<String?>.absent();
     if (path != null) {
       pathValue = Value(path);
     }
@@ -436,15 +436,15 @@ VCardsCompanion _mapToVCardCompanion(Map<String, dynamic> data) {
     return const Value.absent();
   }
 
-  Value<String?> pathField = const Value.absent();
+  var pathField = const Value<String?>.absent();
   if (data['path'] != null) {
     pathField = Value(data['path'].toString());
   }
-  Value<String?> dateDeletedField = const Value.absent();
+  var dateDeletedField = const Value<String?>.absent();
   if (data['date_deleted'] != null) {
     dateDeletedField = Value(data['date_deleted'].toString());
   }
-  Value<int?> eventIdField = const Value.absent();
+  var eventIdField = const Value<int?>.absent();
   final eventRaw = data['event_id'];
   if (eventRaw != null) {
     int? n;
@@ -576,7 +576,7 @@ Future<void> _genQrAndSave(Map<String, dynamic> data, String path) async {
 /// Adds [vcardData] to the device contacts then persists it as a VCard row.
 Future<int> createContact(Map<String, dynamic> vcardData) async {
   await PhoneContacts.add(vcardData);
-  return createVCard(vcardData);
+  return await createVCard(vcardData);
 }
 
 /// Returns true when two VCard maps are equal (excluding the `id` field).

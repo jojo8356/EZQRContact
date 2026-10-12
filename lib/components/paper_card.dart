@@ -6,7 +6,7 @@ import 'package:qr_code_app/theme/tokens.dart';
 /// Surface that reads as a sheet of paper: hairline, rest shadow, warm fill.
 class PaperCard extends StatelessWidget {
   /// Creates a paper card.
-  const PaperCard({
+  const new({
     required this.child,
     this.padding,
     this.margin,

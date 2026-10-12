@@ -5,7 +5,7 @@ import 'package:qr_code_app/theme/tokens.dart';
 /// Small-caps section heading used above grouped content.
 class SectionLabel extends StatelessWidget {
   /// Creates a section label.
-  const SectionLabel(this.text, {super.key});
+  const new(this.text, {super.key});
 
   /// Label copy. Rendered in uppercase.
   final String text;

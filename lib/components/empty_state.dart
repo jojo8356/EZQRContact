@@ -6,7 +6,7 @@ import 'package:qr_code_app/theme/tokens.dart';
 /// Centered empty-state: icon well, title, body, optional CTA.
 class EmptyState extends StatelessWidget {
   /// Creates an empty state.
-  const EmptyState({
+  const new({
     required this.icon,
     required this.title,
     this.body,

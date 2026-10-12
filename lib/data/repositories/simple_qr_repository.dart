@@ -9,7 +9,7 @@ import 'package:qr_code_app/data/db/database.dart';
 class SimpleQRRepository {
 
   /// Creates a repository bound to [_db].
-  SimpleQRRepository(this._db);
+  new(this._db);
   final QRDatabase _db;
 
   /// Inserts a new SimpleQR row. The SQL column is named `text`, but on
