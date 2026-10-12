@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_icons/lucide_icons.dart';
 import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/modals/card_view.dart';
 import 'package:qr_code_app/modals/contact_options.dart';
@@ -69,7 +70,7 @@ class OptionsQR extends StatelessWidget {
       },
       if (data['deleted'] != 1)
         {
-          'icon': Icons.delete_outline_rounded,
+          'icon': LucideIcons.trash_2,
           'color': c['danger'],
           'semanticsKey': 'btn_delete',
           'onPressed': () async {
@@ -78,7 +79,7 @@ class OptionsQR extends StatelessWidget {
           },
         },
       {
-        'icon': Icons.download_outlined,
+          'icon': LucideIcons.download,
         'color': c['navy'],
         'semanticsKey': 'btn_download',
         'onPressed': () async {

@@ -17,6 +17,30 @@ class VCardView extends StatelessWidget {
     final bgColor = currentColors['surface']!;
     final textColor = currentColors['text']!;
     final secondaryTextColor = currentColors['text-muted']!;
+    final photo = photoImageProvider(controllers['photo']?.text ?? '');
+    Widget avatar = Icon(
+      Icons.person_rounded,
+      size: 80,
+      color: currentColors['navy'],
+    );
+    if (photo != null) {
+      avatar = ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: Image(
+          image: photo,
+          width: 80,
+          height: 80,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Icon(
+              Icons.person_rounded,
+              size: 80,
+              color: currentColors['navy'],
+            );
+          },
+        ),
+      );
+    }
 
     return Card(
       color: bgColor, // fond adaptatif
@@ -28,21 +52,7 @@ class VCardView extends StatelessWidget {
             // Photo + nom
             Row(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Image.network(
-                    controllers['photo']?.text ?? '',
-                    width: 80,
-                    height: 80,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        Icon(
-                          Icons.person_rounded,
-                          size: 80,
-                          color: currentColors['navy'],
-                        ),
-                  ),
-                ),
+                avatar,
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(

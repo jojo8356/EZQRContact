@@ -34,6 +34,7 @@ dependencies:
   image: ^4.5.4
   image_picker: ^1.2.0
   intl: ^0.20.2
+  lucide_icons: ^0.257.0
   path: ^1.9.1
   path_provider: ^2.1.5
   pdf: ^3.12.0
