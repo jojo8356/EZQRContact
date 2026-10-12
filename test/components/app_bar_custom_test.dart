@@ -9,7 +9,6 @@ import 'package:qr_code_app/theme/tokens.dart';
 import '../helpers/encre.dart';
 
 void main() {
-  const papier = Color(0xFFF4EFE6);
   const encre = Color(0xFF1A1612);
   const ligne = Color(0xFFDDD4C6);
   const marine = Color(0xFF1F3D4D);
@@ -17,7 +16,7 @@ void main() {
   setUp(() => darkProv.forceSetDarkMode(false));
   tearDown(() => darkProv.forceSetDarkMode(false));
 
-  testWidgets('app bar is flat paper with a 1 dp hairline — DA §9.6', (
+  testWidgets('app bar is 10% black scrim with a 1 dp hairline', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -29,7 +28,8 @@ void main() {
     final bar = tester.widget<AppBar>(find.byType(AppBar));
     expect(bar.elevation, 0);
     expect(bar.scrolledUnderElevation, 0);
-    expect(bar.backgroundColor, papier);
+    expect(bar.backgroundColor, AppTokens.appBarScrim);
+    expect(bar.surfaceTintColor, Colors.transparent);
 
     final title = tester.widget<Text>(find.text('Options'));
     expect(title.style?.color, encre);

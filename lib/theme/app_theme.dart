@@ -59,14 +59,17 @@ ThemeData buildAppTheme({
     textTheme: textTheme,
     iconTheme: IconThemeData(color: ink, size: 24),
     appBarTheme: AppBarTheme(
-      backgroundColor: bg,
+      backgroundColor: AppTokens.appBarScrim,
+      surfaceTintColor: Colors.transparent,
       foregroundColor: ink,
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: false,
       titleTextStyle: textTheme.titleLarge,
       iconTheme: IconThemeData(color: ink, size: 24),
-      systemOverlayStyle: overlay,
+      systemOverlayStyle: overlay.copyWith(
+        statusBarColor: Colors.transparent,
+      ),
     ),
     dividerColor: border,
     dividerTheme: DividerThemeData(

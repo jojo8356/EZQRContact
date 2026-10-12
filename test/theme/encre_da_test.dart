@@ -165,7 +165,7 @@ void main() {
       expect(theme.scaffoldBackgroundColor, papier);
       expect(theme.textTheme.bodyLarge?.fontFamily, AppFonts.ui);
       expect(theme.appBarTheme.elevation, 0);
-      expect(theme.appBarTheme.backgroundColor, papier);
+      expect(theme.appBarTheme.backgroundColor, AppTokens.appBarScrim);
     });
 
     test('CTA theme is 52 dp high with r-md, never a pill', () {

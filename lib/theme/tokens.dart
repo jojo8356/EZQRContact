@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 /// Spacing, radius and motion tokens for the ENCRE art direction.
 ///
 /// See `docs/direction-artistique.md`. Color tokens live in `lib/colors.dart`.
@@ -64,6 +66,9 @@ abstract final class AppTokens {
 
   /// App bar hairline.
   static const double hairline = 1;
+
+  /// App bar fill: transparent + 10% black (`#000000` @ 10%).
+  static const Color appBarScrim = Color(0x1A000000);
 
   // --- Motion --------------------------------------------------------------
   /// Press feedback.

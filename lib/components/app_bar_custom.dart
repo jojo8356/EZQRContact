@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/theme/tokens.dart';
 
@@ -19,11 +20,25 @@ class AppBarCustom extends StatelessWidget implements PreferredSizeWidget {
       animation: darkProv,
       builder: (context, _) {
         final c = currentColors;
+        var overlay = const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+          statusBarBrightness: Brightness.light,
+        );
+        if (darkProv.isDarkMode) {
+          overlay = const SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.light,
+            statusBarBrightness: Brightness.dark,
+          );
+        }
         return AppBar(
-          backgroundColor: c['bg'],
+          backgroundColor: AppTokens.appBarScrim,
+          surfaceTintColor: Colors.transparent,
           foregroundColor: c['text'],
           elevation: 0,
           scrolledUnderElevation: 0,
+          systemOverlayStyle: overlay,
           title: titleWidget ??
               Text(
                 title,
