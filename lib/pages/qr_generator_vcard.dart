@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/btn.animated.dart';
 import 'package:qr_code_app/components/qr_save.dart';
@@ -15,6 +16,7 @@ import 'package:qr_code_app/models/visual_config.dart';
 import 'package:qr_code_app/pages/qr_card_view_page.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
+import 'package:qr_code_app/theme/tokens.dart';
 import 'package:qr_code_app/tools/contacts.dart';
 import 'package:qr_code_app/tools/photo.dart';
 import 'package:qr_code_app/tools/tools.dart';
@@ -59,23 +61,64 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
   String? _photoDataUri;
 
   Future<void> _pickColor(BuildContext ctx, String label) async {
-    final picked = await showColorPickerDialog(
-      ctx,
-      _primaryColor,
-      title: Text(label),
-      pickersEnabled: const <ColorPickerType, bool>{
-        ColorPickerType.primary: true,
-        ColorPickerType.accent: false,
-        ColorPickerType.custom: false,
-        ColorPickerType.wheel: true,
+    var draft = _primaryColor;
+    final picked = await showDialog<Color>(
+      context: ctx,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            return AlertDialog(
+              backgroundColor: currentColors['popup-background'],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppTokens.rXl),
+              ),
+              title: Text(
+                label,
+                style: TextStyle(color: currentColors['popup-text']),
+              ),
+              content: SingleChildScrollView(
+                child: ColorPicker(
+                  color: draft,
+                  onColorChanged: (c) {
+                    setDialogState(() => draft = c);
+                  },
+                  pickersEnabled: const <ColorPickerType, bool>{
+                    ColorPickerType.primary: true,
+                    ColorPickerType.accent: false,
+                    ColorPickerType.custom: false,
+                    ColorPickerType.wheel: true,
+                  },
+                  actionButtons: const ColorPickerActionButtons(
+                    dialogActionButtons: false,
+                    okButton: false,
+                    closeButton: false,
+                  ),
+                ),
+              ),
+              actionsAlignment: MainAxisAlignment.spaceEvenly,
+              actionsPadding: const EdgeInsets.fromLTRB(
+                AppTokens.s4,
+                0,
+                AppTokens.s4,
+                AppTokens.s4,
+              ),
+              actions: [
+                _DialogDisc(
+                  icon: LucideIcons.x,
+                  onTap: () => Navigator.of(dialogContext).pop(),
+                ),
+                _DialogDisc(
+                  icon: LucideIcons.check,
+                  onTap: () => Navigator.of(dialogContext).pop(draft),
+                ),
+              ],
+            );
+          },
+        );
       },
-      actionButtons: const ColorPickerActionButtons(
-        okButton: true,
-        closeButton: true,
-        dialogActionButtons: false,
-      ),
     );
     if (!mounted) return;
+    if (picked == null) return;
     setState(() => _primaryColor = picked);
   }
 
@@ -385,6 +428,31 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
           ),
         );
       },
+    );
+  }
+}
+
+/// Filled circular dialog action (10% black) for OK / close.
+class _DialogDisc extends StatelessWidget {
+  const new({required this.icon, required this.onTap});
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppTokens.appBarScrim,
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: SizedBox(
+          width: AppTokens.tap,
+          height: AppTokens.tap,
+          child: Icon(icon, color: currentColors['text']),
+        ),
+      ),
     );
   }
 }
