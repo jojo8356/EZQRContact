@@ -31,18 +31,29 @@ class _QRCardListViewState extends State<QRCardListView> {
   @override
   void initState() {
     super.initState();
-    _loadMore(initial: true);
+    _fillWindow(initial: true);
     _controller.addListener(_onScroll);
+  }
+
+  @override
+  void didUpdateWidget(QRCardListView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (identical(oldWidget.allItems, widget.allItems)) return;
+    _activeItems.clear();
+    _loadedCount = 0;
+    _fillWindow(initial: true);
   }
 
   void _onScroll() {
     if (_controller.position.pixels >=
         _controller.position.maxScrollExtent - 100) {
-      _loadMore();
+      setState(() {
+        _fillWindow();
+      });
     }
   }
 
-  void _loadMore({bool initial = false}) {
+  void _fillWindow({bool initial = false}) {
     var toLoad = 2;
     if (initial) {
       toLoad = 8;
@@ -51,17 +62,16 @@ class _QRCardListViewState extends State<QRCardListView> {
     if (_loadedCount >= total) return;
 
     var nextLoad = _loadedCount + toLoad;
-    if (nextLoad > total) nextLoad = total;
+    if (nextLoad > total) {
+      nextLoad = total;
+    }
 
-    setState(() {
-      _activeItems.addAll(widget.allItems.getRange(_loadedCount, nextLoad));
-      _loadedCount = nextLoad;
+    _activeItems.addAll(widget.allItems.getRange(_loadedCount, nextLoad));
+    _loadedCount = nextLoad;
 
-      // Garder seulement 12 éléments en RAM
-      if (_activeItems.length > 12) {
-        _activeItems.removeRange(0, _activeItems.length - 12);
-      }
-    });
+    if (_activeItems.length > 12) {
+      _activeItems.removeRange(0, _activeItems.length - 12);
+    }
   }
 
   @override
