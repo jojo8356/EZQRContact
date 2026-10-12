@@ -27,66 +27,50 @@ class _QRScannerPageState extends State<QRScannerPage> {
   bool _scanned = false;
 
   Future<void> _openScanner() async {
+    final overlay = ScannerOverlayConfig(
+      borderColor: currentColors['button-color'],
+      backgroundColor: currentColors['bg'],
+    );
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (context) => SafeArea(
-          child: AiBarcodeScanner(
-            borderColor: currentColors['button-color'] ?? Colors.white,
-            overlayColor: currentColors['bg'] ?? Colors.black,
-            hideGalleryButton: true,
-            hideSheetDragHandler: true,
-            hideSheetTitle: true,
-            appBarBuilder: (context, controller) {
-              var torchIcon = const Icon(Icons.flashlight_on_rounded);
-              if (controller.torchEnabled) {
-                torchIcon = const Icon(Icons.flashlight_off_rounded);
+        builder: (context) => AiBarcodeScanner(
+          formats: const [BarcodeFormat.qrCode],
+          galleryButtonType: GalleryButtonType.none,
+          enabledActionButtons: const {
+            ScannerAction.cameraSwitch,
+            ScannerAction.torch,
+            ScannerAction.close,
+          },
+          overlayConfig: overlay,
+          onDetect: (capture) async {
+            if (_scanned) return;
+            _scanned = true;
+
+            await HapticFeedback.mediumImpact();
+
+            final text = capture.barcodes.first.rawValue ?? '';
+
+            if (VCard.isVCard(text)) {
+              final vcard = VCard.parse(text);
+              final activeEvent = EventProvider().activeEvent;
+              final map = await vcard.toMap()
+                ..['captured_at'] = DateTime.now().toIso8601String();
+              if (activeEvent != null) {
+                map['event_id'] = activeEvent.id.toString();
               }
-              return AppBar(
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                foregroundColor: currentColors['text'],
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.cameraswitch_rounded),
-                    onPressed: controller.switchCamera,
-                  ),
-                  IconButton(
-                    icon: torchIcon,
-                    onPressed: controller.toggleTorch,
-                  ),
-                ],
-              );
-            },
-            onDetect: (capture) async {
-              if (_scanned) return;
-              _scanned = true;
+              final id = await createVCard(map);
 
-              await HapticFeedback.mediumImpact();
-
-              final text = capture.barcodes.first.rawValue ?? '';
-
-              if (VCard.isVCard(text)) {
-                final vcard = VCard.parse(text);
-                final activeEvent = EventProvider().activeEvent;
-                final map = await vcard.toMap()
-                  ..['captured_at'] = DateTime.now().toIso8601String();
-                if (activeEvent != null) {
-                  map['event_id'] = activeEvent.id.toString();
-                }
-                final id = await createVCard(map);
-
-                if (context.mounted) {
-                  await redirect(
-                    context,
-                    ScanResultPage(vcardData: map, savedId: id),
-                  );
-                }
-              } else {
-                await createSimpleQR(text);
-                if (context.mounted) Navigator.of(context).pop();
+              if (context.mounted) {
+                await redirect(
+                  context,
+                  ScanResultPage(vcardData: map, savedId: id),
+                );
               }
-            },
-          ),
+            } else {
+              await createSimpleQR(text);
+              if (context.mounted) Navigator.of(context).pop();
+            }
+          },
         ),
       ),
     );

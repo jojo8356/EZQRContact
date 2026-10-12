@@ -7,6 +7,8 @@ import 'package:permission_handler/permission_handler.dart';
 /// device-contacts operations EZQRContact needs (permission, lookup by
 /// name, conversion to/from the legacy `Map<String, dynamic>` shape).
 class PhoneContacts {
+  static const Set<ContactProperty> _fullProps = ContactProperties.all;
+
   /// Vérifie et demande la permission contacts
   static Future<bool> verifyPermission() async {
     var status = await Permission.contacts.status;
@@ -16,21 +18,18 @@ class PhoneContacts {
     return status.isGranted;
   }
 
-  /// Récupère tous les contacts avec propriétés et comptes
+  /// Récupère tous les contacts avec propriétés
   static Future<List<Contact>> getAll() async {
     await verifyPermission();
-    return FlutterContacts.getContacts(
-      withProperties: true,
-      withAccounts: true,
-    );
+    return FlutterContacts.getAll(properties: _fullProps);
   }
 
   /// Récupère l'ID d'un contact selon prénom et/ou nom
   static Future<String?> getId({String? prenom, String? nom}) async {
     final contacts = await getAll();
     for (final contact in contacts) {
-      final first = contact.name.first;
-      final last = contact.name.last;
+      final first = contact.name?.first ?? '';
+      final last = contact.name?.last ?? '';
       late final bool match;
       if (prenom != null && nom != null) {
         match = first == prenom && last == nom;
@@ -51,8 +50,8 @@ class PhoneContacts {
     }
     final contacts = await getAll();
     return contacts.any((c) {
-      final first = c.name.first;
-      final last = c.name.last;
+      final first = c.name?.first ?? '';
+      final last = c.name?.last ?? '';
       final matchFirst = prenom != null && first == prenom;
       final matchLast = nom != null && last == nom;
       if (prenom != null && nom != null) {
@@ -62,59 +61,78 @@ class PhoneContacts {
     });
   }
 
+  static String _orgName(Contact c) {
+    if (c.organizations.isEmpty) return '';
+    return c.organizations.first.name ?? '';
+  }
+
+  static String _orgTitle(Contact c) {
+    if (c.organizations.isEmpty) return '';
+    return c.organizations.first.jobTitle ?? '';
+  }
+
+  static String _emailOf(Contact c) {
+    if (c.emails.isEmpty) return '';
+    return c.emails.first.address;
+  }
+
+  static String _phoneOf(Contact c, PhoneLabel wanted) {
+    for (final p in c.phones) {
+      if (p.label.label == wanted) return p.number;
+    }
+    return '';
+  }
+
+  static String _addressLine(Address a) {
+    final parts = <String>[];
+    final street = a.street;
+    final city = a.city;
+    final state = a.state;
+    final postal = a.postalCode;
+    final country = a.country;
+    if (street != null && street.isNotEmpty) parts.add(street);
+    if (city != null && city.isNotEmpty) parts.add(city);
+    if (state != null && state.isNotEmpty) parts.add(state);
+    if (postal != null && postal.isNotEmpty) parts.add(postal);
+    if (country != null && country.isNotEmpty) parts.add(country);
+    return parts.join(', ');
+  }
+
+  static String _addressOf(Contact c, AddressLabel wanted) {
+    for (final a in c.addresses) {
+      if (a.label.label == wanted) {
+        final formatted = a.formatted;
+        if (formatted != null && formatted.isNotEmpty) return formatted;
+        return _addressLine(a);
+      }
+    }
+    if (wanted == AddressLabel.home && c.addresses.isNotEmpty) {
+      final first = c.addresses.first;
+      final formatted = first.formatted;
+      if (formatted != null && formatted.isNotEmpty) return formatted;
+      return _addressLine(first);
+    }
+    return '';
+  }
+
   /// Convertit un contact FlutterContacts en Map
   static Map<String, dynamic> contactToMap(Contact c) => {
-    'id': c.id,
-    'prenom': c.name.first,
-    'nom': c.name.last,
-    'nom2': c.name.middle,
-    'prefixe': c.name.prefix,
-    'suffixe': c.name.suffix,
-    'org': () {
-      if (c.organizations.isNotEmpty) {
-        return c.organizations.first.company;
-      }
-      return '';
-    }(),
-    'job': () {
-      if (c.organizations.isNotEmpty) {
-        return c.organizations.first.title;
-      }
-      return '';
-    }(),
-    'photo': '',
-    'tel_work': c.phones
-        .firstWhere(
-          (p) => p.label.name == 'work',
-          orElse: () => Phone('', label: PhoneLabel.work),
-        )
-        .number,
-    'tel_home': c.phones
-        .firstWhere(
-          (p) => p.label.name == 'home',
-          orElse: () => Phone('', label: PhoneLabel.home),
-        )
-        .number,
-    'adr_work': c.addresses
-        .firstWhere(
-          (a) => a.label == AddressLabel.work,
-          orElse: () => Address('', label: AddressLabel.work),
-        )
-        .address,
-    'adr_home': c.addresses
-        .firstWhere(
-          (a) => a.label == AddressLabel.home,
-          orElse: () => Address(''),
-        )
-        .address,
-    'email': () {
-      if (c.emails.isNotEmpty) {
-        return c.emails.first.address;
-      }
-      return '';
-    }(),
-    'rev': '',
-  };
+        'id': c.id ?? '',
+        'prenom': c.name?.first ?? '',
+        'nom': c.name?.last ?? '',
+        'nom2': c.name?.middle ?? '',
+        'prefixe': c.name?.prefix ?? '',
+        'suffixe': c.name?.suffix ?? '',
+        'org': _orgName(c),
+        'job': _orgTitle(c),
+        'photo': '',
+        'tel_work': _phoneOf(c, PhoneLabel.work),
+        'tel_home': _phoneOf(c, PhoneLabel.home),
+        'adr_work': _addressOf(c, AddressLabel.work),
+        'adr_home': _addressOf(c, AddressLabel.home),
+        'email': _emailOf(c),
+        'rev': '',
+      };
 
   /// Récupère un contact sous forme de Map par prénom et/ou nom
   static Future<Map<String, dynamic>?> getByName({
@@ -125,63 +143,75 @@ class PhoneContacts {
       throw Exception('Donner au moins prénom ou nom');
     }
     final contacts = await getAll();
-    final contact = contacts.firstWhere((c) {
-      final first = c.name.first;
-      final last = c.name.last;
+    for (final c in contacts) {
+      final first = c.name?.first ?? '';
+      final last = c.name?.last ?? '';
+      var match = false;
       if (prenom != null && nom != null) {
-        return first == prenom && last == nom;
+        match = first == prenom && last == nom;
+      } else if (prenom != null) {
+        match = first == prenom;
+      } else {
+        match = last == nom;
       }
-      if (prenom != null) {
-        return first == prenom;
-      }
-      return last == nom;
-    });
-    return contactToMap(contact);
+      if (match) return contactToMap(c);
+    }
+    return null;
   }
 
   /// Ajoute un contact à l'appareil
   static Future<void> add(Map<String, dynamic> data) async {
-    // Use isPresent (non-null AND non-empty) so blank form fields don't
-    // produce empty Email('') / Phone('') / Address('') entries on the
-    // device contact card.
     String s(String key) => (data[key] as String?) ?? '';
     bool has(String key) {
       final v = data[key];
       return v is String && v.isNotEmpty;
     }
 
-    final newContact = Contact()
-      ..name.first = s('prenom')
-      ..name.last = s('nom');
-    if (has('nom2')) newContact.name.middle = s('nom2');
-    if (has('prefixe')) newContact.name.prefix = s('prefixe');
-    if (has('suffixe')) newContact.name.suffix = s('suffixe');
-    if (has('org') || has('job')) {
-      newContact.organizations = [
-        Organization(company: s('org'), title: s('job')),
-      ];
-    }
-    if (has('email')) {
-      newContact.emails = [Email(s('email'))];
-    }
     final phones = <Phone>[];
     if (has('tel_work')) {
-      phones.add(Phone(s('tel_work'), label: PhoneLabel.work));
+      phones.add(
+        Phone(number: s('tel_work'), label: const Label(PhoneLabel.work)),
+      );
     }
     if (has('tel_home')) {
-      phones.add(Phone(s('tel_home'), label: PhoneLabel.home));
+      phones.add(
+        Phone(number: s('tel_home'), label: const Label(PhoneLabel.home)),
+      );
     }
-    if (phones.isNotEmpty) newContact.phones = phones;
+    final emails = <Email>[];
+    if (has('email')) {
+      emails.add(Email(s('email')));
+    }
+    final orgs = <Organization>[];
+    if (has('org') || has('job')) {
+      orgs.add(
+        Organization(name: s('org'), jobTitle: s('job')),
+      );
+    }
     final addresses = <Address>[];
     if (has('adr_work')) {
-      addresses.add(Address(s('adr_work'), label: AddressLabel.work));
+      addresses.add(
+        Address(street: s('adr_work'), label: const Label(AddressLabel.work)),
+      );
     }
     if (has('adr_home')) {
-      addresses.add(Address(s('adr_home')));
+      addresses.add(Address(street: s('adr_home')));
     }
-    if (addresses.isNotEmpty) newContact.addresses = addresses;
 
-    await newContact.insert();
+    final newContact = Contact(
+      name: Name(
+        first: s('prenom'),
+        last: s('nom'),
+        middle: s('nom2'),
+        prefix: s('prefixe'),
+        suffix: s('suffixe'),
+      ),
+      phones: phones,
+      emails: emails,
+      organizations: orgs,
+      addresses: addresses,
+    );
+    await FlutterContacts.create(newContact);
   }
 
   /// Met à jour un contact existant
@@ -195,54 +225,57 @@ class PhoneContacts {
     final contactId = await getId(prenom: prenom, nom: nom);
     if (contactId == null) throw Exception('Contact introuvable');
 
-    final contact = await FlutterContacts.getContact(
+    final contact = await FlutterContacts.get(
       contactId,
-      withAccounts: true,
+      properties: _fullProps,
     );
     if (contact == null) return;
 
-    contact.name.first = prenom ?? contact.name.first;
-    contact.name.last = nom ?? contact.name.last;
-    contact.name.middle = data['nom2']?.toString() ?? contact.name.middle;
-    contact.name.prefix = data['prefixe']?.toString() ?? contact.name.prefix;
-    contact.name.suffix = data['suffixe']?.toString() ?? contact.name.suffix;
-
-    contact.organizations = [
-      Organization(
-        company: data['org']?.toString() ?? '',
-        title: data['job']?.toString() ?? '',
-      ),
-    ];
-
-    if (data['email'] != null) {
-      contact.emails = [
-        Email(data['email'].toString()),
-      ];
-    }
-
     final phones = <Phone>[];
-    if (data['tel_work'] != null) {
-      phones.add(Phone(data['tel_work'].toString(), label: PhoneLabel.work));
+    final telWork = data['tel_work']?.toString();
+    final telHome = data['tel_home']?.toString();
+    if (telWork != null && telWork.isNotEmpty) {
+      phones.add(Phone(number: telWork, label: const Label(PhoneLabel.work)));
     }
-    if (data['tel_home'] != null) {
-      phones.add(Phone(data['tel_home'].toString(), label: PhoneLabel.home));
+    if (telHome != null && telHome.isNotEmpty) {
+      phones.add(Phone(number: telHome, label: const Label(PhoneLabel.home)));
     }
-    if (phones.isNotEmpty) contact.phones = phones;
-
+    final emails = <Email>[];
+    final email = data['email']?.toString();
+    if (email != null && email.isNotEmpty) {
+      emails.add(Email(address: email));
+    }
     final addresses = <Address>[];
-    if (data['adr_work'] != null) {
+    final adrWork = data['adr_work']?.toString();
+    final adrHome = data['adr_home']?.toString();
+    if (adrWork != null && adrWork.isNotEmpty) {
       addresses.add(
-        Address(data['adr_work'].toString(), label: AddressLabel.work),
+        Address(street: adrWork, label: const Label(AddressLabel.work)),
       );
     }
-    if (data['adr_home'] != null) {
-      addresses.add(
-        Address(data['adr_home'].toString()),
-      );
+    if (adrHome != null && adrHome.isNotEmpty) {
+      addresses.add(Address(street: adrHome));
     }
-    if (addresses.isNotEmpty) contact.addresses = addresses;
 
-    await contact.update();
+    final updated = contact.copyWith(
+      name: Name(
+        first: prenom ?? contact.name?.first,
+        last: nom ?? contact.name?.last,
+        middle: data['nom2']?.toString() ?? contact.name?.middle,
+        prefix: data['prefixe']?.toString() ?? contact.name?.prefix,
+        suffix: data['suffixe']?.toString() ?? contact.name?.suffix,
+      ),
+      organizations: [
+        Organization(
+          name: data['org']?.toString() ?? '',
+          jobTitle: data['job']?.toString() ?? '',
+        ),
+      ],
+      emails: emails,
+      phones: phones,
+      addresses: addresses,
+    );
+    await FlutterContacts.update(updated);
   }
 
   /// Convertit une liste de contacts en liste de Map
@@ -275,7 +308,6 @@ class PhoneContacts {
 
   /// Returns the contact photo bytes, or null when [c] has no photo set.
   static Future<Uint8List?> getPhoto(Contact c) async {
-    final photo = c.photo;
-    return photo;
+    return c.photo?.fullSize ?? c.photo?.thumbnail;
   }
 }

@@ -8,8 +8,8 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 version: 1.1.0+3
 
 environment:
-  sdk: ^3.8.1
-  flutter: "3.41.6"
+  sdk: ^3.13.0
+  flutter: ">=3.47.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -18,16 +18,16 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
-  ai_barcode_scanner: ^6.0.1
+  ai_barcode_scanner: ^8.2.0
   collection: ^1.19.1
   drift: ^2.33.0
   drift_sqflite: ^2.0.1
-  file_picker: ^10.3.2
-  file_saver: ^0.3.1
-  flex_color_picker: ^3.6.1
+  file_picker: ^13.1.0
+  file_saver: ^0.7.0
+  flex_color_picker: ^4.0.0
   flutter:
     sdk: flutter
-  flutter_contacts: ^1.1.9+2
+  flutter_contacts: ^2.6.0
   flutter_markdown: ^0.7.7+1
   flutter_qrcode_analysis: ^1.0.2
   font_awesome_flutter: ^11.0.0
@@ -35,11 +35,10 @@ dependencies:
   image: ^4.5.4
   image_picker: ^1.2.0
   intl: ^0.20.2
-  mobile_scanner: ^6.0.2
   path: ^1.9.1
   path_provider: ^2.1.5
   pdf: ^3.12.0
-  permission_handler: ^12.0.1
+  permission_handler: ^13.0.2
   printing: ^5.14.3
   provider: ^6.1.5+1
   qr_flutter: ^4.0.0
@@ -60,7 +59,7 @@ dev_dependencies:
   mocktail: ^1.0.4
   sqflite_common_ffi: ^2.3.6
   sqlite3: ^3.3.1
-  very_good_analysis: ^10.2.0
+  very_good_analysis: ^11.0.0
 
 flutter:
   uses-material-design: true

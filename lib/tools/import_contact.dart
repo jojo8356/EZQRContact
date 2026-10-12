@@ -74,7 +74,9 @@ Future<void> importContacts(BuildContext context) async {
     if (!status.isGranted) return; // user dismissed the system dialog
   }
 
-  final contacts = await FlutterContacts.getContacts(withProperties: true);
+  final contacts = await FlutterContacts.getAll(
+    properties: ContactProperties.all,
+  );
   if (contacts.isEmpty || !context.mounted) return;
 
   final popped = await redirect(

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_contacts/contact.dart';
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 
@@ -43,16 +43,20 @@ class _MultiContactPickerPageState extends State<MultiContactPickerPage> {
         itemBuilder: (context, index) {
           final c = widget.contacts[index];
           selectedMap[index] = selectedMap[index] ?? false;
+          final photoBytes = c.photo?.thumbnail ?? c.photo?.fullSize;
           return Theme(
             data: Theme.of(context).copyWith(unselectedWidgetColor: textColor),
             child: CheckboxListTile(
               value: selectedMap[index],
-              title: Text(c.displayName, style: TextStyle(color: textColor)),
+              title: Text(
+                c.displayName ?? '',
+                style: TextStyle(color: textColor),
+              ),
               secondary: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  if (c.photo != null)
-                    CircleAvatar(backgroundImage: MemoryImage(c.photo!))
+                  if (photoBytes != null)
+                    CircleAvatar(backgroundImage: MemoryImage(photoBytes))
                   else
                     CircleAvatar(
                       backgroundColor: currentColors['surface'],
