@@ -43,12 +43,6 @@ class _ScanResultPageState extends State<ScanResultPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final lang = LangProvider.section('pages.QR.scanner');
-      showToast(
-        context: context,
-        title: lang['saved'] as String,
-        color: Colors.white,
-      );
       if (VCardSettingsProvider.reciprocalExchange) {
         unawaited(_showReciprocalPrompt());
       }

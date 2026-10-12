@@ -5,6 +5,7 @@ import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/app_button.dart';
 import 'package:qr_code_app/components/paper_card.dart';
 import 'package:qr_code_app/data/db/database.dart';
+import 'package:qr_code_app/modals/contact_options.dart';
 import 'package:qr_code_app/pages/scan_result_page.dart';
 import 'package:qr_code_app/providers/event_provider.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
@@ -55,7 +56,8 @@ class _QrFromImagePageState extends State<QrFromImagePage> {
         return;
       }
 
-      if (VCard.isVCard(rawValue)) {
+      final isVCard = VCard.isVCard(rawValue);
+      if (isVCard) {
         final vcard = VCard.parse(rawValue);
         final activeEvent = EventProvider().activeEvent;
         final map = await vcard.toMap()
@@ -66,10 +68,22 @@ class _QrFromImagePageState extends State<QrFromImagePage> {
         final id = await createVCard(map);
 
         if (!mounted) return;
+        final lang = LangProvider.section('pages.QR.scanner');
+        showToast(
+          context: context,
+          title: lang['saved'] as String,
+          color: Colors.white,
+        );
         await redirect(context, ScanResultPage(vcardData: map, savedId: id));
       } else {
         await createSimpleQR(rawValue);
         if (!mounted) return;
+        final lang = LangProvider.section('pages.QR.scanner');
+        showToast(
+          context: context,
+          title: lang['flashed'] as String,
+          color: Colors.white,
+        );
         Navigator.of(context).pop();
       }
     } on Exception catch (e) {

@@ -96,6 +96,7 @@
         "title": "QR code Scanner",
         "invalid qr": "Invalid QR code",
         "scan": "Scan QR Code",
+        "flashed": "QR code scanned",
         "saved": "Contact saved",
         "result_title": "Scanned contact",
         "add_to_contacts": "Add to phone contacts",

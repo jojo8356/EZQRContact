@@ -5,6 +5,7 @@ import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/app_button.dart';
 import 'package:qr_code_app/components/paper_card.dart';
 import 'package:qr_code_app/data/db/database.dart';
+import 'package:qr_code_app/modals/contact_options.dart';
 import 'package:qr_code_app/pages/scan_result_page.dart';
 import 'package:qr_code_app/providers/event_provider.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
@@ -49,32 +50,55 @@ class _QRScannerPageState extends State<QRScannerPage> {
             await HapticFeedback.mediumImpact();
 
             final text = capture.barcodes.first.rawValue ?? '';
-
-            if (VCard.isVCard(text)) {
-              final vcard = VCard.parse(text);
-              final activeEvent = EventProvider().activeEvent;
-              final map = await vcard.toMap()
-                ..['captured_at'] = DateTime.now().toIso8601String();
-              if (activeEvent != null) {
-                map['event_id'] = activeEvent.id.toString();
-              }
-              final id = await createVCard(map);
-
-              if (context.mounted) {
-                await redirect(
-                  context,
-                  ScanResultPage(vcardData: map, savedId: id),
-                );
-              }
-            } else {
-              await createSimpleQR(text);
-              if (context.mounted) Navigator.of(context).pop();
-            }
+            await _finishScan(text);
           },
         ),
       ),
     );
     _scanned = false;
+  }
+
+  Future<void> _finishScan(String text) async {
+    final isVCard = VCard.isVCard(text);
+    Map<String, dynamic>? vcardData;
+    int? savedId;
+
+    if (isVCard) {
+      final vcard = VCard.parse(text);
+      final activeEvent = EventProvider().activeEvent;
+      final map = await vcard.toMap()
+        ..['captured_at'] = DateTime.now().toIso8601String();
+      if (activeEvent != null) {
+        map['event_id'] = activeEvent.id.toString();
+      }
+      savedId = await createVCard(map);
+      vcardData = map;
+    } else {
+      await createSimpleQR(text);
+    }
+
+    if (!mounted) return;
+    Navigator.of(context).pop();
+
+    if (!mounted) return;
+    final lang = LangProvider.section('pages.QR.scanner');
+    var title = lang['flashed'] as String;
+    if (isVCard) {
+      title = lang['saved'] as String;
+    }
+    showToast(
+      context: context,
+      title: title,
+      color: Colors.white,
+    );
+
+    if (!isVCard) return;
+    if (vcardData == null || savedId == null) return;
+    if (!context.mounted) return;
+    await redirect(
+      context,
+      ScanResultPage(vcardData: vcardData, savedId: savedId),
+    );
   }
 
   @override
