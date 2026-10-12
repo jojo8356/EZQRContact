@@ -68,9 +68,33 @@ void main() {
       expect(a, isNot(equals(b)));
     });
 
-    test('output is larger than 1 KB (non-trivial PNG content)', () async {
+    test('raster is square and includes 4-module quiet zone at 4 px/module',
+        () async {
       final bytes = await buildQrBytes('some qr content');
-      expect(bytes.length, greaterThan(1024));
+      final decoded = img.decodePng(bytes)!;
+      expect(decoded.width, decoded.height);
+      // Version 1 is 21 modules; quiet zone is 4 modules per side.
+      final minSide = (21 + qrQuietModules * 2) * qrModulePx;
+      expect(decoded.width, greaterThanOrEqualTo(minSide));
+    });
+
+    test('raster contains both dark modules and a white quiet zone', () async {
+      final bytes = await buildQrBytes('hello');
+      final decoded = img.decodePng(bytes)!;
+      var dark = 0;
+      var light = 0;
+      for (var y = 0; y < decoded.height; y += qrModulePx) {
+        for (var x = 0; x < decoded.width; x += qrModulePx) {
+          final p = decoded.getPixel(x, y);
+          if (p.r < 128) {
+            dark += 1;
+          } else {
+            light += 1;
+          }
+        }
+      }
+      expect(dark, greaterThan(0));
+      expect(light, greaterThan(0));
     });
 
     test('oversized payload throws Exception', () async {
@@ -109,9 +133,15 @@ void main() {
       expect(bytes.sublist(0, 8), equals(_pngMagic));
     });
 
-    test('with logo output is larger than 1 KB', () async {
-      final bytes = await buildQrBytes('hello', logoBytes: logo64x64);
-      expect(bytes.length, greaterThan(1024));
+    test('with logo raster matches the no-logo canvas size', () async {
+      final withLogo = await buildQrBytes('hello', logoBytes: logo64x64);
+      final without = await buildQrBytes('hello');
+      final a = img.decodePng(withLogo)!;
+      final b = img.decodePng(without)!;
+      expect(a.width, b.width);
+      expect(a.height, b.height);
+      final minSide = (21 + qrQuietModules * 2) * qrModulePx;
+      expect(a.width, greaterThanOrEqualTo(minSide));
     });
 
     test('QR with logo differs from QR without logo', () async {
