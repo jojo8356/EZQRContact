@@ -21,7 +21,7 @@ class PhoneContacts {
   /// Récupère tous les contacts avec propriétés
   static Future<List<Contact>> getAll() async {
     await verifyPermission();
-    return FlutterContacts.getAll(properties: _fullProps);
+    return await FlutterContacts.getAll(properties: _fullProps);
   }
 
   /// Récupère l'ID d'un contact selon prénom et/ou nom
