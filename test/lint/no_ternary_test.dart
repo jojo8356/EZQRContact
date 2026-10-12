@@ -9,12 +9,16 @@ import 'package:flutter_test/flutter_test.dart';
 /// allowed — they are not ternaries.
 void main() {
   test('Dart sources contain no ternary operators', () {
-    final root = Directory.current;
     final hits = <String>[];
-    for (final entity in root.listSync(recursive: true)) {
-      if (entity is! File || !entity.path.endsWith('.dart')) continue;
-      if (_shouldSkip(entity.path)) continue;
-      hits.addAll(_scanFile(entity));
+    const roots = ['lib', 'test', 'integration_test'];
+    for (final root in roots) {
+      final dir = Directory(root);
+      if (!dir.existsSync()) continue;
+      for (final entity in dir.listSync(recursive: true)) {
+        if (entity is! File || !entity.path.endsWith('.dart')) continue;
+        if (_shouldSkip(entity.path)) continue;
+        hits.addAll(_scanFile(entity));
+      }
     }
     expect(
       hits,
@@ -31,6 +35,9 @@ bool _shouldSkip(String path) {
     '/build/',
     '/.git/',
     '/node_modules/',
+    '/.plugin_symlinks/',
+    '/flutter/ephemeral/',
+    '/.pub-cache/',
   ];
   for (final s in skip) {
     if (path.contains(s)) return true;

@@ -163,7 +163,7 @@ void main() {
 
     test('scaffold and type use paper + Outfit', () {
       expect(theme.scaffoldBackgroundColor, papier);
-      expect(theme.fontFamily, AppFonts.ui);
+      expect(theme.textTheme.bodyLarge?.fontFamily, AppFonts.ui);
       expect(theme.appBarTheme.elevation, 0);
       expect(theme.appBarTheme.backgroundColor, papier);
     });
