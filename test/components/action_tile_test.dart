@@ -42,7 +42,7 @@ void main() {
     expect(icon.size, 22);
   });
 
-  testWidgets('compact tile hides subtitle and uses a 40 dp well', (
+  testWidgets('compact tile hides subtitle and uses a 56 dp centered well', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -66,8 +66,12 @@ void main() {
     expect(find.byIcon(Icons.chevron_right_rounded), findsNothing);
 
     final icon = tester.widget<Icon>(find.byIcon(Icons.qr_code_2_rounded));
-    expect(icon.size, 20);
+    expect(icon.size, AppTokens.compactIcon);
     expect(icon.color, cuivre);
+
+    final well = tester.getRect(find.byKey(const Key('action-tile-well')));
+    final tile = tester.getRect(find.byType(ActionTile));
+    expect((well.center.dx - tile.center.dx).abs(), lessThan(1));
   });
 
   testWidgets('tile surface is paper, not a Material elevation card', (

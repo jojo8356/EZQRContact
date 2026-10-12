@@ -510,7 +510,7 @@ Carte `surface` + hairline + ombre rest.
 À gauche : carré 44×44, radius `r-sm`, fond cuivre 12 %, icône cuivre.  
 Titre Outfit 600 15. Sous-titre caption cendre. Chevron cendre.  
 Featured (VCard, Scanner) : hauteur ~88, sous-titre visible.  
-Secondaire : grille 2×2, plus compacte.
+Secondaire : grille 2×2. Icône **centrée** dans un well 56×56 (`compactWell`), glyphe 28. Titre centré sous l’icône. Pas de sous-titre. Le libellé de section nomme le **job** (« Outils » / « Tools »), jamais « Aussi / Also / More » (tiroir fourre-tout, NN/g).
 
 ### 9.5 Paper card
 

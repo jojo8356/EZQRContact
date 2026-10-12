@@ -37,20 +37,26 @@ class ActionTile extends StatelessWidget {
     final theme = Theme.of(context);
     final radius = BorderRadius.circular(AppTokens.rLg);
 
-    var wellSize = 40.0;
-    var iconSize = 20.0;
+    var wellSize = AppTokens.compactWell;
+    var iconSize = AppTokens.compactIcon;
     var minHeight = 72.0;
     var pad = AppTokens.s3;
+    var textCross = CrossAxisAlignment.center;
+    var titleAlign = TextAlign.center;
     if (featured) {
       wellSize = 44;
       iconSize = 22;
       minHeight = AppTokens.featuredH;
       pad = AppTokens.s4;
+      textCross = CrossAxisAlignment.start;
+      titleAlign = TextAlign.start;
     }
 
     final iconWell = Container(
+      key: const Key('action-tile-well'),
       width: wellSize,
       height: wellSize,
+      alignment: Alignment.center,
       decoration: BoxDecoration(
         color: copper.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppTokens.rSm),
@@ -59,13 +65,14 @@ class ActionTile extends StatelessWidget {
     );
 
     final texts = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: textCross,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
           title,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
+          textAlign: titleAlign,
           style: theme.textTheme.titleMedium,
         ),
         if (featured && subtitle != null) ...[
@@ -95,10 +102,11 @@ class ActionTile extends StatelessWidget {
       );
     } else {
       inner = Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          iconWell,
-          const Spacer(),
+          Expanded(
+            child: Center(child: iconWell),
+          ),
           texts,
         ],
       );

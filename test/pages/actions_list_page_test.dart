@@ -33,6 +33,8 @@ void main() {
     expect(find.text('Exchange. No cloud.'), findsOneWidget);
     expect(find.text('Your cards stay on this phone.'), findsOneWidget);
 
+    expect(find.text('Tools'), findsOneWidget);
+    expect(find.text('Also'), findsNothing);
     expect(find.byType(ActionTile), findsNWidgets(6));
     expect(find.byIcon(Icons.contact_page_outlined), findsOneWidget);
     expect(find.byIcon(Icons.qr_code_scanner_rounded), findsOneWidget);

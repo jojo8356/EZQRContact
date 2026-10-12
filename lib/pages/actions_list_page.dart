@@ -92,7 +92,7 @@ class OptionsListPage extends StatelessWidget {
                 ),
                 const SizedBox(height: AppTokens.s6),
                 SectionLabel(
-                  home['section_more'] as String? ?? 'Aussi',
+                  home['section_more'] as String? ?? 'Outils',
                 ),
                 const SizedBox(height: AppTokens.s2),
                 GridView.count(

@@ -64,6 +64,12 @@ abstract final class AppTokens {
   /// Featured home tile min height.
   static const double featuredH = 88;
 
+  /// Compact 2×2 home-tile icon well.
+  static const double compactWell = 56;
+
+  /// Compact 2×2 home-tile glyph.
+  static const double compactIcon = 28;
+
   /// App bar hairline.
   static const double hairline = 1;
 
