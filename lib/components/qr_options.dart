@@ -4,8 +4,9 @@ import 'package:qr_code_app/modals/card_view.dart';
 import 'package:qr_code_app/modals/contact_options.dart';
 import 'package:qr_code_app/modals/qr_view.dart';
 import 'package:qr_code_app/modals/save.dart';
-import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
+import 'package:qr_code_app/providers/theme_globals.dart';
+import 'package:qr_code_app/theme/tokens.dart';
 
 /// Collapsible grid of action buttons attached to a QRCard: view, open
 /// the rendered QR image, delete, download, and (for vCards) sync to the
@@ -36,12 +37,12 @@ class OptionsQR extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final darkProv = DarkModeProvider();
     final semLang = LangProvider.section('semantics');
+    final c = currentColors;
     final actions = [
       {
-        'icon': Icons.remove_red_eye,
-        'color': null,
+        'icon': Icons.visibility_outlined,
+        'color': c['navy'],
         'semanticsKey': 'btn_view_card',
         'onPressed': () async {
           await showDataDialog(context, data, isVCard: isVCard);
@@ -49,15 +50,15 @@ class OptionsQR extends StatelessWidget {
       },
       {
         'icon': Icons.data_object,
-        'color': null,
+        'color': c['text-muted'],
         'semanticsKey': 'btn_view_raw',
         'onPressed': () async {
           await showRawTextDialog(context, data, isVCard: isVCard);
         },
       },
       {
-        'icon': Icons.qr_code,
-        'color': null,
+        'icon': Icons.qr_code_2_rounded,
+        'color': c['button-color'],
         'semanticsKey': 'btn_view_qr',
         'onPressed': () async {
           final path = data['path'] as String?;
@@ -68,8 +69,8 @@ class OptionsQR extends StatelessWidget {
       },
       if (data['deleted'] != 1)
         {
-          'icon': Icons.delete,
-          'color': darkProv.isDarkMode ? Colors.red : Colors.redAccent,
+          'icon': Icons.delete_outline_rounded,
+          'color': c['danger'],
           'semanticsKey': 'btn_delete',
           'onPressed': () async {
             await deleteQR(isVCard: isVCard, id: data['id'] as int);
@@ -77,13 +78,18 @@ class OptionsQR extends StatelessWidget {
           },
         },
       {
-        'icon': Icons.download,
-        'color': darkProv.isDarkMode ? Colors.indigo : Colors.blue,
+        'icon': Icons.download_outlined,
+        'color': c['navy'],
         'semanticsKey': 'btn_download',
         'onPressed': () async {
-          final path = isVCard
-              ? await QRDatabase().getPathFromVCard(data['id'] as int)
-              : await QRDatabase().getPathFromSimpleQR(data['id'] as int);
+          late final String? path;
+          if (isVCard) {
+            path = await QRDatabase().getPathFromVCard(data['id'] as int);
+          } else {
+            path = await QRDatabase().getPathFromSimpleQR(
+              data['id'] as int,
+            );
+          }
           if (!context.mounted) return;
           await showSaveDialog(context, path!);
           await onRefresh();
@@ -91,8 +97,8 @@ class OptionsQR extends StatelessWidget {
       },
       if (isVCard && data['deleted'] != 1)
         {
-          'icon': Icons.contact_emergency,
-          'color': darkProv.isDarkMode ? Colors.green : Colors.lightGreen,
+          'icon': Icons.person_add_alt_1_outlined,
+          'color': c['success'],
           'semanticsKey': 'btn_add_contact',
           'onPressed': () async {
             await showVCardPopup(context, data, isVCard: true);
@@ -100,45 +106,57 @@ class OptionsQR extends StatelessWidget {
           },
         },
     ];
+    var fade = CrossFadeState.showFirst;
+    if (expanded) {
+      fade = CrossFadeState.showSecond;
+    }
     return AnimatedCrossFade(
-      firstChild: Container(),
+      firstChild: const SizedBox(width: double.infinity),
       secondChild: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: GridView.count(
-          shrinkWrap: true,
-          crossAxisCount:
-              MediaQuery.of(context).orientation == Orientation.portrait
-              ? 4
-              : 8,
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 40,
+        padding: const EdgeInsets.fromLTRB(
+          AppTokens.s4,
+          0,
+          AppTokens.s4,
+          AppTokens.s3,
+        ),
+        child: Wrap(
+          spacing: AppTokens.s2,
+          runSpacing: AppTokens.s2,
           children: actions.map((a) {
             final key = a['semanticsKey'] as String?;
-            final label =
-                key == null ? null : semLang[key] as String?;
+            String? label;
+            if (key != null) {
+              label = semLang[key] as String?;
+            }
+            final color = a['color'] as Color?;
             return Semantics(
               label: label,
               button: true,
-              child: ElevatedButton(
-                onPressed: a['onPressed']! as VoidCallback,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: a['color'] as Color?,
-                  padding: EdgeInsets.zero,
-                  fixedSize: const Size(60, 60),
+              child: Material(
+                color: c['surface-raised'],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppTokens.rSm),
                 ),
-                child: Icon(
-                  a['icon']! as IconData,
-                  color: a['color'] != null ? Colors.white : null,
+                child: InkWell(
+                  onTap: a['onPressed']! as VoidCallback,
+                  borderRadius: BorderRadius.circular(AppTokens.rSm),
+                  child: SizedBox(
+                    width: AppTokens.tap,
+                    height: AppTokens.tap,
+                    child: Icon(
+                      a['icon']! as IconData,
+                      color: color,
+                      size: 22,
+                    ),
+                  ),
                 ),
               ),
             );
           }).toList(),
         ),
       ),
-      crossFadeState: expanded
-          ? CrossFadeState.showSecond
-          : CrossFadeState.showFirst,
-      duration: const Duration(milliseconds: 300),
+      crossFadeState: fade,
+      duration: AppTokens.tMed,
     );
   }
 }

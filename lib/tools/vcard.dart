@@ -111,11 +111,11 @@ class VCard {
 
       if (name == 'N') {
         final parts = value.split(';');
-        data['nom'] = parts.isNotEmpty ? parts[0] : '';
-        data['prenom'] = parts.length > 1 ? parts[1] : '';
-        data['nom2'] = parts.length > 2 ? parts[2] : '';
-        data['prefixe'] = parts.length > 3 ? parts[3] : '';
-        data['suffixe'] = parts.length > 4 ? parts[4] : '';
+        data['nom'] = _partAt(parts, 0);
+        data['prenom'] = _partAt(parts, 1);
+        data['nom2'] = _partAt(parts, 2);
+        data['prefixe'] = _partAt(parts, 3);
+        data['suffixe'] = _partAt(parts, 4);
       } else if (name == 'ORG') {
         // ORG components are `;`-separated (org-name;unit;unit). We keep
         // the full string — the model is single-field.
@@ -478,7 +478,10 @@ class VCard {
       // First physical line: 75 octets of content.
       // Continuation lines: leading space counts toward the 75-octet
       // limit (RFC 6350 §3.2), so content is capped at 74 octets.
-      var take = isFirst ? limit : limit - 1;
+      var take = limit - 1;
+      if (isFirst) {
+        take = limit;
+      }
       if (offset + take > bytes.length) take = bytes.length - offset;
 
       // Don't split a multi-byte UTF-8 sequence: back off until we land
@@ -599,6 +602,13 @@ class VCard {
     if (nom.isNotEmpty || prenom.isNotEmpty) return '$prenom$nom';
     return org;
   }
+}
+
+String _partAt(List<String> parts, int index) {
+  if (parts.length > index) {
+    return parts[index];
+  }
+  return '';
 }
 
 enum _TelKind { work, home, other }

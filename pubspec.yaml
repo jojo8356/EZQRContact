@@ -71,12 +71,21 @@ flutter:
     - assets/icon/icon.png
     - assets/logo_splash.png
     - assets/langs/
+  fonts:
+    - family: Outfit
+      fonts:
+        - asset: assets/fonts/Outfit-Variable.ttf
+    - family: Fraunces
+      fonts:
+        - asset: assets/fonts/Fraunces-Variable.ttf
+        - asset: assets/fonts/Fraunces-Italic-Variable.ttf
+          style: italic
 
 flutter_native_splash:
-  color: "#ffffff"
+  color: "#F4EFE6"
   image: assets/logo_splash.png
   android_12:
-    color: "#ffffff"
+    color: "#F4EFE6"
     image: assets/logo_splash.png
 
 flutter_launcher_icons:

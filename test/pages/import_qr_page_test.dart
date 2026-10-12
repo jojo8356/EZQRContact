@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:qr_code_app/components/btn.animated.dart';
+import 'package:qr_code_app/components/app_button.dart';
 import 'package:qr_code_app/pages/import_qr_page.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,13 +23,12 @@ void main() {
       expect(find.byType(QrFromImagePage), findsOneWidget);
     });
 
-    testWidgets('AnimatedSubmitButton is present in the widget tree',
-        (tester) async {
+    testWidgets('AppButton is present in the widget tree', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(home: QrFromImagePage()),
       );
       await tester.pumpAndSettle();
-      expect(find.byType(AnimatedSubmitButton), findsOneWidget);
+      expect(find.byType(AppButton), findsOneWidget);
     });
 
     testWidgets('button is enabled by default (_processing starts false)',
@@ -42,8 +41,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final btn = tester.widget<AnimatedSubmitButton>(
-        find.byType(AnimatedSubmitButton),
+      final btn = tester.widget<AppButton>(
+        find.byType(AppButton),
       );
       expect(btn.onPressed, isNotNull);
     });

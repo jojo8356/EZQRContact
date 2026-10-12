@@ -3,6 +3,7 @@ import 'package:qr_code_app/pages/events_page.dart';
 import 'package:qr_code_app/providers/event_provider.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
+import 'package:qr_code_app/theme/tokens.dart';
 
 /// Sticky banner displayed at the top of the page when an event is active.
 /// Tapping it navigates to [EventsPage].
@@ -18,8 +19,8 @@ class ActiveEventBanner extends StatelessWidget {
         final event = EventProvider().activeEvent;
         if (event == null) return const SizedBox.shrink();
         final lang = LangProvider.getMap('events');
-        final label =
-            '${lang["banner_prefix"] as String} ${event.name}';
+        final label = '${lang["banner_prefix"] as String} ${event.name}';
+        final c = currentColors;
         return GestureDetector(
           onTap: () => Navigator.push(
             context,
@@ -27,26 +28,31 @@ class ActiveEventBanner extends StatelessWidget {
           ),
           child: Container(
             width: double.infinity,
-            color: currentColors['button-color'],
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            color: c['navy'],
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTokens.s4,
+              vertical: AppTokens.s2,
+            ),
             child: Row(
               children: [
-                const Icon(Icons.event, color: Colors.white, size: 16),
-                const SizedBox(width: 8),
+                Icon(
+                  Icons.event,
+                  color: c['on-button'],
+                  size: 16,
+                ),
+                const SizedBox(width: AppTokens.s2),
                 Expanded(
                   child: Text(
                     label,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: c['on-button'],
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.chevron_right,
-                  color: Colors.white,
+                  color: c['on-button'],
                   size: 16,
                 ),
               ],

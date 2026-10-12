@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:qr_code_app/providers/lang_provider.dart';
+import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Returns true when the first-run guide has not yet been displayed.
@@ -44,15 +45,34 @@ Map<String, TextEditingController> mapToControllers(Map<String, dynamic> data) {
 /// Returns the leading avatar for a list/card item: a photo for vCards
 /// (or a person icon when [photo] is empty) and a QR icon otherwise.
 Widget buildItemAvatar({required bool isVCard, required String photo}) {
+  Widget well(IconData icon, Color color) {
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: currentColors['surface-raised'],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Icon(icon, size: 22, color: color),
+    );
+  }
+
   if (isVCard) {
     if (photo.isNotEmpty) {
-      return CircleAvatar(backgroundImage: NetworkImage(photo), radius: 25);
-    } else {
-      return const Icon(Icons.person, size: 40, color: Colors.green);
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: CircleAvatar(
+          backgroundImage: NetworkImage(photo),
+          radius: 22,
+        ),
+      );
     }
-  } else {
-    return const Icon(Icons.qr_code, size: 40, color: Colors.blue);
+    return well(Icons.person_rounded, currentColors['navy']!);
   }
+  return well(
+    Icons.qr_code_2_rounded,
+    currentColors['button-color']!,
+  );
 }
 
 /// Pushes [page] on the navigator and returns the value popped back, if any.

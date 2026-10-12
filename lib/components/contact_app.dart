@@ -73,21 +73,15 @@ class _MultiContactPickerPageState extends State<MultiContactPickerPage> {
         padding: const EdgeInsets.all(8),
         child: Row(
           children: [
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: currentColors['surface'],
-              ),
+            OutlinedButton(
               onPressed: () => Navigator.pop(context, <Contact>[]),
               child: Text(
-                (lang['buttons'] as Map<String, dynamic>)['cancel'] as String,
-                style: TextStyle(color: textColor),
+                (lang['buttons'] as Map<String, dynamic>)['cancel']
+                    as String,
               ),
             ),
             const Spacer(),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: currentColors['button-color'],
-              ),
               onPressed: () {
                 final chosen = widget.contacts
                     .asMap()
@@ -98,8 +92,8 @@ class _MultiContactPickerPageState extends State<MultiContactPickerPage> {
                 Navigator.pop(context, chosen);
               },
               child: Text(
-                (lang['buttons'] as Map<String, dynamic>)['validate'] as String,
-                style: TextStyle(color: textColor),
+                (lang['buttons'] as Map<String, dynamic>)['validate']
+                    as String,
               ),
             ),
           ],

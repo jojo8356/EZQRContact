@@ -69,8 +69,12 @@ class _PdfExportPageState extends State<PdfExportPage> {
           })
           .toList();
 
-      final pdfBytes =
-          _layout2x2 ? await _build2x2Pdf(items) : await _build1ppPdf(items);
+      late final Uint8List pdfBytes;
+      if (_layout2x2) {
+        pdfBytes = await _build2x2Pdf(items);
+      } else {
+        pdfBytes = await _build1ppPdf(items);
+      }
 
       if (!mounted) return;
       await Printing.sharePdf(
@@ -120,12 +124,12 @@ class _PdfExportPageState extends State<PdfExportPage> {
         } on Exception catch (_) {}
       }
 
-      final captureLabel = () {
-        final d = _formatDate(s('captured_at'));
-        if (d.isEmpty) return '';
+      var captureLabel = '';
+      final captured = _formatDate(s('captured_at'));
+      if (captured.isNotEmpty) {
         final tpl = lang['captured_on'] as String;
-        return tpl.replaceFirst('%s', d);
-      }();
+        captureLabel = tpl.replaceFirst('%s', captured);
+      }
 
       doc.addPage(
         pw.Page(
@@ -338,6 +342,10 @@ class _PdfExportPageState extends State<PdfExportPage> {
   @override
   Widget build(BuildContext context) {
     final lang = LangProvider.getMap('pdf_export');
+    Widget bottomBar = const Navbar(currentRoute: '/collection');
+    if (_selectMode && _selected.isNotEmpty) {
+      bottomBar = _buildExportBar(lang);
+    }
 
     return Scaffold(
       backgroundColor: currentColors['bg'],
@@ -359,7 +367,7 @@ class _PdfExportPageState extends State<PdfExportPage> {
                     }),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: currentColors['button-color'],
-                      foregroundColor: Colors.white,
+                      foregroundColor: currentColors['on-button'],
                     ),
                     icon: const Icon(Icons.checklist),
                     label: Text(lang['select_mode'] as String),
@@ -411,25 +419,31 @@ class _PdfExportPageState extends State<PdfExportPage> {
                     final prenom = (data['prenom'] as String?) ?? '';
                     final nom = (data['nom'] as String?) ?? '';
 
+                    ValueChanged<bool?>? onChanged;
+                    if (_selectMode && id != null) {
+                      onChanged = (_) => _toggleSelect(id);
+                    }
+                    Widget? subtitle;
+                    final org = data['org'] as String?;
+                    if (org != null && org.isNotEmpty) {
+                      subtitle = Text(
+                        org,
+                        style: TextStyle(
+                          color: currentColors['text-muted'],
+                        ),
+                      );
+                    }
+
                     return CheckboxListTile(
                       value: isSelected,
-                      onChanged: _selectMode && id != null
-                          ? (_) => _toggleSelect(id)
-                          : null,
+                      onChanged: onChanged,
                       title: Text(
                         '$prenom $nom'.trim(),
                         style: TextStyle(color: currentColors['text']),
                       ),
-                      subtitle: (data['org'] as String?)?.isNotEmpty == true
-                          ? Text(
-                              data['org'] as String,
-                              style: TextStyle(
-                                color: currentColors['text-muted'],
-                              ),
-                            )
-                          : null,
+                      subtitle: subtitle,
                       activeColor: currentColors['button-color'],
-                      checkColor: Colors.white,
+                      checkColor: currentColors['on-button'],
                     );
                   },
                 );
@@ -438,9 +452,7 @@ class _PdfExportPageState extends State<PdfExportPage> {
           ),
         ],
       ),
-      bottomNavigationBar: _selectMode && _selected.isNotEmpty
-          ? _buildExportBar(lang)
-          : const Navbar(currentRoute: '/collection'),
+      bottomNavigationBar: bottomBar,
     );
   }
 
@@ -475,31 +487,36 @@ class _PdfExportPageState extends State<PdfExportPage> {
             stream: _stream,
             builder: (ctx, snap) {
               final allItems = snap.data ?? [];
+              VoidCallback? onPressed;
+              if (!_generating) {
+                onPressed = () => unawaited(_generate(allItems));
+              }
+              late final Widget icon;
+              late final String label;
+              if (_generating) {
+                icon = SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: currentColors['on-button'],
+                  ),
+                );
+                label = lang['generating'] as String;
+              } else {
+                icon = const Icon(Icons.picture_as_pdf);
+                label = (lang['export_button'] as String)
+                    .replaceFirst('%s', '${_selected.length}');
+              }
               return ElevatedButton.icon(
-                onPressed: _generating
-                    ? null
-                    : () => unawaited(_generate(allItems)),
+                onPressed: onPressed,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: currentColors['button-color'],
-                  foregroundColor: Colors.white,
+                  foregroundColor: currentColors['on-button'],
                   minimumSize: const Size(double.infinity, 48),
                 ),
-                icon: _generating
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Icon(Icons.picture_as_pdf),
-                label: Text(
-                  _generating
-                      ? lang['generating'] as String
-                      : (lang['export_button'] as String)
-                          .replaceFirst('%s', '${_selected.length}'),
-                ),
+                icon: icon,
+                label: Text(label),
               );
             },
           ),
@@ -522,14 +539,18 @@ class _LayoutChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var bg = currentColors['surface'];
+    var fg = currentColors['text'];
+    if (selected) {
+      bg = currentColors['button-color'];
+      fg = currentColors['on-button'];
+    }
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: selected
-              ? currentColors['button-color']
-              : currentColors['surface'],
+          color: bg,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: currentColors['button-color']!,
@@ -539,7 +560,7 @@ class _LayoutChip extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            color: selected ? Colors.white : currentColors['text'],
+            color: fg,
             fontWeight: FontWeight.w600,
           ),
         ),

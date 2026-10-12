@@ -4,11 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/active_event_banner.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/navbar.dart';
+import 'package:qr_code_app/components/empty_state.dart';
 import 'package:qr_code_app/components/qr_card_list.dart';
 import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/pages/pdf_export_page.dart';
+import 'package:qr_code_app/pages/qr_scanner.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
+import 'package:qr_code_app/theme/tokens.dart';
 
 /// Main "collection" page. Lists every saved QR/VCard with reactive Drift
 /// stream. Provides debounced name search and optional event filter (4-5/4-6).
@@ -77,6 +80,19 @@ class _CollectionState extends State<Collection> {
     return AnimatedBuilder(
       animation: darkProv,
       builder: (context, _) {
+        Widget? suffixIcon;
+        if (_searchQuery.isNotEmpty) {
+          suffixIcon = IconButton(
+            icon: Icon(
+              Icons.clear,
+              color: currentColors['text-muted'],
+            ),
+            onPressed: () {
+              _searchCtrl.clear();
+              _onSearchChanged('');
+            },
+          );
+        }
         return Scaffold(
           backgroundColor: currentColors['bg'],
           appBar: AppBarCustom(lang['title'] as String),
@@ -85,10 +101,8 @@ class _CollectionState extends State<Collection> {
               context,
               MaterialPageRoute<void>(builder: (_) => const PdfExportPage()),
             ),
-            backgroundColor: currentColors['button-color'],
-            foregroundColor: Colors.white,
             tooltip: 'Export PDF',
-            child: const Icon(Icons.picture_as_pdf),
+            child: const Icon(Icons.picture_as_pdf_outlined),
           ),
           body: Column(
             children: [
@@ -106,18 +120,7 @@ class _CollectionState extends State<Collection> {
                       Icons.search,
                       color: currentColors['text-muted'],
                     ),
-                    suffixIcon: _searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: Icon(
-                              Icons.clear,
-                              color: currentColors['text-muted'],
-                            ),
-                            onPressed: () {
-                              _searchCtrl.clear();
-                              _onSearchChanged('');
-                            },
-                          )
-                        : null,
+                    suffixIcon: suffixIcon,
                     filled: true,
                     fillColor: currentColors['surface'],
                     border: OutlineInputBorder(
@@ -162,13 +165,18 @@ class _CollectionState extends State<Collection> {
                     }
                     final items = snapshot.data ?? [];
                     if (items.isEmpty) {
-                      return Center(
-                        child: Text(
-                          LangProvider.getString('empty'),
-                          style: TextStyle(
-                            color: currentColors['text'],
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                      final home = LangProvider.getMap('home');
+                      return EmptyState(
+                        icon: Icons.style_outlined,
+                        title: LangProvider.getString('empty'),
+                        body: home['empty_collection'] as String?,
+                        actionLabel: LangProvider.getMap(
+                          'menu',
+                        )['scanner'] as String?,
+                        onAction: () => Navigator.push(
+                          context,
+                          MaterialPageRoute<void>(
+                            builder: (_) => const QRScannerPage(),
                           ),
                         ),
                       );
@@ -202,19 +210,28 @@ class _EventChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var labelColor = currentColors['text'];
+    if (selected) {
+      labelColor = currentColors['on-button'];
+    }
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: FilterChip(
         label: Text(label),
         selected: selected,
         onSelected: (_) => onSelected(),
-        backgroundColor: currentColors['surface'],
+        backgroundColor: currentColors['surface-raised'],
         selectedColor: currentColors['button-color'],
         labelStyle: TextStyle(
-          color: selected ? Colors.white : currentColors['text'],
+          color: labelColor,
           fontSize: 12,
+          fontWeight: FontWeight.w600,
         ),
-        checkmarkColor: Colors.white,
+        checkmarkColor: currentColors['on-button'],
+        side: BorderSide(color: currentColors['border']!),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTokens.rXs),
+        ),
       ),
     );
   }

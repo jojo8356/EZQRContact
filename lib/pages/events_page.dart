@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
+import 'package:qr_code_app/components/empty_state.dart';
 import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/providers/event_provider.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
@@ -53,7 +54,7 @@ class _EventsPageState extends State<EventsPage> {
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: currentColors['button-color'],
-              foregroundColor: Colors.white,
+              foregroundColor: currentColors['on-button'],
             ),
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(lang['create'] as String),
@@ -90,8 +91,6 @@ class _EventsPageState extends State<EventsPage> {
       appBar: AppBarCustom(lang['title'] as String),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showCreateDialog,
-        backgroundColor: currentColors['button-color'],
-        foregroundColor: Colors.white,
         icon: const Icon(Icons.add),
         label: Text(lang['new_event'] as String),
       ),
@@ -100,11 +99,12 @@ class _EventsPageState extends State<EventsPage> {
         builder: (context, snapshot) {
           final events = snapshot.data ?? [];
           if (events.isEmpty) {
-            return Center(
-              child: Text(
-                lang['no_events'] as String,
-                style: TextStyle(color: currentColors['text']),
-              ),
+            return EmptyState(
+              icon: Icons.event_outlined,
+              title: lang['no_events'] as String,
+              body: LangProvider.getMap('home')['empty_events'] as String?,
+              actionLabel: lang['new_event'] as String,
+              onAction: () => unawaited(_showCreateDialog()),
             );
           }
           return ListView.builder(
@@ -133,24 +133,38 @@ class _EventTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lang = LangProvider.getMap('events');
+    var weight = FontWeight.normal;
+    var actionLabel = lang['activate'] as String;
+    var actionColor = currentColors['button-color'];
+    if (event.isActive) {
+      weight = FontWeight.bold;
+      actionLabel = lang['deactivate'] as String;
+      actionColor = currentColors['danger'];
+    }
+    Widget? subtitle;
+    if (event.startDate != null) {
+      subtitle = Text(
+        event.startDate!,
+        style: TextStyle(color: currentColors['text-muted']),
+      );
+    }
     return Card(
       color: currentColors['surface'],
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(color: currentColors['border']!),
+      ),
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         title: Text(
           event.name,
           style: TextStyle(
             color: currentColors['text'],
-            fontWeight:
-                event.isActive ? FontWeight.bold : FontWeight.normal,
+            fontWeight: weight,
           ),
         ),
-        subtitle: event.startDate != null
-            ? Text(
-                event.startDate!,
-                style: TextStyle(color: currentColors['text-muted']),
-              )
-            : null,
+        subtitle: subtitle,
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -166,9 +180,10 @@ class _EventTile extends StatelessWidget {
                 ),
                 child: Text(
                   lang['active_badge'] as String,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: currentColors['on-button'],
                     fontSize: 12,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -176,14 +191,8 @@ class _EventTile extends StatelessWidget {
             TextButton(
               onPressed: onToggle,
               child: Text(
-                event.isActive
-                    ? lang['deactivate'] as String
-                    : lang['activate'] as String,
-                style: TextStyle(
-                  color: event.isActive
-                      ? Colors.red
-                      : currentColors['button-color'],
-                ),
+                actionLabel,
+                style: TextStyle(color: actionColor),
               ),
             ),
           ],

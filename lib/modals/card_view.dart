@@ -20,9 +20,12 @@ Future<void> showRawTextDialog(
   final cardView = LangProvider.section('pages.QR.card view');
   if (!context.mounted) return;
 
-  final rawText = isVCard
-      ? VCard.fromMap(data).toVCard()
-      : (data['text'] as String?) ?? '';
+  late final String rawText;
+  if (isVCard) {
+    rawText = VCard.fromMap(data).toVCard();
+  } else {
+    rawText = (data['text'] as String?) ?? '';
+  }
 
   unawaited(showDialog<void>(
     context: context,
@@ -82,17 +85,33 @@ Future<void> showDataDialog(
   final cardView = LangProvider.section('pages.QR.card view');
   if (!context.mounted) return;
 
-  final content = isVCard
-      ? VCardView(controllers: mapToControllers(data))
-      : Text(
-          (data['text'] as String?) ?? '',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: currentColors['popup-text']),
-        );
+  late final Widget content;
+  if (isVCard) {
+    content = VCardView(controllers: mapToControllers(data));
+  } else {
+    content = Text(
+      (data['text'] as String?) ?? '',
+      textAlign: TextAlign.center,
+      style: TextStyle(color: currentColors['popup-text']),
+    );
+  }
+
+  var titleKey = 'simple';
+  var titleAlign = TextAlign.center;
+  var actionsRight = 16.0;
+  var insetV = 0.0;
+  var contentPad = const EdgeInsets.fromLTRB(0, 16, 0, 0);
+  if (isVCard) {
+    titleKey = 'vcard';
+    titleAlign = TextAlign.start;
+    actionsRight = 20;
+    insetV = 6;
+    contentPad = const EdgeInsets.symmetric(horizontal: 12);
+  }
 
   final title = Text(
-    cardView[isVCard ? 'vcard' : 'simple'] as String,
-    textAlign: isVCard ? TextAlign.start : TextAlign.center,
+    cardView[titleKey] as String,
+    textAlign: titleAlign,
     style: TextStyle(color: currentColors['popup-text']),
   );
 
@@ -100,14 +119,12 @@ Future<void> showDataDialog(
     context: context,
     builder: (_) => AlertDialog(
       backgroundColor: currentColors['popup-background'],
-      actionsPadding: EdgeInsets.fromLTRB(0, 0, isVCard ? 20 : 16, 8),
+      actionsPadding: EdgeInsets.fromLTRB(0, 0, actionsRight, 8),
       insetPadding: EdgeInsets.symmetric(
         horizontal: 12,
-        vertical: isVCard ? 6 : 0,
+        vertical: insetV,
       ),
-      contentPadding: isVCard
-          ? const EdgeInsets.symmetric(horizontal: 12)
-          : const EdgeInsets.fromLTRB(0, 16, 0, 0),
+      contentPadding: contentPad,
       title: title,
       content: SingleChildScrollView(
         child: SizedBox(width: double.maxFinite, child: content),

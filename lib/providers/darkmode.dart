@@ -40,7 +40,7 @@ class DarkModeProvider extends ChangeNotifier {
   void toggle() {
     _isDarkMode = !_isDarkMode;
     notifyListeners(); // immediate notification for isDarkMode consumers
-    _startAnimation(_isDarkMode ? 1.0 : 0.0);
+    _startAnimation(_targetT());
   }
 
   /// Sets dark mode to [value] and starts the transition animation.
@@ -49,7 +49,14 @@ class DarkModeProvider extends ChangeNotifier {
     if (_isDarkMode == value) return;
     _isDarkMode = value;
     notifyListeners(); // immediate notification for isDarkMode consumers
-    _startAnimation(_isDarkMode ? 1.0 : 0.0);
+    _startAnimation(_targetT());
+  }
+
+  double _targetT() {
+    if (_isDarkMode) {
+      return 1;
+    }
+    return 0;
   }
 
   void _startAnimation(double target) {
@@ -83,11 +90,19 @@ class DarkModeProvider extends ChangeNotifier {
     _ticker?.dispose();
     _ticker = null;
     _isDarkMode = value;
-    _themeT = value ? 1 : 0;
+    if (value) {
+      _themeT = 1;
+    } else {
+      _themeT = 0;
+    }
     notifyListeners();
   }
 
-  static double _easeInOutCubic(double t) => t < 0.5
-      ? 4 * t * t * t
-      : 1 - (-2 * t + 2) * (-2 * t + 2) * (-2 * t + 2) / 2;
+  static double _easeInOutCubic(double t) {
+    if (t < 0.5) {
+      return 4 * t * t * t;
+    }
+    final u = -2 * t + 2;
+    return 1 - u * u * u / 2;
+  }
 }

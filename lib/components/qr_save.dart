@@ -21,7 +21,10 @@ Uint8List _renderQrPng(List<dynamic> args) {
   final cr       = args[2] as int;
   final cg       = args[3] as int;
   final cb       = args[4] as int;
-  final logoData = args.length > 5 ? args[5] as Uint8List? : null;
+  Uint8List? logoData;
+  if (args.length > 5) {
+    logoData = args[5] as Uint8List?;
+  }
 
   // 10 px per module + 4-module quiet zone on each side.
   const scale   = 10;
@@ -60,9 +63,11 @@ Uint8List _renderQrPng(List<dynamic> args) {
       // Fit within 64×64 px, preserving aspect ratio.
       const maxSide = 64;
       if (logo.width > maxSide || logo.height > maxSide) {
-        logo = logo.width >= logo.height
-            ? img.copyResize(logo, width: maxSide)
-            : img.copyResize(logo, height: maxSide);
+        if (logo.width >= logo.height) {
+          logo = img.copyResize(logo, width: maxSide);
+        } else {
+          logo = img.copyResize(logo, height: maxSide);
+        }
       }
 
       // White shield: 4 px padding around logo to separate it from modules.

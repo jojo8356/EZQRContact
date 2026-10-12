@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/btn.animated.dart';
 import 'package:qr_code_app/components/qr_save.dart';
+import 'package:qr_code_app/components/section_label.dart';
 import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/modals/contact_options.dart';
 import 'package:qr_code_app/models/qr_layout.dart';
@@ -154,6 +155,10 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
       animation: darkProv,
       builder: (context, _) {
         final isDark = darkProv.isDarkMode;
+        var hairline = Colors.black26;
+        if (isDark) {
+          hairline = Colors.white38;
+        }
 
         return Scaffold(
           backgroundColor: currentColors['bg'],
@@ -170,17 +175,8 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                // — Apparence section —————————————————————————————
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    (lang['appearance'] as String?) ?? 'Apparence',
-                    style: TextStyle(
-                      color: currentColors['text'],
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                SectionLabel(
+                  (lang['appearance'] as String?) ?? 'Apparence',
                 ),
                 const SizedBox(height: 12),
                 // Photo row
@@ -220,11 +216,7 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                           width: 36,
                           height: 36,
                           decoration: BoxDecoration(
-                            border: Border.all(
-                              color: isDark
-                                  ? Colors.white38
-                                  : Colors.black26,
-                            ),
+                            border: Border.all(color: hairline),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Icon(
@@ -257,11 +249,7 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                         height: 36,
                         decoration: BoxDecoration(
                           color: _primaryColor,
-                          border: Border.all(
-                            color: isDark
-                                ? Colors.white38
-                                : Colors.black26,
-                          ),
+                          border: Border.all(color: hairline),
                           borderRadius: BorderRadius.circular(6),
                         ),
                       ),
@@ -306,11 +294,7 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                             width: 36,
                             height: 36,
                             decoration: BoxDecoration(
-                              border: Border.all(
-                                color: isDark
-                                    ? Colors.white38
-                                    : Colors.black26,
-                              ),
+                              border: Border.all(color: hairline),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Icon(
@@ -324,17 +308,8 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                // Layout section label
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    (lang['layout'] as String?) ?? 'Layout',
-                    style: TextStyle(
-                      color: currentColors['text'],
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                SectionLabel(
+                  (lang['layout'] as String?) ?? 'Layout',
                 ),
                 const SizedBox(height: 8),
                 // Layout picker
@@ -376,9 +351,10 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                   onPressed: () async {
                     final data = extractValues(controllers);
                     data['photo'] = _photoDataUri ?? '';
-                    final logoBase64 = _logoBytes != null
-                        ? base64Encode(_logoBytes!)
-                        : null;
+                    String? logoBase64;
+                    if (_logoBytes != null) {
+                      logoBase64 = base64Encode(_logoBytes!);
+                    }
                     data['visual_config'] = VisualConfig(
                       primaryColor: _primaryColor,
                       logoBase64: logoBase64,
@@ -416,26 +392,12 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
 /// Builds a single themed [TextField] from the field record [f] (a
 /// `{label, controller}` pair produced by `tools.buildFields`).
 Widget input(Map<String, dynamic> f) {
-  final isDark = darkProv.isDarkMode;
   final textColor = currentColors['text'] ?? Colors.white;
   return TextField(
     controller: f['controller'] as TextEditingController?,
     style: TextStyle(color: textColor),
     decoration: InputDecoration(
-      filled: true,
-      fillColor: currentColors['surface'],
-      border: OutlineInputBorder(
-        borderSide: BorderSide(color: textColor),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: textColor),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: textColor, width: 2),
-      ),
       labelText: f['label'] as String,
-      labelStyle:
-          TextStyle(color: isDark ? Colors.white70 : Colors.black87),
     ),
   );
 }

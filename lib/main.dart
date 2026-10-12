@@ -12,6 +12,7 @@ import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/onboarding_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/providers/vcard_settings_provider.dart';
+import 'package:qr_code_app/theme/app_theme.dart';
 import 'package:qr_code_app/tools/perf.dart';
 
 /// Application entry point: ensures Flutter bindings, loads the active
@@ -59,17 +60,18 @@ class _MyAppState extends State<MyApp> {
         builder: (context, snap) {
           // Default true to avoid flicker while future resolves.
           final done = snap.data ?? true;
+          var initialRoute = '/onboarding';
+          if (done) {
+            initialRoute = '/options';
+          }
           return MaterialApp(
             debugShowCheckedModeBanner: false,
             title: LangProvider.getString('title'),
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-              scaffoldBackgroundColor: currentColors['bg'],
-              dialogTheme: DialogThemeData(
-                backgroundColor: currentColors['popup-background'],
-              ),
+            theme: buildAppTheme(
+              colors: currentColors,
+              isDark: darkProv.isDarkMode,
             ),
-            initialRoute: done ? '/options' : '/onboarding',
+            initialRoute: initialRoute,
             routes: {
               '/onboarding': (_) => const OnboardingPage(),
               '/options': (_) => const OptionsListPage(),

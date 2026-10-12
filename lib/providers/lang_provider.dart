@@ -49,13 +49,19 @@ class LangProvider {
   /// 🔹 Récupère une traduction (typée String)
   static String getString(String key) {
     final value = _translations?[key];
-    return value is String ? value : key;
+    if (value is String) {
+      return value;
+    }
+    return key;
   }
 
   /// 🔹 Récupère une section de traductions (typée Map)
   static Map<String, dynamic> getMap(String key) {
     final value = _translations?[key];
-    return value is Map<String, dynamic> ? value : <String, dynamic>{};
+    if (value is Map<String, dynamic>) {
+      return value;
+    }
+    return <String, dynamic>{};
   }
 
   /// 🔹 Récupère une traduction via un chemin pointé "a.b.c"
@@ -69,7 +75,10 @@ class LangProvider {
         return path;
       }
     }
-    return node is String ? node : path;
+    if (node is String) {
+      return node;
+    }
+    return path;
   }
 
   /// 🔹 Récupère une section imbriquée via un chemin pointé "a.b.c".
@@ -86,7 +95,10 @@ class LangProvider {
         return <String, dynamic>{};
       }
     }
-    return node is Map<String, dynamic> ? node : <String, dynamic>{};
+    if (node is Map<String, dynamic>) {
+      return node;
+    }
+    return <String, dynamic>{};
   }
 
   /// 🔹 Récupère une traduction (legacy, retourne dynamic)

@@ -150,11 +150,14 @@ Apple Developer account.
 ```
 lib/
   main.dart        # Entry + MaterialApp + routes
+  theme/           # ENCRE design tokens, typography, ThemeData
   pages/           # Top level screens
   components/      # Reusable widgets
   modals/          # Modal dialogs
   providers/       # Singleton state (theme, lang, dark mode)
   tools/           # Helpers (vcard, contacts, db)
+docs/
+  direction-artistique.md   # Art direction (ENCRE) — source of visual truth
 ```
 
 The full v2.0 architecture, ADRs, and migration plan are documented in

@@ -43,7 +43,10 @@ class _QRCardListViewState extends State<QRCardListView> {
   }
 
   void _loadMore({bool initial = false}) {
-    final toLoad = initial ? 8 : 2; // 8 éléments au départ, 2 ensuite
+    var toLoad = 2;
+    if (initial) {
+      toLoad = 8;
+    }
     final total = widget.allItems.length;
     if (_loadedCount >= total) return;
 

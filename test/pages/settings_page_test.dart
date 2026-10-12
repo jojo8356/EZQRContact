@@ -89,14 +89,14 @@ void main() {
       expect(find.byType(DropdownButton<String>), findsOneWidget);
     });
 
-    testWidgets('tapping dark-mode ElevatedButton flips isDarkMode to true',
+    testWidgets('tapping dark-mode switch flips isDarkMode to true',
         (tester) async {
       await pumpSettingsPage(tester);
 
-      final buttons = find.byType(ElevatedButton);
-      expect(buttons.evaluate(), isNotEmpty);
+      final toggle = find.byKey(const Key('dark-mode-switch'));
+      expect(toggle, findsOneWidget);
 
-      await tester.tap(buttons.last);
+      await tester.tap(toggle);
       // pumpAndSettle pumps 100 ms frames until no pending callbacks.
       // The Ticker records _startTime on its first tick (elapsed = 0) then
       // needs ~300 ms more, so ~4 frames of 100 ms each before it stops.

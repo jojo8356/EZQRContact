@@ -2,38 +2,55 @@ import 'package:flutter/material.dart';
 
 /// Discriminator for the available theme palettes.
 enum ThemeModeType {
-  /// Light theme palette.
+  /// Light theme palette — warm paper.
   whiteMode,
 
-  /// Dark theme palette.
+  /// Dark theme palette — warm night ink.
   blackMode,
 }
 
-/// Color palettes used across the app, keyed by [ThemeModeType] and then
-/// by semantic role. Values follow Tailwind's zinc/gray/sky scales so the
-/// dark palette avoids pure black and the light palette avoids pure black
-/// text (both improve legibility and reduce eye strain).
+/// ENCRE palettes, keyed by [ThemeModeType] then by semantic role.
+///
+/// Names and hex values are specified in
+/// `docs/direction-artistique.md` §7.2 / §8.1.
+///
+/// Legacy keys (`bg`, `surface`, `text`, `text-muted`, `button-color`,
+/// `popup-*`) are preserved so existing call sites keep compiling.
 final Map<ThemeModeType, Map<String, Color>> appColorsEnum = {
-  ThemeModeType.whiteMode: {
-    'bg':               const Color(0xFFFFFFFF), // white
-    'surface':          const Color(0xFFF9FAFB), // gray-50  — cards, inputs
-    'text':             const Color(0xFF111827), // gray-900
-    'text-muted':       const Color(0xFF6B7280), // gray-500 — subtitles
-    'button-color':     const Color(0xFF2563EB), // blue-600
-    'popup-background': const Color(0xFFFFFFFF), // white
-    'popup-text':       const Color(0xFF111827), // gray-900
-    'popup-h1':         const Color(0xFF111827), // gray-900
-    'popup-h2':         const Color(0xFF4B5563), // gray-600
+  ThemeModeType.whiteMode: const {
+    'bg': Color(0xFFF4EFE6), // Papier
+    'surface': Color(0xFFFFFCF7), // Carte
+    'surface-raised': Color(0xFFEBE4D8), // Sable
+    'text': Color(0xFF1A1612), // Encre
+    'text-muted': Color(0xFF6F675C), // Cendre
+    'button-color': Color(0xFFC45C26), // Cuivre
+    'on-button': Color(0xFFFFF8F0),
+    'navy': Color(0xFF1F3D4D), // Marine
+    'border': Color(0xFFDDD4C6), // Ligne
+    'success': Color(0xFF3D6B4F),
+    'danger': Color(0xFFB42318),
+    'popup-background': Color(0xFFFFFCF7),
+    'popup-text': Color(0xFF1A1612),
+    'popup-h1': Color(0xFF1A1612),
+    'popup-h2': Color(0xFF1F3D4D),
+    'shadow': Color(0xFF1A1612),
   },
-  ThemeModeType.blackMode: {
-    'bg':               const Color(0xFF09090B), // zinc-950 — near-black
-    'surface':          const Color(0xFF18181B), // zinc-900 — cards, inputs
-    'text':             const Color(0xFFF4F4F5), // zinc-100
-    'text-muted':       const Color(0xFFA1A1AA), // zinc-400 — subtitles
-    'button-color':     const Color(0xFF0EA5E9), // sky-500  — visible on dark
-    'popup-background': const Color(0xFF27272A), // zinc-800
-    'popup-text':       const Color(0xFFF4F4F5), // zinc-100
-    'popup-h1':         const Color(0xFFFAFAFA), // zinc-50
-    'popup-h2':         const Color(0xFFA1A1AA), // zinc-400
+  ThemeModeType.blackMode: const {
+    'bg': Color(0xFF141210), // Nuit
+    'surface': Color(0xFF1E1B18), // Carte nuit
+    'surface-raised': Color(0xFF2A2622),
+    'text': Color(0xFFF3EDE4), // Ivoire
+    'text-muted': Color(0xFFA89F93),
+    'button-color': Color(0xFFE07A3D), // Cuivre nuit
+    'on-button': Color(0xFF1A1612),
+    'navy': Color(0xFF8BB8C9),
+    'border': Color(0xFF3A342E),
+    'success': Color(0xFF7BC49A),
+    'danger': Color(0xFFF97066),
+    'popup-background': Color(0xFF1E1B18),
+    'popup-text': Color(0xFFF3EDE4),
+    'popup-h1': Color(0xFFF3EDE4),
+    'popup-h2': Color(0xFF8BB8C9),
+    'shadow': Color(0xFF000000),
   },
 };

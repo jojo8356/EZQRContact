@@ -2,6 +2,22 @@
   "close": "Fermer",
   "title": "Easy QR Contact App",
   "QR Not Found": "Aucun QR code trouvé",
+  "home": {
+    "tagline": "Échangez. Sans cloud.",
+    "tagline_sub": "Vos cartes restent sur ce téléphone.",
+    "section_more": "Aussi",
+    "vcard_sub": "Créez votre carte de visite",
+    "scanner_sub": "Capturez un contact en un scan",
+    "simple_sub": "Texte, URL, identifiant",
+    "import_sub": "Depuis une capture d’écran",
+    "import_contact_sub": "Depuis le carnet du téléphone",
+    "events_sub": "Regroupez par salon ou RDV",
+    "scanner_hint": "Cadrez le QR. Rien n’est envoyé.",
+    "import_hint": "Choisissez une capture contenant un QR.",
+    "empty_collection": "Scannez votre première carte.",
+    "empty_history": "Les cartes supprimées apparaîtront ici.",
+    "empty_events": "Créez un événement pour grouper vos scans."
+  },
   "menu": {
     "simple": "QR code Simple",
     "vcard": "QR code VCard",

@@ -31,11 +31,14 @@ class PhoneContacts {
     for (final contact in contacts) {
       final first = contact.name.first;
       final last = contact.name.last;
-      final match = (prenom != null && nom != null)
-          ? (first == prenom && last == nom)
-          : prenom != null
-          ? first == prenom
-          : last == nom;
+      late final bool match;
+      if (prenom != null && nom != null) {
+        match = first == prenom && last == nom;
+      } else if (prenom != null) {
+        match = first == prenom;
+      } else {
+        match = last == nom;
+      }
       if (match) return contact.id;
     }
     return null;
@@ -52,9 +55,10 @@ class PhoneContacts {
       final last = c.name.last;
       final matchFirst = prenom != null && first == prenom;
       final matchLast = nom != null && last == nom;
-      return (prenom != null && nom != null)
-          ? matchFirst && matchLast
-          : matchFirst || matchLast;
+      if (prenom != null && nom != null) {
+        return matchFirst && matchLast;
+      }
+      return matchFirst || matchLast;
     });
   }
 
@@ -66,8 +70,18 @@ class PhoneContacts {
     'nom2': c.name.middle,
     'prefixe': c.name.prefix,
     'suffixe': c.name.suffix,
-    'org': c.organizations.isNotEmpty ? c.organizations.first.company : '',
-    'job': c.organizations.isNotEmpty ? c.organizations.first.title : '',
+    'org': () {
+      if (c.organizations.isNotEmpty) {
+        return c.organizations.first.company;
+      }
+      return '';
+    }(),
+    'job': () {
+      if (c.organizations.isNotEmpty) {
+        return c.organizations.first.title;
+      }
+      return '';
+    }(),
     'photo': '',
     'tel_work': c.phones
         .firstWhere(
@@ -93,7 +107,12 @@ class PhoneContacts {
           orElse: () => Address(''),
         )
         .address,
-    'email': c.emails.isNotEmpty ? c.emails.first.address : '',
+    'email': () {
+      if (c.emails.isNotEmpty) {
+        return c.emails.first.address;
+      }
+      return '';
+    }(),
     'rev': '',
   };
 
@@ -109,11 +128,13 @@ class PhoneContacts {
     final contact = contacts.firstWhere((c) {
       final first = c.name.first;
       final last = c.name.last;
-      return (prenom != null && nom != null)
-          ? first == prenom && last == nom
-          : prenom != null
-          ? first == prenom
-          : last == nom;
+      if (prenom != null && nom != null) {
+        return first == prenom && last == nom;
+      }
+      if (prenom != null) {
+        return first == prenom;
+      }
+      return last == nom;
     });
     return contactToMap(contact);
   }

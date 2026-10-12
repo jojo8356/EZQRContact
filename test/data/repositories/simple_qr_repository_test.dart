@@ -17,7 +17,12 @@ void main() {
   }) =>
       SimpleQRsCompanion(
         qrText: Value(text),
-        path: path == null ? const Value.absent() : Value(path),
+        path: () {
+          if (path == null) {
+            return const Value.absent();
+          }
+          return Value(path);
+        }(),
       );
 
   setUp(() {

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/components/action_tile.dart';
 import 'package:qr_code_app/components/active_event_banner.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/navbar.dart';
+import 'package:qr_code_app/components/qr_mark.dart';
+import 'package:qr_code_app/components/section_label.dart';
 import 'package:qr_code_app/modals/guide.dart';
 import 'package:qr_code_app/pages/events_page.dart';
 import 'package:qr_code_app/pages/import_qr_page.dart';
@@ -10,12 +13,12 @@ import 'package:qr_code_app/pages/qr_generator_vcard.dart';
 import 'package:qr_code_app/pages/qr_scanner.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
+import 'package:qr_code_app/theme/tokens.dart';
 import 'package:qr_code_app/tools/import_contact.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
-/// Home page of the app, presenting the five primary user actions
-/// (generate simple QR / vCard, scan, import image, import contact)
-/// as a vertical list of large buttons.
+/// Home page of the app. Featured VCard + Scanner tiles, then a 2×2 grid
+/// of secondary actions.
 class OptionsListPage extends StatelessWidget {
   /// Creates the home page.
   const OptionsListPage({super.key});
@@ -25,104 +28,125 @@ class OptionsListPage extends StatelessWidget {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!context.mounted) return;
       if (await shouldShowGuide() && context.mounted) {
-        // Await the dialog so the guide-shown flag is only persisted if
-        // the popup actually appears (otherwise rapid navigation marks
-        // it as seen and suppresses it forever for fast users).
         await showGuidePopup(context);
         await markGuideShown();
         debugPrint('Guide affiché et marqué comme montré.');
       }
     });
     final lang = LangProvider.getMap('menu');
-    final buttons = [
-      {
-        'label': lang['simple'],
-        'icon': Icons.qr_code_2,
-        'action': () => Navigator.push(
-          context,
-          MaterialPageRoute<void>(
-            builder: (context) => const GenerateSimpleQRCode(),
-          ),
-        ),
-      },
-      {
-        'label': lang['vcard'],
-        'icon': Icons.contact_page,
-        'action': () => Navigator.push(
-          context,
-          MaterialPageRoute<void>(
-            builder: (context) => const GenerateVCardQRCode(),
-          ),
-        ),
-      },
-      {
-        'label': lang['scanner'],
-        'icon': Icons.qr_code_scanner,
-        'action': () => Navigator.push(
-          context,
-          MaterialPageRoute<void>(builder: (context) => const QRScannerPage()),
-        ),
-      },
-      {
-        'label': lang['import'],
-        'icon': Icons.upload_file,
-        'action': () => Navigator.push(
-          context,
-          MaterialPageRoute<void>(
-            builder: (context) => const QrFromImagePage(),
-          ),
-        ),
-      },
-      {
-        'label': lang['import_contact'],
-        'icon': Icons.person_add,
-        'action': () async {
-          await importContacts(context);
-        },
-      },
-      {
-        'label': lang['events'] as String? ?? 'Événements',
-        'icon': Icons.event,
-        'action': () => Navigator.push(
-          context,
-          MaterialPageRoute<void>(builder: (_) => const EventsPage()),
-        ),
-      },
-    ];
+    final home = LangProvider.getMap('home');
+    final theme = Theme.of(context);
 
     return Scaffold(
       backgroundColor: currentColors['bg'],
-      appBar: const AppBarCustom('Actions QR'),
+      appBar: const AppBarCustom('', titleWidget: EzqrWordmark()),
       body: Column(
         children: [
           const ActiveEventBanner(),
           Expanded(
-            child: Center(
-              child: ListView.separated(
-                shrinkWrap: true,
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                itemCount: buttons.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 20),
-                itemBuilder: (context, index) {
-                  final btn = buttons[index];
-                  return ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: currentColors['button-color'],
-                      minimumSize: const Size(double.infinity, 50),
-                    ),
-                    icon: Icon(
-                      btn['icon'] as IconData?,
-                      color: Colors.white,
-                    ),
-                    label: Text(
-                      btn['label'] as String,
-                      style:
-                          const TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                    onPressed: () => (btn['action'] as void Function())(),
-                  );
-                },
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(
+                AppTokens.s5,
+                AppTokens.s6,
+                AppTokens.s5,
+                AppTokens.s10,
               ),
+              children: [
+                Text(
+                  home['tagline'] as String? ?? 'Échangez. Sans cloud.',
+                  style: theme.textTheme.displayLarge,
+                ),
+                const SizedBox(height: AppTokens.s2),
+                Text(
+                  home['tagline_sub'] as String? ??
+                      'Vos cartes restent sur ce téléphone.',
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: currentColors['text-muted'],
+                  ),
+                ),
+                const SizedBox(height: AppTokens.s8),
+                ActionTile(
+                  featured: true,
+                  icon: Icons.contact_page_outlined,
+                  title: lang['vcard'] as String,
+                  subtitle: home['vcard_sub'] as String?,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (context) => const GenerateVCardQRCode(),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppTokens.s3),
+                ActionTile(
+                  featured: true,
+                  icon: Icons.qr_code_scanner_rounded,
+                  title: lang['scanner'] as String,
+                  subtitle: home['scanner_sub'] as String?,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (context) => const QRScannerPage(),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppTokens.s6),
+                SectionLabel(
+                  home['section_more'] as String? ?? 'Aussi',
+                ),
+                const SizedBox(height: AppTokens.s2),
+                GridView.count(
+                  crossAxisCount: 2,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  mainAxisSpacing: AppTokens.s3,
+                  crossAxisSpacing: AppTokens.s3,
+                  childAspectRatio: 1.05,
+                  children: [
+                    ActionTile(
+                      icon: Icons.qr_code_2_rounded,
+                      title: lang['simple'] as String,
+                      subtitle: home['simple_sub'] as String?,
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (context) => const GenerateSimpleQRCode(),
+                        ),
+                      ),
+                    ),
+                    ActionTile(
+                      icon: Icons.photo_outlined,
+                      title: lang['import'] as String,
+                      subtitle: home['import_sub'] as String?,
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (context) => const QrFromImagePage(),
+                        ),
+                      ),
+                    ),
+                    ActionTile(
+                      icon: Icons.person_add_alt_1_outlined,
+                      title: lang['import_contact'] as String,
+                      subtitle: home['import_contact_sub'] as String?,
+                      onTap: () async {
+                        await importContacts(context);
+                      },
+                    ),
+                    ActionTile(
+                      icon: Icons.event_outlined,
+                      title: lang['events'] as String? ?? 'Événements',
+                      subtitle: home['events_sub'] as String?,
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (_) => const EventsPage(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ],

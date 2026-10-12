@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/active_event_banner.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
+import 'package:qr_code_app/components/empty_state.dart';
 import 'package:qr_code_app/components/navbar.dart';
 import 'package:qr_code_app/components/qr_card.dart';
 import 'package:qr_code_app/data/db/database.dart';
@@ -46,32 +47,35 @@ class _HistoryPageState extends State<HistoryPage> {
   @override
   Widget build(BuildContext context) {
     final lang = LangProvider.section('pages.history');
+    Widget body = ListView.builder(
+      itemCount: deletedItems.length,
+      itemBuilder: (context, index) {
+        final item = deletedItems[index];
+        final data = item['data'] as Map<String, dynamic>;
+        final isVCard = item['type'] == 'vcard';
+        return QRCard(
+          data: data,
+          isVCard: isVCard,
+          onRefresh: () async {},
+        );
+      },
+    );
+    if (loading) {
+      body = const Center(child: CircularProgressIndicator());
+    } else if (deletedItems.isEmpty) {
+      body = EmptyState(
+        icon: Icons.history_rounded,
+        title: LangProvider.getString('empty'),
+        body: LangProvider.getMap('home')['empty_history'] as String?,
+      );
+    }
     return Scaffold(
       backgroundColor: currentColors['bg'],
       appBar: AppBarCustom(lang['title'] as String),
       body: Column(
         children: [
           const ActiveEventBanner(),
-          Expanded(
-            child: loading
-                ? const Center(child: CircularProgressIndicator())
-                : deletedItems.isEmpty
-                ? Center(child: Text(LangProvider.getString('empty')))
-                : ListView.builder(
-                    itemCount: deletedItems.length,
-                    itemBuilder: (context, index) {
-                      final item = deletedItems[index];
-                      final data = item['data'] as Map<String, dynamic>;
-                      final isVCard = item['type'] == 'vcard';
-
-                      return QRCard(
-                        data: data,
-                        isVCard: isVCard,
-                        onRefresh: () async {},
-                      );
-                    },
-                  ),
-          ),
+          Expanded(child: body),
         ],
       ),
       bottomNavigationBar: const Navbar(currentRoute: '/history'),

@@ -227,7 +227,12 @@ class QRDatabase extends _$QRDatabase {
   Future<int> insertSimpleQR(String text, String? path) {
     return simpleQrs.insert(SimpleQRsCompanion(
       qrText: Value(text),
-      path: path == null ? const Value.absent() : Value(path),
+      path: () {
+        if (path == null) {
+          return const Value.absent();
+        }
+        return Value(path);
+      }(),
     ));
   }
 
@@ -286,7 +291,10 @@ class QRDatabase extends _$QRDatabase {
   /// Returns the VCard row at [id] as a legacy map, or null if missing.
   Future<Map<String, dynamic>?> getVCardById(int id) async {
     final row = await vcards.getById(id);
-    return row == null ? null : _vcardToLegacyMap(row);
+    if (row == null) {
+      return null;
+    }
+    return _vcardToLegacyMap(row);
   }
 
   /// Looks up an existing VCard by [nom] and/or [prenom].
@@ -295,7 +303,10 @@ class QRDatabase extends _$QRDatabase {
     String? prenom,
   }) async {
     final row = await vcards.findByName(nom: nom, prenom: prenom);
-    return row == null ? null : _vcardToLegacyMap(row);
+    if (row == null) {
+      return null;
+    }
+    return _vcardToLegacyMap(row);
   }
 
   /// Merges [newContact] fields into an existing VCard row when one matches.
@@ -374,8 +385,18 @@ Map<String, dynamic> _vcardToLegacyMap(VCardRow row) => {
       'email': row.email,
       'rev': row.rev,
       'path': row.path,
-      'clone': row.clone ? 1 : 0,
-      'deleted': row.deleted ? 1 : 0,
+      'clone': () {
+        if (row.clone) {
+          return 1;
+        }
+        return 0;
+      }(),
+      'deleted': () {
+        if (row.deleted) {
+          return 1;
+        }
+        return 0;
+      }(),
       'date_deleted': row.dateDeleted,
       'visual_config': row.visualConfig,
       'event_id': row.eventId,
@@ -386,14 +407,22 @@ Map<String, dynamic> _simpleQrToLegacyMap(SimpleQRRow row) => {
       'id': row.id,
       'text': row.qrText,
       'path': row.path,
-      'deleted': row.deleted ? 1 : 0,
+      'deleted': () {
+        if (row.deleted) {
+          return 1;
+        }
+        return 0;
+      }(),
       'date_deleted': row.dateDeleted,
     };
 
 VCardsCompanion _mapToVCardCompanion(Map<String, dynamic> data) {
   Value<String> str(String key) {
     final v = data[key];
-    return v == null ? const Value.absent() : Value(v.toString());
+    if (v == null) {
+      return const Value.absent();
+    }
+    return Value(v.toString());
   }
 
   Value<bool> boolFromIntOrString(String key) {
@@ -423,21 +452,35 @@ VCardsCompanion _mapToVCardCompanion(Map<String, dynamic> data) {
     adrHome: str('adr_home'),
     email: str('email'),
     rev: str('rev'),
-    path: data['path'] == null
-        ? const Value.absent()
-        : Value(data['path'].toString()),
+    path: () {
+      if (data['path'] == null) {
+        return const Value.absent();
+      }
+      return Value(data['path'].toString());
+    }(),
     clone: boolFromIntOrString('clone'),
     deleted: boolFromIntOrString('deleted'),
-    dateDeleted: data['date_deleted'] == null
-        ? const Value.absent()
-        : Value(data['date_deleted'].toString()),
+    dateDeleted: () {
+      if (data['date_deleted'] == null) {
+        return const Value.absent();
+      }
+      return Value(data['date_deleted'].toString());
+    }(),
     visualConfig: str('visual_config'),
     capturedAt: str('captured_at'),
     eventId: () {
       final v = data['event_id'];
       if (v == null) return const Value<int?>.absent();
-      final n = v is int ? v : int.tryParse(v.toString());
-      return n == null ? const Value<int?>.absent() : Value(n);
+      int? n;
+      if (v is int) {
+        n = v;
+      } else {
+        n = int.tryParse(v.toString());
+      }
+      if (n == null) {
+        return const Value<int?>.absent();
+      }
+      return Value(n);
     }(),
   );
 }

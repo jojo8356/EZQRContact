@@ -45,20 +45,6 @@ class GenerateSimpleQRCodeState extends State<GenerateSimpleQRCode> {
                   style: TextStyle(color: currentColors['text']),
                   decoration: InputDecoration(
                     labelText: lang['input'] as String?,
-                    labelStyle: TextStyle(
-                      color: isDark ? Colors.white70 : Colors.black54,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: currentColors['text'] ?? Colors.white,
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: currentColors['text'] ?? Colors.white,
-                        width: 2,
-                      ),
-                    ),
                   ),
                 ),
                 const SizedBox(height: 20),

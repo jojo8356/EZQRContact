@@ -2,6 +2,22 @@
   "close": "Close",
   "title": "Easy QR Contact App",
   "QR Not Found": "No QR code found",
+  "home": {
+    "tagline": "Exchange. No cloud.",
+    "tagline_sub": "Your cards stay on this phone.",
+    "section_more": "Also",
+    "vcard_sub": "Create your business card",
+    "scanner_sub": "Capture a contact in one scan",
+    "simple_sub": "Text, URL, identifier",
+    "import_sub": "From a screenshot",
+    "import_contact_sub": "From the phone address book",
+    "events_sub": "Group by fair or meeting",
+    "scanner_hint": "Frame the QR. Nothing is uploaded.",
+    "import_hint": "Pick a screenshot that contains a QR.",
+    "empty_collection": "Scan your first card.",
+    "empty_history": "Deleted cards will show up here.",
+    "empty_events": "Create an event to group your scans."
+  },
   "menu": {
     "simple": "Simple QR code",
     "vcard": "VCard QR code",

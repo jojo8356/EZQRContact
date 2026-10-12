@@ -122,7 +122,10 @@ class VCardRepository {
     if (oldValue.isNotEmpty) return oldValue;
     if (!newValue.present) return oldValue;
     final candidate = newValue.value;
-    return candidate.isEmpty ? oldValue : candidate;
+    if (candidate.isEmpty) {
+      return oldValue;
+    }
+    return candidate;
   }
 
   /// Clones a VCard. The new row has `clone=true` and a fresh id. Returns

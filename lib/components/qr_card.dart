@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/qr_options.dart';
-import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
+import 'package:qr_code_app/theme/app_theme.dart';
+import 'package:qr_code_app/theme/tokens.dart';
 import 'package:qr_code_app/tools/contacts.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
@@ -34,58 +35,79 @@ class _QRCardState extends State<QRCard> {
 
   @override
   Widget build(BuildContext context) {
-    final darkProv = DarkModeProvider();
+    var type = 'simple';
+    if (widget.isVCard) {
+      type = 'vcard';
+    }
     final titleText = PhoneContacts.getTitle({
-      'type': widget.isVCard ? 'vcard' : 'simple',
+      'type': type,
       'data': widget.data,
     });
     final photo = (widget.data['photo'] as String?) ?? '';
+    final c = currentColors;
+    final theme = Theme.of(context);
+    var expandIcon = Icons.expand_more_rounded;
+    if (expanded) {
+      expandIcon = Icons.expand_less_rounded;
+    }
 
-    return Card(
-      color: currentColors['surface'],
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      elevation: 3,
-      child: Column(
-        children: [
-          ListTile(
-            leading: buildItemAvatar(isVCard: widget.isVCard, photo: photo),
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  titleText,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: currentColors['text-muted'],
-                  ),
-                ),
-                if (widget.data['date_deleted'] != null)
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppTokens.s5,
+        vertical: AppTokens.s2,
+      ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: c['surface'],
+          borderRadius: BorderRadius.circular(AppTokens.rLg),
+          border: Border.all(color: c['border']!),
+          boxShadow: paperShadow(c['shadow']!),
+        ),
+        child: Column(
+          children: [
+            ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppTokens.s4,
+                vertical: AppTokens.s1,
+              ),
+              leading: buildItemAvatar(
+                isVCard: widget.isVCard,
+                photo: photo,
+              ),
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    "Supprimé le : ${widget.data['date_deleted']}",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: darkProv.isDarkMode
-                          ? Colors.redAccent
-                          : Colors.pinkAccent,
+                    titleText,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: c['text'],
                     ),
                   ),
-              ],
+                  if (widget.data['date_deleted'] != null)
+                    Text(
+                      'Supprimé le : ${widget.data['date_deleted']}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: c['danger'],
+                      ),
+                    ),
+                ],
+              ),
+              trailing: Icon(
+                expandIcon,
+                color: c['text-muted'],
+              ),
+              onTap: () {
+                setState(() => expanded = !expanded);
+              },
             ),
-            trailing: Icon(
-              expanded ? Icons.expand_less : Icons.expand_more,
-              color: currentColors['text'],
+            OptionsQR(
+              isVCard: widget.isVCard,
+              data: widget.data,
+              expanded: expanded,
+              onRefresh: widget.onRefresh,
             ),
-            onTap: () {
-              setState(() => expanded = !expanded);
-            },
-          ),
-          OptionsQR(
-            isVCard: widget.isVCard,
-            data: widget.data,
-            expanded: expanded,
-            onRefresh: widget.onRefresh,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

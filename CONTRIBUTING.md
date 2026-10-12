@@ -155,6 +155,72 @@ Other ways to help:
 - Suggest features via issues
 - Add a translation in `assets/langs/` (current: French, English)
 
+## No ternary operators
+
+House rule: **do not use `cond ? a : b`**. Dart has no native `no_ternary`
+lint (`unneeded_ternary` / `prefer_if_widgets` do not exist in the SDK).
+We enable `prefer_if_elements_to_conditional_expressions` and enforce the
+full ban in `test/lint/no_ternary_test.dart`.
+
+Use `if` / `else` (statements or collection-if). Null-aware `??`, `?.`,
+`?[` and nullable types (`String?`) are fine.
+
+```dart
+// Bad
+final color = selected ? copper : muted;
+child: loading ? const Spinner() : body,
+
+// Good
+late final Color color;
+if (selected) {
+  color = copper;
+} else {
+  color = muted;
+}
+
+child: Builder(
+  builder: (context) {
+    if (loading) return const Spinner();
+    return body;
+  },
+)
+
+children: [
+  if (loading) const Spinner() else body,
+]
+```
+
+## Pure display returns
+
+A `build` (or builder) **return is a widget tree**, not a place for
+algorithms. No IIFE `() { ... }()` inside the tree. Compute values
+above the `return`, or extract a component.
+
+Allowed in the tree: widgets, components, collection-if of widgets,
+event callbacks (`onPressed: () { ... }`).
+
+Enforced by `test/lint/no_iife_in_display_test.dart`.
+
+```dart
+// Bad — algorithm in the display return
+return Scaffold(
+  body: () {
+    if (loading) return const Spinner();
+    return list;
+  }(),
+);
+
+// Good — algorithm above the return
+Widget body = list;
+if (loading) {
+  body = const Spinner();
+}
+return Scaffold(body: body);
+
+// Good — algorithm inside a component
+return Scaffold(body: HistoryBody(loading: loading, items: items));
+```
+
 ## License
 
 By contributing, you agree that your contributions will be licensed under

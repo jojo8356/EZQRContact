@@ -105,11 +105,16 @@ Future<void> importContacts(BuildContext context) async {
           ),
           content: ValueListenableBuilder<int>(
             valueListenable: progress,
-            builder: (context2, current, child) => Column(
+            builder: (context2, current, child) {
+              var progressValue = 0.0;
+              if (total > 0) {
+                progressValue = current / total;
+              }
+              return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 LinearProgressIndicator(
-                  value: total > 0 ? current / total : 0,
+                  value: progressValue,
                   color: currentColors['button-color'],
                   backgroundColor:
                       currentColors['text']?.withValues(alpha: 0.15),
@@ -123,7 +128,8 @@ Future<void> importContacts(BuildContext context) async {
                   ),
                 ),
               ],
-            ),
+            );
+            },
           ),
         ),
       ),

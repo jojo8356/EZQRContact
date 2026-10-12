@@ -27,9 +27,11 @@ Uint8List _resizeAndCompressIsolate(List<dynamic> args) {
   if (src == null) return bytes;
 
   if (src.width > maxSide || src.height > maxSide) {
-    src = src.width >= src.height
-        ? img.copyResize(src, width: maxSide)
-        : img.copyResize(src, height: maxSide);
+    if (src.width >= src.height) {
+      src = img.copyResize(src, width: maxSide);
+    } else {
+      src = img.copyResize(src, height: maxSide);
+    }
   }
   return img.encodeJpg(src, quality: quality);
 }

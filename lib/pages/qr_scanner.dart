@@ -2,11 +2,14 @@ import 'package:ai_barcode_scanner/ai_barcode_scanner.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
+import 'package:qr_code_app/components/app_button.dart';
+import 'package:qr_code_app/components/paper_card.dart';
 import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/pages/scan_result_page.dart';
 import 'package:qr_code_app/providers/event_provider.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
+import 'package:qr_code_app/theme/tokens.dart';
 import 'package:qr_code_app/tools/tools.dart';
 import 'package:qr_code_app/tools/vcard.dart';
 
@@ -23,84 +26,127 @@ class QRScannerPage extends StatefulWidget {
 class _QRScannerPageState extends State<QRScannerPage> {
   bool _scanned = false;
 
+  Future<void> _openScanner() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (context) => SafeArea(
+          child: AiBarcodeScanner(
+            borderColor: currentColors['button-color'] ?? Colors.white,
+            overlayColor: currentColors['bg'] ?? Colors.black,
+            hideGalleryButton: true,
+            hideSheetDragHandler: true,
+            hideSheetTitle: true,
+            appBarBuilder: (context, controller) {
+              var torchIcon = const Icon(Icons.flashlight_on_rounded);
+              if (controller.torchEnabled) {
+                torchIcon = const Icon(Icons.flashlight_off_rounded);
+              }
+              return AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                foregroundColor: currentColors['text'],
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.cameraswitch_rounded),
+                    onPressed: controller.switchCamera,
+                  ),
+                  IconButton(
+                    icon: torchIcon,
+                    onPressed: controller.toggleTorch,
+                  ),
+                ],
+              );
+            },
+            onDetect: (capture) async {
+              if (_scanned) return;
+              _scanned = true;
+
+              await HapticFeedback.mediumImpact();
+
+              final text = capture.barcodes.first.rawValue ?? '';
+
+              if (VCard.isVCard(text)) {
+                final vcard = VCard.parse(text);
+                final activeEvent = EventProvider().activeEvent;
+                final map = await vcard.toMap()
+                  ..['captured_at'] = DateTime.now().toIso8601String();
+                if (activeEvent != null) {
+                  map['event_id'] = activeEvent.id.toString();
+                }
+                final id = await createVCard(map);
+
+                if (context.mounted) {
+                  await redirect(
+                    context,
+                    ScanResultPage(vcardData: map, savedId: id),
+                  );
+                }
+              } else {
+                await createSimpleQR(text);
+                if (context.mounted) Navigator.of(context).pop();
+              }
+            },
+          ),
+        ),
+      ),
+    );
+    _scanned = false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final lang = LangProvider.section('pages.QR.scanner');
+    final home = LangProvider.getMap('home');
+    final c = currentColors;
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBarCustom(lang['title'] as String),
-      backgroundColor: currentColors['bg'],
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () async {
-            await Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (context) => SafeArea(
-                  child: AiBarcodeScanner(
-                    borderColor: currentColors['text'] ?? Colors.white,
-                    overlayColor: currentColors['bg'] ?? Colors.black,
-                    hideGalleryButton: true,
-                    hideSheetDragHandler: true,
-                    hideSheetTitle: true,
-                    appBarBuilder: (context, controller) => AppBar(
-                      backgroundColor: Colors.transparent,
-                      elevation: 0,
-                      foregroundColor: currentColors['text'],
-                      actions: [
-                        IconButton(
-                          icon: const Icon(Icons.cameraswitch_rounded),
-                          onPressed: controller.switchCamera,
-                        ),
-                        IconButton(
-                          icon: controller.torchEnabled
-                              ? const Icon(Icons.flashlight_off_rounded)
-                              : const Icon(Icons.flashlight_on_rounded),
-                          onPressed: controller.toggleTorch,
-                        ),
-                      ],
-                    ),
-                    onDetect: (capture) async {
-                      if (_scanned) return;
-                      _scanned = true;
-
-                      await HapticFeedback.mediumImpact();
-
-                      final text = capture.barcodes.first.rawValue ?? '';
-
-                      if (VCard.isVCard(text)) {
-                        final vcard = VCard.parse(text);
-                        final activeEvent = EventProvider().activeEvent;
-                        final map = await vcard.toMap()
-                          ..['captured_at'] =
-                              DateTime.now().toIso8601String();
-                        if (activeEvent != null) {
-                          map['event_id'] = activeEvent.id.toString();
-                        }
-                        final id = await createVCard(map);
-
-                        if (context.mounted) {
-                          await redirect(
-                            context,
-                            ScanResultPage(vcardData: map, savedId: id),
-                          );
-                        }
-                      } else {
-                        await createSimpleQR(text);
-                        if (context.mounted) Navigator.of(context).pop();
-                      }
-                    },
+      backgroundColor: c['bg'],
+      body: Padding(
+        padding: const EdgeInsets.all(AppTokens.s5),
+        child: Center(
+          child: PaperCard(
+            padding: const EdgeInsets.all(AppTokens.s8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    color: c['button-color']!.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(AppTokens.rLg),
+                  ),
+                  child: Icon(
+                    Icons.qr_code_scanner_rounded,
+                    size: 36,
+                    color: c['button-color'],
                   ),
                 ),
-              ),
-            );
-            _scanned = false;
-          },
-          style: ButtonStyle(
-            backgroundColor: WidgetStatePropertyAll(
-              currentColors['button-color'],
+                const SizedBox(height: AppTokens.s5),
+                Text(
+                  lang['title'] as String,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.headlineLarge,
+                ),
+                const SizedBox(height: AppTokens.s2),
+                Text(
+                  home['scanner_hint'] as String? ??
+                      'Cadrez le QR. Rien n’est envoyé.',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    color: c['text-muted'],
+                  ),
+                ),
+                const SizedBox(height: AppTokens.s6),
+                AppButton.primary(
+                  label: lang['scan'] as String,
+                  icon: Icons.qr_code_scanner_rounded,
+                  onPressed: _openScanner,
+                ),
+              ],
             ),
-            foregroundColor: const WidgetStatePropertyAll(Colors.white),
           ),
-          child: Text(lang['scan'] as String),
         ),
       ),
     );
