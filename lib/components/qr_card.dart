@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/components/paper_card.dart';
 import 'package:qr_code_app/components/qr_options.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
-import 'package:qr_code_app/theme/app_theme.dart';
 import 'package:qr_code_app/theme/tokens.dart';
 import 'package:qr_code_app/tools/contacts.dart';
 import 'package:qr_code_app/tools/tools.dart';
@@ -56,13 +56,8 @@ class _QRCardState extends State<QRCard> {
         horizontal: AppTokens.s5,
         vertical: AppTokens.s2,
       ),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: c['surface'],
-          borderRadius: BorderRadius.circular(AppTokens.rLg),
-          border: Border.all(color: c['border']!),
-          boxShadow: paperShadow(c['shadow']!),
-        ),
+      child: PaperCard(
+        padding: EdgeInsets.zero,
         child: Column(
           children: [
             ListTile(
