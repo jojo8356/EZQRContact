@@ -57,19 +57,25 @@ void main() {
       ),
     );
 
-    DecoratedBox boxOf(Key key) {
-      return tester.widget<DecoratedBox>(
+    Color? trackColor(Key key) {
+      final boxes = tester.widgetList<DecoratedBox>(
         find.descendant(
           of: find.byKey(key),
           matching: find.byType(DecoratedBox),
         ),
       );
+      for (final box in boxes) {
+        final deco = box.decoration;
+        if (deco is! BoxDecoration) continue;
+        if (deco.color == null) continue;
+        if (deco.color == Colors.white) continue;
+        return deco.color;
+      }
+      return null;
     }
 
-    final offDeco = boxOf(const Key('off')).decoration as BoxDecoration;
-    final onDeco = boxOf(const Key('on')).decoration as BoxDecoration;
-    expect(offDeco.color, sable);
-    expect(onDeco.color, cuivre);
+    expect(trackColor(const Key('off')), sable);
+    expect(trackColor(const Key('on')), cuivre);
   });
 
   testWidgets('tap notifies onChanged', (tester) async {

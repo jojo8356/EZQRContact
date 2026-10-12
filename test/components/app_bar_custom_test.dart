@@ -72,7 +72,12 @@ void main() {
       ),
     );
     expect(tester.getSize(find.byType(QrMark)), const Size(22, 22));
-    final paint = tester.widget<CustomPaint>(find.byType(CustomPaint));
+    final paint = tester.widget<CustomPaint>(
+      find.descendant(
+        of: find.byType(QrMark),
+        matching: find.byType(CustomPaint),
+      ),
+    );
     expect(paint.painter, isNotNull);
   });
 

@@ -225,14 +225,13 @@ class QRDatabase extends _$QRDatabase {
 
   /// Inserts a new SimpleQR row and returns its generated id.
   Future<int> insertSimpleQR(String text, String? path) {
+    Value<String?> pathValue = const Value.absent();
+    if (path != null) {
+      pathValue = Value(path);
+    }
     return simpleQrs.insert(SimpleQRsCompanion(
       qrText: Value(text),
-      path: () {
-        if (path == null) {
-          return const Value.absent();
-        }
-        return Value(path);
-      }(),
+      path: pathValue,
     ));
   }
 
@@ -437,6 +436,28 @@ VCardsCompanion _mapToVCardCompanion(Map<String, dynamic> data) {
     return const Value.absent();
   }
 
+  Value<String?> pathField = const Value.absent();
+  if (data['path'] != null) {
+    pathField = Value(data['path'].toString());
+  }
+  Value<String?> dateDeletedField = const Value.absent();
+  if (data['date_deleted'] != null) {
+    dateDeletedField = Value(data['date_deleted'].toString());
+  }
+  Value<int?> eventIdField = const Value.absent();
+  final eventRaw = data['event_id'];
+  if (eventRaw != null) {
+    int? n;
+    if (eventRaw is int) {
+      n = eventRaw;
+    } else {
+      n = int.tryParse(eventRaw.toString());
+    }
+    if (n != null) {
+      eventIdField = Value(n);
+    }
+  }
+
   return VCardsCompanion(
     nom: str('nom'),
     prenom: str('prenom'),
@@ -452,36 +473,13 @@ VCardsCompanion _mapToVCardCompanion(Map<String, dynamic> data) {
     adrHome: str('adr_home'),
     email: str('email'),
     rev: str('rev'),
-    path: () {
-      if (data['path'] == null) {
-        return const Value.absent();
-      }
-      return Value(data['path'].toString());
-    }(),
     clone: boolFromIntOrString('clone'),
     deleted: boolFromIntOrString('deleted'),
-    dateDeleted: () {
-      if (data['date_deleted'] == null) {
-        return const Value.absent();
-      }
-      return Value(data['date_deleted'].toString());
-    }(),
     visualConfig: str('visual_config'),
     capturedAt: str('captured_at'),
-    eventId: () {
-      final v = data['event_id'];
-      if (v == null) return const Value<int?>.absent();
-      int? n;
-      if (v is int) {
-        n = v;
-      } else {
-        n = int.tryParse(v.toString());
-      }
-      if (n == null) {
-        return const Value<int?>.absent();
-      }
-      return Value(n);
-    }(),
+    path: pathField,
+    dateDeleted: dateDeletedField,
+    eventId: eventIdField,
   );
 }
 

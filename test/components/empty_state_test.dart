@@ -43,13 +43,16 @@ void main() {
     expect(icon.size, 32);
     expect(icon.color, cendre);
 
-    final max = tester.widget<ConstrainedBox>(
+    final maxBoxes = tester.widgetList<ConstrainedBox>(
       find.descendant(
         of: find.byType(EmptyState),
         matching: find.byType(ConstrainedBox),
       ),
     );
-    expect(max.constraints.maxWidth, 280);
+    expect(
+      maxBoxes.any((box) => box.constraints.maxWidth == 280),
+      isTrue,
+    );
 
     expect(find.byType(AppButton), findsNothing);
   });

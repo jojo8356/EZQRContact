@@ -14,16 +14,16 @@ void main() {
   SimpleQRsCompanion sample({
     String text = 'https://example.com',
     String? path,
-  }) =>
-      SimpleQRsCompanion(
-        qrText: Value(text),
-        path: () {
-          if (path == null) {
-            return const Value.absent();
-          }
-          return Value(path);
-        }(),
-      );
+  }) {
+    Value<String?> pathValue = const Value.absent();
+    if (path != null) {
+      pathValue = Value(path);
+    }
+    return SimpleQRsCompanion(
+      qrText: Value(text),
+      path: pathValue,
+    );
+  }
 
   setUp(() {
     db = QRDatabase.forTesting(NativeDatabase.memory());

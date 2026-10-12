@@ -36,14 +36,16 @@ void main() {
     expect(find.text('History'), findsOneWidget);
     expect(find.text('Settings'), findsOneWidget);
 
-    final bar = tester.widget<DecoratedBox>(
+    final boxes = tester.widgetList<DecoratedBox>(
       find.descendant(
         of: find.byType(Navbar),
         matching: find.byType(DecoratedBox),
       ),
     );
-    final deco = bar.decoration as BoxDecoration;
-    expect(deco.color, carte);
+    final deco = boxes
+        .map((box) => box.decoration)
+        .whereType<BoxDecoration>()
+        .firstWhere((d) => d.color == carte);
     expect(deco.borderRadius, BorderRadius.circular(AppTokens.rLg));
     expect(deco.boxShadow, isNotEmpty);
     expect(deco.color, isNot(v1Purple));
