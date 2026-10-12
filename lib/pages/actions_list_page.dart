@@ -21,7 +21,7 @@ import 'package:qr_code_app/tools/tools.dart';
 /// of secondary actions.
 class OptionsListPage extends StatelessWidget {
   /// Creates the home page.
-  const OptionsListPage({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -15,7 +15,7 @@ void main() {
   setUp(() => darkProv.forceSetDarkMode(false));
   tearDown(() => darkProv.forceSetDarkMode(false));
 
-  Material _fill(WidgetTester tester) {
+  Material fill(WidgetTester tester) {
     return tester.widget<Material>(
       find.descendant(
         of: find.byType(AppButton),
@@ -38,7 +38,7 @@ void main() {
 
       expect(tester.getSize(find.byType(AppButton)).height, AppTokens.buttonH);
 
-      final material = _fill(tester);
+      final material = fill(tester);
       expect(material.color, cuivre);
       final shape = material.shape! as RoundedRectangleBorder;
       expect(shape.borderRadius, BorderRadius.circular(AppTokens.rMd));
@@ -75,7 +75,7 @@ void main() {
         ),
       );
 
-      final material = _fill(tester);
+      final material = fill(tester);
       expect(material.color, Colors.transparent);
       final shape = material.shape! as RoundedRectangleBorder;
       expect(shape.side.color, ligne);
@@ -93,7 +93,7 @@ void main() {
         ),
       );
 
-      final material = _fill(tester);
+      final material = fill(tester);
       expect(material.color, Colors.transparent);
       final shape = material.shape! as RoundedRectangleBorder;
       expect(shape.side, BorderSide.none);

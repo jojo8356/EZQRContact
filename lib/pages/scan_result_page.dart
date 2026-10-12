@@ -19,7 +19,7 @@ import 'package:qr_code_app/tools/contacts.dart';
 /// button to optionally add the contact to the device address book.
 class ScanResultPage extends StatefulWidget {
   /// Creates the page from [vcardData] (legacy map) and the DB row [savedId].
-  const ScanResultPage({
+  const new({
     required this.vcardData,
     required this.savedId,
     super.key,

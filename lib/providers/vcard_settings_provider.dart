@@ -9,9 +9,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 class VCardSettingsProvider {
 
   /// Returns the singleton instance.
-  factory VCardSettingsProvider() => _instance;
+  factory() => _instance;
 
-  VCardSettingsProvider._internal();
+  new _internal();
   static final VCardSettingsProvider _instance =
       VCardSettingsProvider._internal();
 

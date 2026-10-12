@@ -158,7 +158,7 @@ String _stripStringsAndComments(String src) {
       out.write(' ');
       i += 1;
       while (i < n) {
-        if (src[i] == '\\') {
+        if (src[i] == r'\\') {
           out.write(' ');
           i += 1;
           if (i < n) {

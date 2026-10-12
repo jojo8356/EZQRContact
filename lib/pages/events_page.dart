@@ -11,7 +11,7 @@ import 'package:qr_code_app/providers/theme_globals.dart';
 /// Displays all events and lets the user create, activate, and deactivate them.
 class EventsPage extends StatefulWidget {
   /// Creates the events page.
-  const EventsPage({super.key});
+  const new({super.key});
 
   @override
   State<EventsPage> createState() => _EventsPageState();
@@ -125,7 +125,7 @@ class _EventsPageState extends State<EventsPage> {
 }
 
 class _EventTile extends StatelessWidget {
-  const _EventTile({required this.event, required this.onToggle});
+  const new({required this.event, required this.onToggle});
 
   final Event event;
   final VoidCallback onToggle;

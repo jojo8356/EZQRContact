@@ -23,7 +23,7 @@ import 'package:qr_code_app/tools/vcard.dart';
 /// Form page that builds a vCard QR code from manually-entered fields.
 class GenerateVCardQRCode extends StatefulWidget {
   /// Creates the page.
-  const GenerateVCardQRCode({super.key});
+  const new({super.key});
 
   @override
   GenerateVCardQRCodeState createState() => GenerateVCardQRCodeState();
@@ -122,7 +122,7 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
 
   Future<ImageSource?> _askPhotoSource() async {
     final lang = LangProvider.section('pages.QR.generator');
-    return showModalBottomSheet<ImageSource>(
+    return await showModalBottomSheet<ImageSource>(
       context: context,
       builder: (ctx) => Column(
         mainAxisSize: MainAxisSize.min,

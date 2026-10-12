@@ -12,7 +12,7 @@ Future<Uint8List> resizeAndCompressJpeg(
   int maxSide = 720,
   int quality = 85,
 }) async {
-  return compute(
+  return await compute(
     _resizeAndCompressIsolate,
     [bytes, maxSide, quality],
   );

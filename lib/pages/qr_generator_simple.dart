@@ -11,7 +11,7 @@ import 'package:qr_code_app/tools/tools.dart';
 /// Form page that turns a single text input into a SimpleQR row + image.
 class GenerateSimpleQRCode extends StatefulWidget {
   /// Creates the page.
-  const GenerateSimpleQRCode({super.key});
+  const new({super.key});
 
   @override
   GenerateSimpleQRCodeState createState() => GenerateSimpleQRCodeState();

@@ -14,7 +14,7 @@ import 'package:qr_code_app/tools/perf.dart';
 /// Page listing the soft-deleted QR / VCard rows ("trash" view).
 class HistoryPage extends StatefulWidget {
   /// Creates the page.
-  const HistoryPage({super.key});
+  const new({super.key});
 
   @override
   State<HistoryPage> createState() => _HistoryPageState();

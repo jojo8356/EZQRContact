@@ -19,7 +19,7 @@ import 'package:qr_code_app/providers/theme_globals.dart';
 /// 2×2 synthetic (story 6-3) layouts.
 class PdfExportPage extends StatefulWidget {
   /// Creates the export page.
-  const PdfExportPage({super.key});
+  const new({super.key});
 
   @override
   State<PdfExportPage> createState() => _PdfExportPageState();
@@ -211,7 +211,7 @@ class _PdfExportPageState extends State<PdfExportPage> {
         ),
       );
     }
-    return doc.save();
+    return await doc.save();
   }
 
   // ---------------------------------------------------------------------------
@@ -270,7 +270,7 @@ class _PdfExportPageState extends State<PdfExportPage> {
         ),
       );
     }
-    return doc.save();
+    return await doc.save();
   }
 
   static pw.Widget _buildCell(Map<String, dynamic> item) {
@@ -527,7 +527,7 @@ class _PdfExportPageState extends State<PdfExportPage> {
 }
 
 class _LayoutChip extends StatelessWidget {
-  const _LayoutChip({
+  const new({
     required this.label,
     required this.selected,
     required this.onTap,

@@ -17,7 +17,7 @@ import 'package:qr_code_app/tools/vcard.dart';
 /// to [ScanResultPage]; other payloads are saved as SimpleQR rows.
 class QRScannerPage extends StatefulWidget {
   /// Creates the scanner page.
-  const QRScannerPage({super.key});
+  const new({super.key});
 
   @override
   State<QRScannerPage> createState() => _QRScannerPageState();

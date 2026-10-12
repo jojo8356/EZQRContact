@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/active_event_banner.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
-import 'package:qr_code_app/components/navbar.dart';
 import 'package:qr_code_app/components/empty_state.dart';
+import 'package:qr_code_app/components/navbar.dart';
 import 'package:qr_code_app/components/qr_card_list.dart';
 import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/pages/pdf_export_page.dart';
@@ -17,7 +17,7 @@ import 'package:qr_code_app/theme/tokens.dart';
 /// stream. Provides debounced name search and optional event filter (4-5/4-6).
 class Collection extends StatefulWidget {
   /// Creates the collection page.
-  const Collection({super.key});
+  const new({super.key});
 
   @override
   State<Collection> createState() => _CollectionState();
@@ -198,7 +198,7 @@ class _CollectionState extends State<Collection> {
 }
 
 class _EventChip extends StatelessWidget {
-  const _EventChip({
+  const new({
     required this.label,
     required this.selected,
     required this.onSelected,

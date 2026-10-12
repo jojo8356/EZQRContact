@@ -16,7 +16,7 @@ void main() {
     String text = 'https://example.com',
     String? path,
   }) {
-    Value<String?> pathValue = const Value.absent();
+    var pathValue = const Value.absent<String?>();
     if (path != null) {
       pathValue = Value(path);
     }

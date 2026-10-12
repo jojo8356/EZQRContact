@@ -18,7 +18,7 @@ import 'package:qr_code_app/tools/vcard.dart';
 /// are stored as SimpleQR rows.
 class QrFromImagePage extends StatefulWidget {
   /// Creates the page.
-  const QrFromImagePage({super.key});
+  const new({super.key});
 
   @override
   State<QrFromImagePage> createState() => _QrFromImagePageState();

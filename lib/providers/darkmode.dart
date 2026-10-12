@@ -1,11 +1,9 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 // Minimal TickerProvider that creates standalone tickers — no State needed.
 class _StandaloneTickerProvider implements TickerProvider {
-  const _StandaloneTickerProvider();
+  const new();
 
   @override
   Ticker createTicker(TickerCallback onTick) => Ticker(onTick);
@@ -17,9 +15,9 @@ class _StandaloneTickerProvider implements TickerProvider {
 /// [AnimatedBuilder] wrappers repaint with interpolated colors.
 class DarkModeProvider extends ChangeNotifier {
   /// Returns the singleton instance.
-  factory DarkModeProvider() => _instance;
+  factory() => _instance;
 
-  DarkModeProvider._internal();
+  new _internal();
   static final DarkModeProvider _instance = DarkModeProvider._internal();
   static const _kDuration = Duration(milliseconds: 300);
 
@@ -65,7 +63,7 @@ class DarkModeProvider extends ChangeNotifier {
     _animFrom = _themeT;
     _animTo = target;
     _ticker = const _StandaloneTickerProvider().createTicker(_onTick);
-    unawaited(_ticker!.start());
+    _ticker!.start();
   }
 
   void _onTick(Duration elapsed) {

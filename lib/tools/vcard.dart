@@ -18,7 +18,7 @@ class VCard {
   /// [rev] auto-generates a UTC ISO8601 revision marker if omitted.
   /// [visualConfigJson] is the raw JSON from the `visual_config` DB column;
   /// when non-null it is encoded into `X-EZQR-VISUAL` on serialisation.
-  VCard({
+  new({
     this.nom = '',
     this.prenom = '',
     this.nom2 = '',
@@ -38,7 +38,7 @@ class VCard {
 
   /// Builds a VCard from a legacy `Map<String, dynamic>` payload, where
   /// missing or null values fall back to empty strings.
-  factory VCard.fromMap(Map<String, dynamic> data) => VCard(
+  factory fromMap(Map<String, dynamic> data) => VCard(
     nom: (data['nom'] as String?) ?? '',
     prenom: (data['prenom'] as String?) ?? '',
     nom2: (data['nom2'] as String?) ?? '',
@@ -64,7 +64,7 @@ class VCard {
   /// Only the subset of properties used by EZQRContact (N, FN, ORG,
   /// TITLE, PHOTO, TEL, ADR, EMAIL, REV) is recognized; everything else
   /// is ignored.
-  factory VCard.parse(String vcard) {
+  factory parse(String vcard) {
     final data = <String, String>{
       'nom': '',
       'prenom': '',

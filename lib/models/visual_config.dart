@@ -7,14 +7,14 @@ import 'package:qr_code_app/models/qr_layout.dart';
 /// Stored as JSON in the `visual_config` DB column.
 class VisualConfig {
   /// Creates a [VisualConfig] with optional visual fields.
-  const VisualConfig({
+  const new({
     this.primaryColor = const Color(0xFF000000),
     this.logoBase64,
     this.layout = QrLayout.minimal,
   });
 
   /// Creates a [VisualConfig] from a JSON string.
-  factory VisualConfig.fromJson(String json) {
+  factory fromJson(String json) {
     final map = jsonDecode(json) as Map<String, dynamic>;
     final hex = map['primaryColor'] as String? ?? '#000000';
     final layoutStr = map['layout'] as String?;
@@ -26,7 +26,7 @@ class VisualConfig {
   }
 
   /// Creates a [VisualConfig] with defaults when [json] is null or empty.
-  factory VisualConfig.fromNullableJson(String? json) {
+  factory fromNullableJson(String? json) {
     if (json == null || json.isEmpty) return const VisualConfig();
     try {
       return VisualConfig.fromJson(json);

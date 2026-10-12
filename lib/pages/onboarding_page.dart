@@ -14,7 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// shows again.
 class OnboardingPage extends StatefulWidget {
   /// Creates the onboarding page.
-  const OnboardingPage({super.key});
+  const new({super.key});
 
   @override
   State<OnboardingPage> createState() => _OnboardingPageState();
@@ -160,7 +160,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
 }
 
 class _OnboardingScreen extends StatelessWidget {
-  const _OnboardingScreen({
+  const new({
     required this.icon,
     required this.title,
     required this.body,
@@ -208,7 +208,7 @@ class _OnboardingScreen extends StatelessWidget {
 }
 
 class _Dot extends StatelessWidget {
-  const _Dot({required this.active});
+  const new({required this.active});
 
   final bool active;
 

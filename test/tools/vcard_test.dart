@@ -156,7 +156,7 @@ void main() {
   group('VCard.toVCard() — toggle useVCard4 (Story 2.1 AC-2)', () {
     test('useVCard4=true produces VERSION:4.0', () async {
       await VCardSettingsProvider.setUseVCard4(true);
-      addTearDown(() async => VCardSettingsProvider.setUseVCard4(false));
+      addTearDown(() => VCardSettingsProvider.setUseVCard4(false));
 
       final v = VCard(nom: 'Doe', prenom: 'Jane', rev: '20260101T000000Z');
       final out = v.toVCard();
@@ -166,7 +166,7 @@ void main() {
 
     test('useVCard4=true uses TEL;VALUE=uri:tel: format', () async {
       await VCardSettingsProvider.setUseVCard4(true);
-      addTearDown(() async => VCardSettingsProvider.setUseVCard4(false));
+      addTearDown(() => VCardSettingsProvider.setUseVCard4(false));
 
       final v = VCard(
         nom: 'Doe',
@@ -328,7 +328,7 @@ void main() {
         <String, Object>{'use_vcard4': true},
       );
       await VCardSettingsProvider.init();
-      addTearDown(() async => VCardSettingsProvider.setUseVCard4(false));
+      addTearDown(() => VCardSettingsProvider.setUseVCard4(false));
 
       final original = VCard(
         nom: 'Doe',

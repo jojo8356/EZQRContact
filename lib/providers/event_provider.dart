@@ -6,9 +6,9 @@ import 'package:qr_code_app/data/db/database.dart';
 /// [deactivate] to manage state.
 class EventProvider extends ChangeNotifier {
   /// Returns the singleton instance.
-  factory EventProvider() => _instance;
+  factory() => _instance;
 
-  EventProvider._();
+  new _();
   static final EventProvider _instance = EventProvider._();
 
   Event? _active;

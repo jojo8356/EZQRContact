@@ -19,7 +19,7 @@ import 'package:qr_code_app/tools/perf.dart';
 /// to the help guide and the developer's social networks.
 class SettingsPage extends StatefulWidget {
   /// Creates the settings page.
-  const SettingsPage({super.key});
+  const new({super.key});
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -165,7 +165,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                   trailing: AppSwitch(
                                     key: const Key('dark-mode-switch'),
                                     value: darkProv.isDarkMode,
-                                    onChanged: (v) => darkProv.setDarkMode(v),
+                                    onChanged: darkProv.setDarkMode,
                                   ),
                                 ),
                                 ListTile(

@@ -85,7 +85,7 @@ Set<String> _leafPaths(Map<String, dynamic> map, [String prefix = '']) {
 enum _Kind { string, map }
 
 class _Usage {
-  _Usage(this.path, this.kind, this.location);
+  new(this.path, this.kind, this.location);
   final String path;
   final _Kind kind;
   final String location;

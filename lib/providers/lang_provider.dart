@@ -15,9 +15,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 class LangProvider {
 
   /// Returns the singleton instance.
-  factory LangProvider() => _instance;
+  factory() => _instance;
 
-  LangProvider._internal();
+  new _internal();
   static final LangProvider _instance = LangProvider._internal();
   static Map<String, dynamic>? _translations;
   static String _currentLang = 'en';
