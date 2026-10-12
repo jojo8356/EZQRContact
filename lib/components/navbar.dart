@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
@@ -84,11 +82,9 @@ class Navbar extends StatelessWidget {
                               selected: currentRoute == item.$4,
                               onTap: () {
                                 if (item.$4 == currentRoute) return;
-                                unawaited(
-                                  Navigator.pushReplacementNamed(
-                                    context,
-                                    item.$4,
-                                  ),
+                                Navigator.pushReplacementNamed(
+                                  context,
+                                  item.$4,
                                 );
                               },
                             ),

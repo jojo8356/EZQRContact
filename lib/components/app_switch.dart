@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 /// Toggle M3-like avec squish du thumb et durée d'animation configurable.
@@ -59,9 +57,9 @@ class _AppSwitchState extends State<AppSwitch>
     super.didUpdateWidget(old);
     if (old.value != widget.value) {
       if (widget.value) {
-        unawaited(_ctrl.forward());
+        _ctrl.forward();
       } else {
-        unawaited(_ctrl.reverse());
+        _ctrl.reverse();
       }
     }
   }

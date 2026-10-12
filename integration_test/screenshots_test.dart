@@ -11,8 +11,6 @@
 //   3. Si l'action timeout (3s par défaut) → log et continue avec la suivante
 // Comme ça, dès que l'app crash, le test s'arrête au lieu de bloquer 10 min.
 
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -161,7 +159,7 @@ void main() {
       'collection',
       before: () async {
         final ctx = tester.element(find.byType(Navigator).first);
-        unawaited(Navigator.of(ctx).pushNamed('/collection'));
+        Navigator.of(ctx).pushNamed('/collection');
       },
     );
   });
@@ -185,7 +183,7 @@ void main() {
       'collection-dark',
       before: () async {
         final ctx = tester.element(find.byType(Navigator).first);
-        unawaited(Navigator.of(ctx).pushNamed('/collection'));
+        Navigator.of(ctx).pushNamed('/collection');
       },
     );
   });

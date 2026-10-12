@@ -102,7 +102,6 @@ class ActionTile extends StatelessWidget {
       );
     } else {
       inner = Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(
             child: Center(child: iconWell),
