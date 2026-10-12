@@ -3,10 +3,15 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:qr_code_app/components/app_switch.dart';
+import 'package:qr_code_app/components/paper_card.dart';
+import 'package:qr_code_app/components/section_label.dart';
 import 'package:qr_code_app/pages/settings.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../helpers/encre.dart';
 
 // Flutter 3.41.6+ uses AssetManifest.bin (StandardMessageCodec binary format)
 // exclusively on non-web platforms. The binary format encodes a map from asset
@@ -19,17 +24,9 @@ ByteData _buildFakeManifestBin() {
   })!;
 }
 
-/// Wraps [SettingsPage] with the routes its bottom navigation bar may push.
+/// Wraps [SettingsPage] with ENCRE theme and navbar routes.
 Widget _buildApp() {
-  return MaterialApp(
-    home: const SettingsPage(),
-    routes: {
-      '/settings': (_) => const SettingsPage(),
-      '/options': (_) => const Scaffold(),
-      '/collection': (_) => const Scaffold(),
-      '/history': (_) => const Scaffold(),
-    },
-  );
+  return encreApp(home: const SettingsPage());
 }
 
 void main() {
@@ -102,6 +99,17 @@ void main() {
       // needs ~300 ms more, so ~4 frames of 100 ms each before it stops.
       await tester.pumpAndSettle();
       expect(darkProv.isDarkMode, isTrue);
+    });
+
+    testWidgets('uses AppSwitch and PaperCard, not Material Switch pills',
+        (tester) async {
+      await pumpSettingsPage(tester);
+
+      expect(find.byType(AppSwitch), findsWidgets);
+      expect(find.byType(PaperCard), findsWidgets);
+      expect(find.byType(SectionLabel), findsWidgets);
+      expect(find.byType(Switch), findsNothing);
+      expect(find.byType(SwitchListTile), findsNothing);
     });
   });
 }

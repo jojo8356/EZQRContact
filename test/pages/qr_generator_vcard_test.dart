@@ -3,10 +3,13 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:qr_code_app/components/section_label.dart';
 import 'package:qr_code_app/pages/qr_generator_vcard.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../helpers/encre.dart';
 
 ByteData _buildFakeManifestBin() {
   const codec = StandardMessageCodec();
@@ -16,14 +19,7 @@ ByteData _buildFakeManifestBin() {
   })!;
 }
 
-Widget _buildApp() => MaterialApp(
-  home: const GenerateVCardQRCode(),
-  routes: {
-    '/collection': (_) => const Scaffold(),
-    '/settings': (_) => const Scaffold(),
-    '/history': (_) => const Scaffold(),
-  },
-);
+Widget _buildApp() => encreApp(home: const GenerateVCardQRCode());
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -34,7 +30,7 @@ void main() {
   });
 
   setUp(() {
-    darkProv.setDarkMode(false);
+    darkProv.forceSetDarkMode(false);
     final fakeManifestBin = _buildFakeManifestBin();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMessageHandler('flutter/assets', (message) async {
@@ -46,7 +42,7 @@ void main() {
   });
 
   tearDown(() {
-    darkProv.setDarkMode(false);
+    darkProv.forceSetDarkMode(false);
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMessageHandler('flutter/assets', null);
   });
@@ -56,6 +52,7 @@ void main() {
       await tester.pumpWidget(_buildApp());
       await tester.pump();
 
+      expect(find.byType(SectionLabel), findsWidgets);
       expect(find.text('Appearance'), findsOneWidget);
     });
 

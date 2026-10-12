@@ -1,4 +1,4 @@
-// Capture des screenshots automatiques des pages v1 d'EZQRContact.
+// Capture des screenshots automatiques des pages ENCRE d'EZQRContact.
 //
 // Lancer avec :
 //   ./scripts/capture_screenshots.sh
@@ -150,7 +150,7 @@ void main() {
       tester,
       'vcard-form',
       before: () async {
-        await tester.tap(find.byIcon(Icons.contact_page).first);
+        await tester.tap(find.byIcon(Icons.contact_page_outlined).first);
       },
     );
 
@@ -206,7 +206,7 @@ void main() {
       tester,
       'scanner',
       before: () async {
-        await tester.tap(find.byIcon(Icons.qr_code_scanner).first);
+        await tester.tap(find.byIcon(Icons.qr_code_scanner_rounded).first);
       },
     );
   });

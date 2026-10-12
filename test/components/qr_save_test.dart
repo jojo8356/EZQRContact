@@ -52,7 +52,7 @@ void main() {
     });
 
     test('custom color produces a PNG', () async {
-      final bytes = await buildQrBytes('test', color: const Color(0xFF0EA5E9));
+      final bytes = await buildQrBytes('test', color: const Color(0xFFC45C26));
       expect(bytes.sublist(0, 8), equals(_pngMagic));
     });
 

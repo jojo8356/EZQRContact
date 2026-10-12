@@ -122,10 +122,20 @@ Run the full test suite with:
 flutter test
 ```
 
-The v1 codebase has a minimal test surface. The v2 roadmap (epics E1, E2,
-and E3) includes a major test push using `mocktail` and
-`sqflite_common_ffi`. If your PR introduces new logic, please add at least
-one unit test next to it under `test/<mirror-of-lib-path>/`.
+Art direction (ENCRE) is locked by `test/theme/encre_da_test.dart` and the
+widget tests under `test/components/` (AppButton, AppSwitch, PaperCard,
+Navbar, …). After a visual change, run at least:
+
+```bash
+flutter test test/theme test/components
+```
+
+Pump UI under `encreApp()` from `test/helpers/encre.dart` — never the
+default Material starter theme (blue seed, pills, Roboto).
+
+The v2 roadmap (epics E1, E2, and E3) still includes a broader test push
+using `mocktail` and `sqflite_common_ffi`. If your PR introduces new logic,
+add at least one unit test next to it under `test/<mirror-of-lib-path>/`.
 
 ## Code style
 
