@@ -19,7 +19,28 @@ import 'package:qr_code_app/tools/vcard.dart';
 /// are stored as SimpleQR rows.
 class QrFromImagePage extends StatefulWidget {
   /// Creates the page.
-  const new({super.key});
+  ///
+  /// [pickImage], [analyzeImage], [saveVCard] and [saveSimpleQr] are test
+  /// seams. Production leaves them null.
+  const new({
+    this.pickImage,
+    this.analyzeImage,
+    this.saveVCard,
+    this.saveSimpleQr,
+    super.key,
+  });
+
+  /// Test override for `ImagePicker.pickImage`.
+  final Future<XFile?> Function()? pickImage;
+
+  /// Test override for barcode analysis. Null/empty means no QR in the image.
+  final Future<String?> Function(String path)? analyzeImage;
+
+  /// Test override for [createVCard].
+  final Future<int> Function(Map<String, dynamic> data)? saveVCard;
+
+  /// Test override for [createSimpleQR].
+  final Future<int> Function(String text)? saveSimpleQr;
 
   @override
   State<QrFromImagePage> createState() => _QrFromImagePageState();
@@ -33,21 +54,31 @@ class _QrFromImagePageState extends State<QrFromImagePage> {
     setState(() => _processing = true);
 
     try {
-      final picker = ImagePicker();
-      final file = await picker.pickImage(source: ImageSource.gallery);
+      XFile? file;
+      final pick = widget.pickImage;
+      if (pick != null) {
+        file = await pick();
+      } else {
+        file = await ImagePicker().pickImage(source: ImageSource.gallery);
+      }
       if (file == null) return;
 
-      final controller = AiBarcodeScannerController(autoStart: false);
-      BarcodeCapture? capture;
-      try {
-        capture = await controller.analyzeImage(file.path);
-      } finally {
-        controller.dispose();
+      String? rawValue;
+      final analyze = widget.analyzeImage;
+      if (analyze != null) {
+        rawValue = await analyze(file.path);
+      } else {
+        final controller = AiBarcodeScannerController(autoStart: false);
+        try {
+          final capture = await controller.analyzeImage(file.path);
+          rawValue = capture?.barcodes.firstOrNull?.rawValue;
+        } finally {
+          controller.dispose();
+        }
       }
 
       if (!mounted) return;
 
-      final rawValue = capture?.barcodes.firstOrNull?.rawValue;
       if (rawValue == null || rawValue.isEmpty) {
         final lang = LangProvider.section('pages.QR.import');
         ScaffoldMessenger.of(context).showSnackBar(
@@ -65,7 +96,13 @@ class _QrFromImagePageState extends State<QrFromImagePage> {
         if (activeEvent != null) {
           map['event_id'] = activeEvent.id.toString();
         }
-        final id = await createVCard(map);
+        final saveV = widget.saveVCard;
+        late final int id;
+        if (saveV != null) {
+          id = await saveV(map);
+        } else {
+          id = await createVCard(map);
+        }
 
         if (!mounted) return;
         final lang = LangProvider.section('pages.QR.scanner');
@@ -76,7 +113,12 @@ class _QrFromImagePageState extends State<QrFromImagePage> {
         );
         await redirect(context, ScanResultPage(vcardData: map, savedId: id));
       } else {
-        await createSimpleQR(rawValue);
+        final saveS = widget.saveSimpleQr;
+        if (saveS != null) {
+          await saveS(rawValue);
+        } else {
+          await createSimpleQR(rawValue);
+        }
         if (!mounted) return;
         final lang = LangProvider.section('pages.QR.scanner');
         showToast(
@@ -145,6 +187,7 @@ class _QrFromImagePageState extends State<QrFromImagePage> {
                 ),
                 const SizedBox(height: AppTokens.s6),
                 AppButton.primary(
+                  key: const Key('import-pick-image'),
                   label: lang['pick'] as String,
                   icon: Icons.image_outlined,
                   onPressed: onPick,
