@@ -9,6 +9,7 @@ import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/providers/vcard_settings_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:toastification/toastification.dart';
 
 import '../helpers/encre.dart';
 
@@ -55,6 +56,11 @@ Future<void> _openImport(
 Future<void> _tapPick(WidgetTester tester) async {
   await tester.tap(find.byKey(const Key('import-pick-image')));
   await tester.pump();
+  await tester.pump();
+  // showToast arms a 3 s PausableTimer that outlives the tree.
+  toastification.dismissAll();
+  await tester.pump();
+  // Material route push/pop is 300 ms.
   await tester.pump(const Duration(milliseconds: 400));
 }
 
@@ -68,7 +74,10 @@ void main() {
   });
 
   setUp(() => darkProv.forceSetDarkMode(false));
-  tearDown(() => darkProv.forceSetDarkMode(false));
+  tearDown(() {
+    toastification.dismissAll();
+    darkProv.forceSetDarkMode(false);
+  });
 
   group('QrFromImagePage — rendering', () {
     testWidgets('page renders without throwing inside MaterialApp',
