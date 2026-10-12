@@ -115,13 +115,23 @@ class _QrFromImagePageState extends State<QrFromImagePage> {
         }
         if (!mounted) return;
         final lang = LangProvider.section('pages.QR.scanner');
+        final title = lang['flashed'] as String;
+        // Pop before the toast. toastification attaches to this overlay;
+        // popping after showToast used to eat the pop (page stayed).
+        final navigator = Navigator.of(context, rootNavigator: true);
+        var toastContext = navigator.context;
+        final overlay = navigator.overlay;
+        if (overlay != null) {
+          toastContext = overlay.context;
+        }
+        if (navigator.canPop()) {
+          navigator.popUntil((route) => route.isFirst);
+        }
         showToast(
-          context: context,
-          title: lang['flashed'] as String,
+          context: toastContext,
+          title: title,
           color: Colors.white,
         );
-        if (!context.mounted) return;
-        Navigator.of(context).popUntil((route) => route.isFirst);
       }
     } on Exception catch (e) {
       debugPrint('Erreur lors du scan image: $e');

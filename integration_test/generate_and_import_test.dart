@@ -78,7 +78,7 @@ Future<void> _tapPickUntil(
   }
   toastification.dismissAll();
   await tester.pump();
-  await tester.pump(const Duration(milliseconds: 400));
+  await tester.pump(const Duration(milliseconds: 800));
 }
 
 Future<String> _writeScene(String name, Uint8List png) async {

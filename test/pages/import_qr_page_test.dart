@@ -64,7 +64,8 @@ Future<void> _tapPick(WidgetTester tester) async {
   // showToast arms a 3 s PausableTimer that outlives the tree.
   toastification.dismissAll();
   await tester.pump();
-  await tester.pump(const Duration(milliseconds: 400));
+  // MaterialPageRoute reverse transition is 300 ms.
+  await tester.pump(const Duration(milliseconds: 800));
 }
 
 void main() {

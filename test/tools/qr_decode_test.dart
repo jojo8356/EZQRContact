@@ -49,7 +49,12 @@ void main() {
   test('decodes a QR that is not cropped (photo-like scene)', () async {
     final png = await buildQrBytes(_simple);
     final photo = embedQrInScene(png);
-    expect(photo.length, greaterThan(png.length));
+    final qrImg = img.decodePng(png);
+    final photoImg = img.decodePng(photo);
+    expect(qrImg, isNotNull);
+    expect(photoImg, isNotNull);
+    expect(photoImg!.width, greaterThan(qrImg!.width));
+    expect(photoImg.height, greaterThan(qrImg.height));
     expect(decodeQrFromBytes(photo), _simple);
   });
 
