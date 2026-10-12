@@ -1,11 +1,12 @@
 // Hide drift's `isNull` / `isNotNull` SQL expression builders so we use
 // the matcher package versions in `expect(...)` calls.
 import 'package:drift/drift.dart' hide isNotNull, isNull;
-import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/data/repositories/vcard_repository.dart';
+
+import '../../helpers/test_db.dart';
 
 void main() {
   late QRDatabase db;
@@ -36,7 +37,7 @@ void main() {
   }
 
   setUp(() {
-    db = QRDatabase.forTesting(NativeDatabase.memory());
+    db = openTestDb();
     repo = VCardRepository(db);
   });
 

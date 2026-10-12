@@ -122,8 +122,14 @@ Generate Drift (`lib/data/db/database.g.dart` is gitignored) then run tests:
 
 ```bash
 dart run build_runner build --delete-conflicting-outputs
+flutter pub get
 flutter test
 ```
+
+`test/flutter_test_config.dart` boots sqflite FFI and silences Drift's
+multi-instance warning. Data tests open an **in-memory** DB with
+`openTestDb()` from `test/helpers/test_db.dart` — never the on-device
+`qr_app.db`.
 
 Art direction (ENCRE) is locked by `test/theme/encre_da_test.dart` and the
 widget tests under `test/components/` (AppButton, AppSwitch, PaperCard,

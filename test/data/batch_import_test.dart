@@ -1,11 +1,12 @@
 import 'dart:io';
 
-import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qr_code_app/components/qr_save.dart';
 import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../helpers/test_db.dart';
 
 // PNG magic: 89 50 4E 47 0D 0A 1A 0A
 const _pngMagic = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
@@ -46,7 +47,7 @@ void main() {
   });
 
   setUp(() async {
-    db = QRDatabase.forTesting(NativeDatabase.memory());
+    db = openTestDb();
     tempDir = await Directory.systemTemp.createTemp('qr_batch_test_');
   });
 
@@ -261,7 +262,7 @@ void main() {
       // unit tests), the exception must NOT contain 'invalid qr' — meaning
       // the vCard string passed validation, not a file path.
       try {
-        await createVCard({'nom': 'Test', 'prenom': 'User'});
+        await createVCard({'nom': 'Test', 'prenom': 'User'}, db: db);
       } on Object catch (e) {
         expect(e.toString(), isNot(contains('invalid qr')));
       }

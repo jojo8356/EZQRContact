@@ -1,13 +1,14 @@
-import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qr_code_app/data/db/database.dart';
+
+import '../helpers/test_db.dart';
 
 void main() {
   group('getAllDeletedQRs', () {
     late QRDatabase db;
 
     setUp(() {
-      db = QRDatabase.forTesting(NativeDatabase.memory());
+      db = openTestDb();
     });
 
     tearDown(() async {

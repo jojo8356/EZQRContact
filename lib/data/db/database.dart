@@ -508,13 +508,16 @@ Future<int> createSimpleQR(String txt) async {
 }
 
 /// Inserts a VCard row from [vcardData], saves the QR image, and links it.
-Future<int> createVCard(Map<String, dynamic> vcardData) async {
-  final db = QRDatabase();
+Future<int> createVCard(
+  Map<String, dynamic> vcardData, {
+  QRDatabase? db,
+}) async {
+  final database = db ?? QRDatabase();
   vcardData['clone'] = '0';
-  final id = await db.insertVCard(vcardData);
+  final id = await database.insertVCard(vcardData);
   final vcardStr = VCard.fromMap(vcardData).toVCard();
   final path = await saveQrCode(vcardStr, id);
-  await db.updateVCardPath(id, path);
+  await database.updateVCardPath(id, path);
   return id;
 }
 

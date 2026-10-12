@@ -22,6 +22,8 @@ Map<String, WidgetBuilder> encreTestRoutes() {
 
 /// [MaterialApp] wired to ENCRE tokens so component tests see copper, Outfit
 /// and the paper surfaces instead of the Flutter starter theme.
+///
+/// Persistence: use `openTestDb()` from `test/helpers/test_db.dart`.
 Widget encreApp({required Widget home}) {
   return MaterialApp(
     theme: encreTheme(),
