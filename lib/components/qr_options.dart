@@ -21,6 +21,7 @@ class OptionsQR extends StatelessWidget {
     required this.data,
     required this.expanded,
     required this.onRefresh,
+    this.onDelete,
     super.key,
   });
 
@@ -36,76 +37,96 @@ class OptionsQR extends StatelessWidget {
   /// Callback invoked after a destructive action mutates the database.
   final Future<void> Function() onRefresh;
 
+  /// Test override for [deleteQR]. Production leaves this null.
+  final Future<void> Function(int id)? onDelete;
+
   @override
   Widget build(BuildContext context) {
     final semLang = LangProvider.section('semantics');
     final c = currentColors;
-    final actions = [
-      {
-        'icon': Icons.visibility_outlined,
-        'color': c['navy'],
-        'semanticsKey': 'btn_view_card',
-        'onPressed': () async {
+    final actions = <_QrAction>[
+      _QrAction(
+        icon: Icons.visibility_outlined,
+        color: c['navy'],
+        semanticsKey: 'btn_view_card',
+        onPressed: () async {
           await showDataDialog(context, data, isVCard: isVCard);
         },
-      },
-      {
-        'icon': Icons.data_object,
-        'color': c['text-muted'],
-        'semanticsKey': 'btn_view_raw',
-        'onPressed': () async {
+      ),
+      _QrAction(
+        icon: Icons.data_object,
+        color: c['text-muted'],
+        semanticsKey: 'btn_view_raw',
+        onPressed: () async {
           await showRawTextDialog(context, data, isVCard: isVCard);
         },
-      },
-      {
-        'icon': Icons.qr_code_2_rounded,
-        'color': c['button-color'],
-        'semanticsKey': 'btn_view_qr',
-        'onPressed': () async {
+      ),
+      _QrAction(
+        icon: Icons.qr_code_2_rounded,
+        color: c['button-color'],
+        semanticsKey: 'btn_view_qr',
+        onPressed: () async {
           final path = data['path'] as String?;
           if (path != null && path.isNotEmpty) {
             await showImageDialog(context, path);
           }
         },
-      },
+      ),
       if (data['deleted'] != 1)
-        {
-          'icon': LucideIcons.trash,
-          'color': c['danger'],
-          'semanticsKey': 'btn_delete',
-          'onPressed': () async {
-            await deleteQR(isVCard: isVCard, id: data['id'] as int);
+        _QrAction(
+          icon: LucideIcons.trash,
+          color: c['danger'],
+          semanticsKey: 'btn_delete',
+          buttonKey: const Key('qr-btn-delete'),
+          onPressed: () async {
+            final id = _asId(data['id']);
+            if (id == null) {
+              return;
+            }
+            final custom = onDelete;
+            if (custom != null) {
+              await custom(id);
+            } else {
+              await deleteQR(isVCard: isVCard, id: id);
+            }
             await onRefresh();
           },
-        },
-      {
-          'icon': LucideIcons.download,
-        'color': c['navy'],
-        'semanticsKey': 'btn_download',
-        'onPressed': () async {
+        ),
+      _QrAction(
+        icon: LucideIcons.download,
+        color: c['navy'],
+        semanticsKey: 'btn_download',
+        onPressed: () async {
+          final id = _asId(data['id']);
+          if (id == null) {
+            return;
+          }
           late final String? path;
           if (isVCard) {
-            path = await QRDatabase().getPathFromVCard(data['id'] as int);
+            path = await QRDatabase().getPathFromVCard(id);
           } else {
-            path = await QRDatabase().getPathFromSimpleQR(
-              data['id'] as int,
-            );
+            path = await QRDatabase().getPathFromSimpleQR(id);
           }
-          if (!context.mounted) return;
-          await showSaveDialog(context, path!);
+          if (!context.mounted) {
+            return;
+          }
+          if (path == null || path.isEmpty) {
+            return;
+          }
+          await showSaveDialog(context, path);
           await onRefresh();
         },
-      },
+      ),
       if (isVCard && data['deleted'] != 1)
-        {
-          'icon': Icons.person_add_alt_1_outlined,
-          'color': c['success'],
-          'semanticsKey': 'btn_add_contact',
-          'onPressed': () async {
+        _QrAction(
+          icon: Icons.person_add_alt_1_outlined,
+          color: c['success'],
+          semanticsKey: 'btn_add_contact',
+          onPressed: () async {
             await showVCardPopup(context, data, isVCard: true);
             await onRefresh();
           },
-        },
+        ),
     ];
     var fade = CrossFadeState.showFirst;
     if (expanded) {
@@ -123,41 +144,65 @@ class OptionsQR extends StatelessWidget {
         child: Wrap(
           spacing: AppTokens.s2,
           runSpacing: AppTokens.s2,
-          children: actions.map((a) {
-            final key = a['semanticsKey'] as String?;
-            String? label;
-            if (key != null) {
-              label = semLang[key] as String?;
-            }
-            final color = a['color'] as Color?;
-            return Semantics(
-              label: label,
-              button: true,
-              child: Material(
-                color: c['surface-raised'],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppTokens.rSm),
-                ),
-                child: InkWell(
-                  onTap: a['onPressed']! as VoidCallback,
-                  borderRadius: BorderRadius.circular(AppTokens.rSm),
-                  child: SizedBox(
-                    width: AppTokens.tap,
-                    height: AppTokens.tap,
-                    child: Icon(
-                      a['icon']! as IconData,
-                      color: color,
-                      size: 22,
+          children: [
+            for (final action in actions)
+              Semantics(
+                label: semLang[action.semanticsKey] as String?,
+                button: true,
+                child: Material(
+                  color: c['surface-raised'],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppTokens.rSm),
+                  ),
+                  child: InkWell(
+                    key: action.buttonKey,
+                    onTap: () async {
+                      await action.onPressed();
+                    },
+                    borderRadius: BorderRadius.circular(AppTokens.rSm),
+                    child: SizedBox(
+                      width: AppTokens.tap,
+                      height: AppTokens.tap,
+                      child: Icon(
+                        action.icon,
+                        color: action.color,
+                        size: 22,
+                      ),
                     ),
                   ),
                 ),
               ),
-            );
-          }).toList(),
+          ],
         ),
       ),
       crossFadeState: fade,
       duration: AppTokens.tMed,
     );
   }
+}
+
+int? _asId(dynamic raw) {
+  if (raw is int) {
+    return raw;
+  }
+  if (raw is num) {
+    return raw.toInt();
+  }
+  return int.tryParse(raw?.toString() ?? '');
+}
+
+class _QrAction {
+  const _QrAction({
+    required this.icon,
+    required this.color,
+    required this.semanticsKey,
+    required this.onPressed,
+    this.buttonKey,
+  });
+
+  final IconData icon;
+  final Color? color;
+  final String semanticsKey;
+  final Future<void> Function() onPressed;
+  final Key? buttonKey;
 }
