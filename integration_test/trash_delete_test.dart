@@ -6,12 +6,13 @@
 //   ./scripts/test_trash.sh <device-id>
 //
 // Uses the production [deleteQR] path (no onDelete inject). Seeds a
-// uniquely named vCard so we do not delete the user's own contacts.
+// uniquely named SimpleQR so we do not delete the user's own contacts.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:qr_code_app/components/qr_card.dart';
+import 'package:qr_code_app/components/qr_card_list.dart';
 import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/main.dart' as app;
 import 'package:qr_code_app/pages/qr_card_view_page.dart';
@@ -57,8 +58,20 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       expect(find.byType(Collection), findsOneWidget);
 
-      final name = find.text(_title);
-      await tester.scrollUntilVisible(name, 200);
+      // Collection has several Scrollables (chips, list). Do not use
+      // scrollUntilVisible — it requires exactly one. Drag the card list
+      // only if the seeded row is not already on screen.
+      var name = find.text(_title);
+      var tries = 0;
+      while (name.evaluate().isEmpty && tries < 20) {
+        await tester.drag(
+          find.byType(QRCardListView),
+          const Offset(0, -300),
+        );
+        await tester.pumpAndSettle();
+        tries += 1;
+        name = find.text(_title);
+      }
       expect(name, findsOneWidget);
 
       await tester.tap(name);
