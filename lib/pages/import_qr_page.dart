@@ -1,4 +1,3 @@
-import 'package:ai_barcode_scanner/ai_barcode_scanner.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
@@ -11,6 +10,7 @@ import 'package:qr_code_app/providers/event_provider.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/theme/tokens.dart';
+import 'package:qr_code_app/tools/qr_decode.dart';
 import 'package:qr_code_app/tools/tools.dart';
 import 'package:qr_code_app/tools/vcard.dart';
 
@@ -68,13 +68,7 @@ class _QrFromImagePageState extends State<QrFromImagePage> {
       if (analyze != null) {
         rawValue = await analyze(file.path);
       } else {
-        final controller = AiBarcodeScannerController(autoStart: false);
-        try {
-          final capture = await controller.analyzeImage(file.path);
-          rawValue = capture?.barcodes.firstOrNull?.rawValue;
-        } finally {
-          controller.dispose();
-        }
+        rawValue = await decodeQrFromFile(file.path);
       }
 
       if (!mounted) return;

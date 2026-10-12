@@ -3,11 +3,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:qr_code_app/components/app_button.dart';
 import 'package:qr_code_app/components/paper_card.dart';
+import 'package:qr_code_app/components/qr_save.dart';
 import 'package:qr_code_app/pages/import_qr_page.dart';
 import 'package:qr_code_app/pages/scan_result_page.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/providers/vcard_settings_provider.dart';
+import 'package:qr_code_app/tools/qr_decode.dart';
+import 'package:qr_code_app/tools/vcard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toastification/toastification.dart';
 
@@ -196,6 +199,67 @@ void main() {
           find.text('No QR code found in this image'),
           findsOneWidget,
         );
+      },
+    );
+  });
+
+  // Generate a real PNG (and a photo-like scene), decode with ZXing, import.
+  group('generate then import', () {
+    testWidgets(
+      'simple QR photo is decoded and saved as SimpleQR',
+      (tester) async {
+        final png = embedQrInScene(await buildQrBytes(_simpleQr));
+        final saved = <String>[];
+        await _openImport(
+          tester,
+          import: QrFromImagePage(
+            pickImage: () async => XFile('simple-photo.png'),
+            analyzeImage: (_) async => decodeQrFromBytes(png),
+            saveSimpleQr: (text) async {
+              saved.add(text);
+              return 1;
+            },
+          ),
+        );
+
+        await _tapPick(tester);
+
+        expect(saved, equals([_simpleQr]));
+        expect(find.byType(QrFromImagePage), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'vCard QR photo is decoded, parsed, and opened',
+      (tester) async {
+        final payload = VCard(
+          nom: 'Dupont',
+          prenom: 'Marie',
+          telWork: '+33612345678',
+          email: 'marie.dupont@acme.fr',
+          rev: '20261012T000000Z',
+        ).toVCard();
+        final png = embedQrInScene(await buildQrBytes(payload));
+        Map<String, dynamic>? saved;
+        await _openImport(
+          tester,
+          import: QrFromImagePage(
+            pickImage: () async => XFile('vcard-photo.png'),
+            analyzeImage: (_) async => decodeQrFromBytes(png),
+            saveVCard: (data) async {
+              saved = data;
+              return 7;
+            },
+          ),
+        );
+
+        await _tapPick(tester);
+
+        expect(saved, isNotNull);
+        expect(saved!['nom'], 'Dupont');
+        expect(saved!['prenom'], 'Marie');
+        expect(find.byType(ScanResultPage), findsOneWidget);
+        expect(find.text('Marie Dupont'), findsOneWidget);
       },
     );
   });
