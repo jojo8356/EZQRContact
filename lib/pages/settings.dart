@@ -218,6 +218,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                 style: theme.textTheme.titleMedium,
                               ),
                               trailing: AppSwitch(
+                                key: const Key('vcard4-switch'),
                                 value: _useVCard4,
                                 onChanged: (value) async {
                                   await VCardSettingsProvider.setUseVCard4(
