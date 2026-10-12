@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/active_event_banner.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
@@ -54,19 +53,22 @@ class _SettingsPageState extends State<SettingsPage> {
     super.dispose();
   }
 
+  String _flagEmoji(String lang) {
+    if (lang == 'fr') {
+      return '🇫🇷';
+    }
+    if (lang == 'en') {
+      return '🇬🇧';
+    }
+    return '🏳️';
+  }
+
   DropdownMenuItem<String> _langItem(String lang) => DropdownMenuItem(
         value: lang,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CountryFlag.fromLanguageCode(
-              lang,
-              theme: const ImageTheme(
-                width: 28,
-                height: 20,
-                shape: RoundedRectangle(3),
-              ),
-            ),
+            Text(_flagEmoji(lang), style: const TextStyle(fontSize: 20)),
             const SizedBox(width: 8),
             Text(
               lang.toUpperCase(),

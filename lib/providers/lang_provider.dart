@@ -143,28 +143,22 @@ class LangProvider {
   /// un crash au démarrage.
   static Future<void> _loadTranslations(String lang) async {
     Perf.start('lang.loadTranslations ($lang)');
-    final fileLang = 'assets/langs/$lang.json';
-    try {
-      final jsonString = await rootBundle.loadString(fileLang);
-      _translations = json.decode(jsonString) as Map<String, dynamic>;
-      Perf.end('lang.loadTranslations ($lang)');
-      // `rootBundle.loadString` throws `FlutterError` (a subclass of `Error`)
-      // when an asset is missing. Catching `Error` is normally an anti-pattern
-      // but here it's the official API surface for "asset not found" — no
-      // typed Exception variant exists.
-      // ignore: avoid_catching_errors
-    } on FlutterError catch (e) {
+    var code = lang;
+    final bundled = await getJsonFiles('assets/langs');
+    final names = <String>{
+      for (final file in bundled) file.replaceAll('.json', ''),
+    };
+    if (!names.contains(code)) {
       debugPrint(
-        'LangProvider: $fileLang not found ($e), '
+        'LangProvider: assets/langs/$code.json is not bundled, '
         'falling back to $_kFallbackLang',
       );
+      code = _kFallbackLang;
       _currentLang = _kFallbackLang;
-      final jsonString = await rootBundle.loadString(
-        'assets/langs/$_kFallbackLang.json',
-      );
-      _translations = json.decode(jsonString) as Map<String, dynamic>;
-      Perf.end('lang.loadTranslations ($lang)');
     }
+    final jsonString = await rootBundle.loadString('assets/langs/$code.json');
+    _translations = json.decode(jsonString) as Map<String, dynamic>;
+    Perf.end('lang.loadTranslations ($lang)');
   }
 
   /// 🔹 Optionnel : récupérer la langue actuelle
