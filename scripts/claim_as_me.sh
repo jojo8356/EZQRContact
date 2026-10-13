@@ -1,20 +1,18 @@
 #!/usr/bin/env bash
-# Rewrite commits that exist only on this branch so they are yours:
-#   - author + committer = git user.name / user.email
-#   - drop "Co-authored-by: arena-agent ..." trailers
+# Rewrite commits that exist only on this feature branch so they belong
+# to you: author + committer, and drop every Co-authored-by trailer.
 #
-# Does not rewrite origin/main. You must force-push the feature branch
-# afterwards. Merging to main is optional and explicit.
+# Does NOT rewrite origin/main. Hashes on this branch will change.
+# Force-push is explicit (--push). Merge to main is explicit too.
 #
-# Usage (clean working tree, on the feature branch):
+# Usage (clean working tree, on the feature branch — not main):
 #   ./scripts/claim_as_me.sh
 #   ./scripts/claim_as_me.sh --push
 #   ./scripts/claim_as_me.sh --push --merge-main
 #
 # Identity (first match wins):
-#   CLAIM_NAME / CLAIM_EMAIL env
-#   git config user.name / user.email
-#   jojo8356 / polsinelli@gmx.com
+#   CLAIM_NAME / CLAIM_EMAIL
+#   else Johan Polsinelli / polsinelli@gmx.com
 
 set -euo pipefail
 
@@ -29,7 +27,7 @@ for arg in "$@"; do
   elif [ "$arg" = "--merge-main" ]; then
     MERGE_MAIN=1
   elif [ "$arg" = "-h" ] || [ "$arg" = "--help" ]; then
-    sed -n '2,20p' "$0"
+    sed -n '2,22p' "$0"
     exit 0
   else
     echo "Unknown flag: $arg" >&2
@@ -52,40 +50,38 @@ if [ "$BRANCH" = "main" ]; then
   exit 1
 fi
 
-NAME="${CLAIM_NAME:-$(git config user.name || true)}"
-EMAIL="${CLAIM_EMAIL:-$(git config user.email || true)}"
-if [ -z "$NAME" ]; then
-  NAME="jojo8356"
-fi
-if [ -z "$EMAIL" ]; then
-  EMAIL="polsinelli@gmx.com"
-fi
+NAME="${CLAIM_NAME:-Johan Polsinelli}"
+EMAIL="${CLAIM_EMAIL:-polsinelli@gmx.com}"
 
 git fetch origin main 2>/dev/null || true
 if git rev-parse --verify origin/main >/dev/null 2>&1; then
   BASE="$(git merge-base origin/main HEAD)"
+elif git rev-parse --verify main >/dev/null 2>&1; then
+  BASE="$(git merge-base main HEAD)"
 else
-  BASE="$(git merge-base main HEAD 2>/dev/null || true)"
-fi
-if [ -z "$BASE" ]; then
-  echo "[error] cannot find merge-base with main"
+  echo "[error] cannot find main"
   exit 1
 fi
 
 COUNT="$(git rev-list --count "${BASE}..HEAD")"
+if [ "$COUNT" -eq 0 ]; then
+  echo "[ok] nothing to rewrite (branch has no commits beyond main)"
+  exit 0
+fi
+
 echo "Branch:     $BRANCH"
 echo "Base:       $BASE"
 echo "Commits:    $COUNT"
 echo "Identity:   $NAME <$EMAIL>"
 echo
-echo "This rewrites ${COUNT} commit(s). Hashes will change."
+echo "This rewrites ${COUNT} commit(s) after main. Hashes will change."
 echo
 
 export FILTER_BRANCH_SQUELCH_WARNING=1
-if ! git filter-branch -h >/dev/null 2>&1; then
-  echo "[error] git filter-branch is not available on this Git."
-  exit 1
-fi
+export GIT_AUTHOR_NAME="$NAME"
+export GIT_AUTHOR_EMAIL="$EMAIL"
+export GIT_COMMITTER_NAME="$NAME"
+export GIT_COMMITTER_EMAIL="$EMAIL"
 
 git filter-branch -f \
   --env-filter "
@@ -94,15 +90,15 @@ git filter-branch -f \
     export GIT_COMMITTER_NAME='${NAME}'
     export GIT_COMMITTER_EMAIL='${EMAIL}'
   " \
-  --msg-filter 'sed "/Co-authored-by: *arena-agent/d"' \
-  -- "${BASE}..HEAD"
+  --msg-filter 'grep -v -E "^Co-authored-by:" || true' \
+  "${BASE}..HEAD"
 
 git update-ref -d "refs/original/refs/heads/${BRANCH}" 2>/dev/null || true
 rm -rf .git/refs/original
 
 echo
-echo "[ok] rewritten. Sample:"
-git log --format="%h %an <%ae>%n%s%n%b" -1
+echo "[ok] rewritten. Tip of branch:"
+git log --format="%h %an <%ae>%n%s" -1
 echo
 
 if [ "$PUSH" -eq 1 ]; then

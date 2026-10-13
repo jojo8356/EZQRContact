@@ -3,6 +3,9 @@ contact_links:
   - name: User guide
     url: https://github.com/jojo8356/EZQRContact/blob/main/docs/help/user-guide.md
     about: How to create, scan, import, and export cards
+  - name: Privacy
+    url: https://github.com/jojo8356/EZQRContact/blob/main/PRIVACY.md
+    about: What stays on the phone, and the optional photo host
   - name: Security report
     url: https://github.com/jojo8356/EZQRContact/blob/main/SECURITY.md
     about: Report a vulnerability in private, do not file a public issue

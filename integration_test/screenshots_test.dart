@@ -4,8 +4,7 @@
 //
 //   ./scripts/capture_screenshots.sh
 //
-// Filenames: home, home-dark, vcard-form, scanner, collection,
-// collection-dark.
+// Filenames: home, home-dark, scanner, collection, collection-dark.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -96,27 +95,6 @@ void main() {
     await pumpQuiet(tester, frames: 8);
   }
 
-  Future<void> fillVCardForm(WidgetTester tester) async {
-    final fields = find.byType(TextField);
-    final count = fields.evaluate().length;
-    Future<void> enter(int index, String value) async {
-      if (index >= count) {
-        return;
-      }
-      final target = fields.at(index);
-      await tester.ensureVisible(target);
-      await tester.pump(const Duration(milliseconds: 200));
-      await tester.enterText(target, value);
-    }
-
-    await enter(0, 'Dupont');
-    await enter(1, 'Marie');
-    await enter(5, 'Demo Corp');
-    await enter(6, 'Sales Representative');
-    FocusManager.instance.primaryFocus?.unfocus();
-    await tester.pump(const Duration(milliseconds: 400));
-  }
-
   Future<void> tapBack(WidgetTester tester) async {
     FocusManager.instance.primaryFocus?.unfocus();
     await tester.pump(const Duration(milliseconds: 300));
@@ -149,11 +127,6 @@ void main() {
     await launchApp(tester);
 
     await markShot(tester, 'home');
-
-    await tapIcon(tester, Icons.contact_page_outlined);
-    await fillVCardForm(tester);
-    await markShot(tester, 'vcard-form');
-    await tapBack(tester);
 
     await tapIcon(tester, Icons.qr_code_scanner_rounded);
     await markShot(tester, 'scanner');

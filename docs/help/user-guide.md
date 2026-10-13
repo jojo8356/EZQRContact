@@ -101,6 +101,9 @@ Navbar **History**. Soft-deleted cards. Read-mostly.
 
 No account. Uninstalling the app deletes the local database.
 
+Full policy: [PRIVACY.md](../../PRIVACY.md). Photo hosting (catbox.moe,
+then 0x0.st) runs only when you add a photo and the phone is online.
+
 ## Troubleshooting
 
 **QR will not scan.** Shorten the card (drop the photo or go offline so

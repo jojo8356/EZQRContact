@@ -33,4 +33,4 @@ next patch release when possible.
 ## Crypto / network
 
 The only network use is optional photo hosting so a vCard QR stays
-scannable. No analytics SDK. No crash reporter.
+scannable ([PRIVACY.md](PRIVACY.md)). No analytics SDK. No crash reporter.

@@ -9,7 +9,9 @@
 
 EZQRContact is a local-first Android and iOS app. You encode your vCard in a
 QR code. Someone scans it with their camera (or this app) and your contact
-lands in their address book. Nothing is uploaded.
+lands in their address book. Cards stay on the phone. The only optional
+network call is a small photo host so a QR with a portrait stays scannable
+(see [PRIVACY.md](PRIVACY.md)).
 
 Built for sales reps, exhibitors, recruiters, and freelancers who swap
 dozens of cards a day at fairs and meetups.
@@ -36,7 +38,8 @@ EZQRContact is different:
 
 - **MIT.** Fork it, audit it, ship your own build.
 - **Local first.** Cards live in SQLite on the phone. No backend.
-- **GDPR by absence.** No processor, no DPA, no account graph.
+- **Local by default.** No account graph. Optional photo host is documented
+  in [PRIVACY.md](PRIVACY.md).
 - **Native.** Not a PWA. Installs from source or a release APK.
 - **Free.** No Pro tier.
 
@@ -107,7 +110,9 @@ docs/
 |---|---|
 | [User guide](docs/help/user-guide.md) | People using the app |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | People changing the code |
+| [PRIVACY.md](PRIVACY.md) | What leaves the phone |
 | [SECURITY.md](SECURITY.md) | Vulnerability reports |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Community |
 | [CHANGELOG.md](CHANGELOG.md) | What shipped |
 | [RELEASING.md](RELEASING.md) | Tag → APK → Play / App Store |
 | [Art direction](docs/direction-artistique.md) | ENCRE visual system |

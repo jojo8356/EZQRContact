@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
-# Capture the six README screenshots from a real device / emulator.
+# Capture the five README screenshots from a real device / emulator.
 #
 # Writes (and overwrites) PNG files named exactly as in README.md:
 #   docs/screenshots/home.png
 #   docs/screenshots/home-dark.png
-#   docs/screenshots/vcard-form.png
 #   docs/screenshots/scanner.png
 #   docs/screenshots/collection.png
 #   docs/screenshots/collection-dark.png
@@ -34,7 +33,6 @@ GITHUB_QR="https://github.com/jojo8356/EZQRContact"
 EXPECTED=(
   home.png
   home-dark.png
-  vcard-form.png
   scanner.png
   collection.png
   collection-dark.png
@@ -387,12 +385,12 @@ done
 
 if [ "$MISSING" -eq 0 ]; then
   echo
-  echo "[ok] all 6 README screenshots are present"
+  echo "[ok] all 5 README screenshots are present"
   echo
   echo "  | Light | Dark |"
   echo "  | docs/screenshots/home.png | docs/screenshots/home-dark.png |"
-  echo "  | docs/screenshots/vcard-form.png | docs/screenshots/scanner.png |"
   echo "  | docs/screenshots/collection.png | docs/screenshots/collection-dark.png |"
+  echo "  scanner: docs/screenshots/scanner.png"
 fi
 
 shopt -s nullglob

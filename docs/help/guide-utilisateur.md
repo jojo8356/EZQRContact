@@ -106,6 +106,10 @@ lecture.
 
 Pas de compte. Désinstaller l'app efface la base locale.
 
+Politique : [PRIVACY.md](../../PRIVACY.md). L'hébergement photo
+(catbox.moe, puis 0x0.st) n'a lieu que si tu ajoutes une photo et que
+le téléphone est en ligne.
+
 ## Dépannage
 
 **QR illisible.** Allège la carte (enlève la photo, ou passe hors ligne).

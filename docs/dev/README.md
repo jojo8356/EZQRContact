@@ -13,8 +13,8 @@ Not for end users. Product docs live in [docs/help/](../help/).
 `TDL.txt` at the repo root is a 2025 alpha scratchpad. Do not treat it as the
 roadmap.
 
-To publish a branch as yourself only (strip `Co-authored-by: arena-agent`
-trailers, set author/committer):
+To publish a branch as the maintainer only (author/committer + drop
+`Co-authored-by` trailers):
 
 ```bash
 ./scripts/claim_as_me.sh          # rewrite current branch
