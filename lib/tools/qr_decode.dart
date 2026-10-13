@@ -252,7 +252,7 @@ void _paintClutter(img.Image scene, int seed) {
   }
 }
 
-void _addLcdMoiré(img.Image scene) {
+void _addLcdMoire(img.Image scene) {
   final w = scene.width;
   final h = scene.height;
   for (var y = 0; y < h; y++) {
