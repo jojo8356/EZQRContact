@@ -15,7 +15,7 @@ class CollectionSyncBar extends StatelessWidget {
   /// Import every contact from the device address book.
   final VoidCallback onImport;
 
-  /// Export every stored vCard as a `.vcf` file.
+  /// Export the collection as a zip (vCards, QR images, photos).
   final VoidCallback onExport;
 
   @override

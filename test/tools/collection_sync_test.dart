@@ -1,3 +1,7 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qr_code_app/providers/vcard_settings_provider.dart';
 import 'package:qr_code_app/tools/import_contact.dart';
@@ -92,6 +96,88 @@ void main() {
 
     test('empty list yields empty document', () {
       expect(vcardsToVcf(const []), isEmpty);
+    });
+  });
+
+  group('exportFileSlug', () {
+    test('uses prenom and nom in lowercase ascii', () {
+      expect(
+        exportFileSlug({'prenom': 'Marie', 'nom': 'Dupont'}),
+        'marie-dupont',
+      );
+    });
+
+    test('falls back to org then text', () {
+      expect(exportFileSlug({'org': 'Acme Corp'}), 'acme-corp');
+      expect(exportFileSlug({'text': 'hello world'}), 'hello-world');
+    });
+
+    test('strips accents and punctuation', () {
+      expect(
+        exportFileSlug({'prenom': 'Émilie', 'nom': 'Müller!'}),
+        'milie-mller',
+      );
+    });
+  });
+
+  group('buildCollectionZip', () {
+    test('contains contacts.vcf, per-card vcf, png, photo and simple txt',
+        () async {
+      const png = <int>[0x89, 0x50, 0x4E, 0x47];
+      final photo = 'data:image/png;base64,${base64Encode(png)}';
+      final zipBytes = await buildCollectionZip(
+        vcards: [
+          {
+            'id': 12,
+            'nom': 'Dupont',
+            'prenom': 'Marie',
+            'email': 'marie@acme.fr',
+            'photo': photo,
+            'path': '/tmp/12.png',
+            'rev': '20261013T000000Z',
+          },
+        ],
+        simples: [
+          {
+            'id': 3,
+            'text': 'tzst',
+            'path': '/tmp/3.png',
+          },
+        ],
+        readBytes: (path) async {
+          return Uint8List.fromList(png);
+        },
+      );
+      expect(zipBytes.length, greaterThan(30));
+      final decoded = ZipDecoder().decodeBytes(zipBytes);
+      final names = <String>{};
+      for (final f in decoded.files) {
+        names.add(f.name);
+      }
+      expect(names, contains('contacts.vcf'));
+      expect(names, contains('vcards/12-marie-dupont.vcf'));
+      expect(names, contains('vcards/12-marie-dupont.png'));
+      expect(names, contains('vcards/12-marie-dupont-photo.png'));
+      expect(names, contains('simple/3-tzst.txt'));
+      expect(names, contains('simple/3-tzst.png'));
+
+      ArchiveFile? allVcf;
+      ArchiveFile? simple;
+      for (final f in decoded.files) {
+        if (f.name == 'contacts.vcf') {
+          allVcf = f;
+        }
+        if (f.name == 'simple/3-tzst.txt') {
+          simple = f;
+        }
+      }
+      expect(allVcf, isNotNull);
+      expect(
+        utf8.decode(allVcf!.content as List<int>),
+        contains('Marie Dupont'),
+      );
+      expect(simple, isNotNull);
+      expect(utf8.decode(simple!.content as List<int>), 'tzst');
     });
   });
 }

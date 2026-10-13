@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:archive/archive.dart';
 import 'package:file_saver/file_saver.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
@@ -105,6 +107,172 @@ String vcardsToVcf(List<Map<String, dynamic>> rows) {
     buffer.write(VCard.fromMap(row).toVCard());
   }
   return buffer.toString();
+}
+
+/// ASCII filename stem from a contact or simple-QR row.
+String exportFileSlug(
+  Map<String, dynamic> row, {
+  String fallback = 'contact',
+}) {
+  final prenom = (row['prenom'] as String?) ?? '';
+  final nom = (row['nom'] as String?) ?? '';
+  var raw = '$prenom $nom'.trim();
+  if (raw.isEmpty) {
+    raw = (row['org'] as String?) ?? '';
+  }
+  if (raw.isEmpty) {
+    raw = (row['text'] as String?) ?? '';
+  }
+  if (raw.isEmpty) {
+    raw = fallback;
+  }
+  final buf = StringBuffer();
+  for (final unit in raw.toLowerCase().codeUnits) {
+    final isDigit = unit >= 0x30 && unit <= 0x39;
+    final isLatin = unit >= 0x61 && unit <= 0x7A;
+    if (isDigit || isLatin) {
+      buf.writeCharCode(unit);
+      continue;
+    }
+    if (unit == 0x20 || unit == 0x2D || unit == 0x5F) {
+      buf.write('-');
+    }
+  }
+  var slug = buf.toString();
+  while (slug.contains('--')) {
+    slug = slug.replaceAll('--', '-');
+  }
+  while (slug.startsWith('-')) {
+    slug = slug.substring(1);
+  }
+  while (slug.endsWith('-')) {
+    slug = slug.substring(0, slug.length - 1);
+  }
+  if (slug.isEmpty) {
+    return fallback;
+  }
+  if (slug.length > 40) {
+    return slug.substring(0, 40);
+  }
+  return slug;
+}
+
+/// Optional reader so tests can inject PNG bytes without touching disk.
+typedef ZipBytesReader = Future<Uint8List?> Function(String path);
+
+Future<Uint8List?> _readPathBytes(
+  String? path,
+  ZipBytesReader? readBytes,
+) async {
+  if (path == null || path.isEmpty) {
+    return null;
+  }
+  if (readBytes != null) {
+    return readBytes(path);
+  }
+  try {
+    final file = File(path);
+    if (!file.existsSync()) {
+      return null;
+    }
+    return await file.readAsBytes();
+  } on Object catch (_) {
+    return null;
+  }
+}
+
+void _addZipFile(Archive archive, String name, List<int> bytes) {
+  archive.addFile(ArchiveFile(name, bytes.length, bytes));
+}
+
+Uint8List? _photoBytes(String photo) {
+  if (!photo.startsWith('data:image/')) {
+    return null;
+  }
+  final comma = photo.indexOf(',');
+  if (comma < 0) {
+    return null;
+  }
+  try {
+    final bytes = base64Decode(photo.substring(comma + 1));
+    if (bytes.isEmpty) {
+      return null;
+    }
+    return bytes;
+  } on FormatException {
+    return null;
+  }
+}
+
+String _photoExt(String photo) {
+  final comma = photo.indexOf(',');
+  var meta = photo;
+  if (comma >= 0) {
+    meta = photo.substring(0, comma).toLowerCase();
+  }
+  if (meta.contains('png')) {
+    return 'png';
+  }
+  if (meta.contains('gif')) {
+    return 'gif';
+  }
+  if (meta.contains('webp')) {
+    return 'webp';
+  }
+  return 'jpg';
+}
+
+/// Builds a zip of the whole collection: `contacts.vcf`, per-card `.vcf`,
+/// QR PNGs, inline photos, and simple-QR text + PNG.
+Future<Uint8List> buildCollectionZip({
+  required List<Map<String, dynamic>> vcards,
+  required List<Map<String, dynamic>> simples,
+  ZipBytesReader? readBytes,
+}) async {
+  final archive = Archive();
+  if (vcards.isNotEmpty) {
+    _addZipFile(
+      archive,
+      'contacts.vcf',
+      utf8.encode(vcardsToVcf(vcards)),
+    );
+  }
+  for (final row in vcards) {
+    final id = row['id'] ?? 'x';
+    final slug = exportFileSlug(row);
+    final stem = 'vcards/$id-$slug';
+    _addZipFile(
+      archive,
+      '$stem.vcf',
+      utf8.encode(VCard.fromMap(row).toVCard()),
+    );
+    final qr = await _readPathBytes(row['path'] as String?, readBytes);
+    if (qr != null) {
+      _addZipFile(archive, '$stem.png', qr);
+    }
+    final photo = (row['photo'] as String?) ?? '';
+    final photoBytes = _photoBytes(photo);
+    if (photoBytes != null) {
+      _addZipFile(
+        archive,
+        '$stem-photo.${_photoExt(photo)}',
+        photoBytes,
+      );
+    }
+  }
+  for (final row in simples) {
+    final id = row['id'] ?? 'x';
+    final slug = exportFileSlug(row, fallback: 'qr');
+    final stem = 'simple/$id-$slug';
+    final text = (row['text'] as String?) ?? '';
+    _addZipFile(archive, '$stem.txt', utf8.encode(text));
+    final qr = await _readPathBytes(row['path'] as String?, readBytes);
+    if (qr != null) {
+      _addZipFile(archive, '$stem.png', qr);
+    }
+  }
+  final encoded = ZipEncoder().encode(archive);
+  return Uint8List.fromList(encoded);
 }
 
 Future<bool> _ensureContactsPermission(BuildContext context) async {
@@ -294,13 +462,17 @@ Future<void> importAllDeviceContacts(BuildContext context) async {
   );
 }
 
-/// Writes every stored vCard to a single `.vcf` file via the system saver.
+/// Writes the whole collection (vCards, simple QRs, QR PNGs, photos)
+/// to a `.zip` via the system saver.
 Future<void> exportAllVCards(BuildContext context) async {
   final collection = LangProvider.section('pages.collection');
-  final rows = await QRDatabase().getAllVCards();
+  final db = QRDatabase();
+  final vcards = await db.getAllVCards();
+  final simples = await db.getAllSimpleQR();
   if (!context.mounted) return;
 
-  if (rows.isEmpty) {
+  final total = vcards.length + simples.length;
+  if (total == 0) {
     showToast(
       context: context,
       title: (collection['export_none'] as String?) ??
@@ -310,19 +482,22 @@ Future<void> exportAllVCards(BuildContext context) async {
     return;
   }
 
-  final vcf = vcardsToVcf(rows);
+  final zip = await buildCollectionZip(
+    vcards: vcards,
+    simples: simples,
+  );
   await FileSaver.instance.saveAs(
-    name: 'ezqr_contacts',
-    bytes: Uint8List.fromList(utf8.encode(vcf)),
-    fileExtension: 'vcf',
-    mimeType: MimeType.text,
+    name: 'ezqr_collection',
+    bytes: zip,
+    fileExtension: 'zip',
+    mimeType: MimeType.zip,
   );
   if (!context.mounted) return;
   final doneTemplate =
       (collection['export_done'] as String?) ?? '%s contacts exportés';
   showToast(
     context: context,
-    title: doneTemplate.replaceFirst('%s', '${rows.length}'),
+    title: doneTemplate.replaceFirst('%s', '$total'),
     color: Colors.white,
   );
 }
