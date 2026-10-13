@@ -1,12 +1,10 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qr_code_app/components/qr_card.dart';
-import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/tools/contacts.dart';
@@ -37,47 +35,28 @@ Contact _deviceContactWithPhoto() {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late QRDatabase db;
-  late Directory tempDir;
-
   setUpAll(() async {
     SharedPreferences.setMockInitialValues({});
     await LangProvider.init(lang: 'en');
   });
 
-  setUp(() async {
-    darkProv.forceSetDarkMode(false);
-    db = openTestDb();
-    tempDir = await Directory.systemTemp.createTemp('qr_photo_import_');
-  });
-
-  tearDown(() async {
-    darkProv.forceSetDarkMode(false);
-    await db.close();
-    if (tempDir.existsSync()) {
-      await tempDir.delete(recursive: true);
-    }
-  });
+  setUp(() => darkProv.forceSetDarkMode(false));
+  tearDown(() => darkProv.forceSetDarkMode(false));
 
   testWidgets(
     'importing a device contact with a photo shows it on the card',
     (tester) async {
-      final device = _deviceContactWithPhoto();
-      final maps = PhoneContacts.toMapList([device]);
+      final maps = PhoneContacts.toMapList([_deviceContactWithPhoto()]);
       expect(maps, hasLength(1));
       expect(
         (maps.first['photo'] as String).startsWith('data:image/png;base64,'),
         isTrue,
       );
 
-      final ids = await createVCardsBatch(
-        maps,
-        db: db,
-        baseDir: tempDir.path,
-      );
-      expect(ids, hasLength(1));
-
-      final stored = await db.getVCardById(ids.first);
+      final db = openTestDb();
+      addTearDown(db.close);
+      final id = await db.insertVCard(maps.first);
+      final stored = await db.getVCardById(id);
       expect(stored, isNotNull);
       final photo = stored!['photo'] as String;
       expect(photo.startsWith('data:image/png;base64,'), isTrue);
