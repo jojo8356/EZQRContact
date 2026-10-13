@@ -102,7 +102,14 @@ db_exists() {
 ensure_app_and_db() {
   if ! app_installed; then
     echo "[step] installing debug app so the demo DB can be seeded"
-    flutter install --no-pub -d "$DEVICE"
+    if ! flutter install -d "$DEVICE"; then
+      echo "[warn] flutter install failed"
+      return 1
+    fi
+  fi
+  if ! app_installed; then
+    echo "[warn] $PACKAGE is not installed"
+    return 1
   fi
   if db_exists; then
     return 0
