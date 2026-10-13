@@ -676,7 +676,47 @@ void main() {
   group('VCard.toQrPayload() — hosted PHOTO URI, never inline base64', () {
     tearDown(() {
       debugHostPhotoForQr = null;
+      debugHasInternet = null;
       resetPhotoHostCache();
+    });
+
+    test('offline drops PHOTO — QR is contact text only', () async {
+      debugHasInternet = false;
+      var hosted = false;
+      debugHostPhotoForQr = (_) async {
+        hosted = true;
+        return 'https://files.example/jane.jpg';
+      };
+      final v = VCard(
+        nom: 'Doe',
+        prenom: 'Jane',
+        photo: 'data:image/jpeg;base64,/9j/4AAQSkZJRg==',
+        email: 'jane@doe.com',
+        telWork: '+33611111111',
+        rev: '20260101T000000Z',
+      );
+      final out = await v.toQrPayload();
+      expect(hosted, isFalse);
+      expect(out, isNot(contains('PHOTO')));
+      expect(out, isNot(contains('data:image')));
+      expect(out, contains('FN:Jane Doe'));
+      expect(out, contains('EMAIL;TYPE=INTERNET:jane@doe.com'));
+      expect(out, contains('TEL;TYPE=WORK,VOICE:+33611111111'));
+      expect(v.photo, 'data:image/jpeg;base64,/9j/4AAQSkZJRg==');
+    });
+
+    test('offline also drops an existing http PHOTO URL', () async {
+      debugHasInternet = false;
+      final v = VCard(
+        nom: 'Doe',
+        prenom: 'Jane',
+        photo: 'https://cdn.example/jane.jpg',
+        rev: '20260101T000000Z',
+      );
+      final out = await v.toQrPayload();
+      expect(out, isNot(contains('PHOTO')));
+      expect(out, isNot(contains('cdn.example')));
+      expect(out, contains('FN:Jane Doe'));
     });
 
     test('omits data:image PHOTO when hosting fails', () async {

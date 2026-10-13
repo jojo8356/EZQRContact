@@ -317,24 +317,29 @@ class VCard {
   }
 
   /// vCard text sized for a printable QR. Never embeds `data:image`
-  /// PHOTO. When [hostPhoto] is true, an inline photo is uploaded and
-  /// replaced by `PHOTO;VALUE=URI:https://…` so a scan can download the
-  /// image (needs internet at generate time). Upload failure omits PHOTO
-  /// so the QR still encodes. http(s) photo URLs are kept.
+  /// PHOTO. Offline, PHOTO is dropped and the QR is contact text only.
+  /// Online, an inline photo is uploaded and replaced by
+  /// `PHOTO;VALUE=URI:https://…` so a scan can download the image.
+  /// Upload failure also omits PHOTO so the QR still encodes.
   Future<String> toQrPayload({bool hostPhoto = true}) async {
     final original = photo;
-    if (original.startsWith('data:image/')) {
-      String? url;
-      if (hostPhoto) {
-        url = await hostPhotoForQr(original);
-      }
-      if (url != null && url.isNotEmpty) {
-        photo = url;
-      } else {
-        photo = '';
-      }
-    }
     try {
+      final online = await deviceHasInternet();
+      if (!online) {
+        photo = '';
+        return toVCard(includeInlinePhoto: false);
+      }
+      if (original.startsWith('data:image/')) {
+        String? url;
+        if (hostPhoto) {
+          url = await hostPhotoForQr(original);
+        }
+        if (url != null && url.isNotEmpty) {
+          photo = url;
+        } else {
+          photo = '';
+        }
+      }
       return toVCard(includeInlinePhoto: false);
     } finally {
       photo = original;

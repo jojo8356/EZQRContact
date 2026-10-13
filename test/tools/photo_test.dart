@@ -97,7 +97,19 @@ void main() {
   group('hostPhotoForQr', () {
     tearDown(() {
       debugHostPhotoForQr = null;
+      debugHasInternet = null;
       resetPhotoHostCache();
+    });
+
+    test('deviceHasInternet respects the debug hook', () async {
+      debugHasInternet = true;
+      expect(await deviceHasInternet(), isTrue);
+      debugHasInternet = false;
+      expect(await deviceHasInternet(), isFalse);
+    });
+
+    test('deviceHasInternet is false during flutter test by default', () async {
+      expect(await deviceHasInternet(), isFalse);
     });
 
     test('returns http(s) photo unchanged', () async {

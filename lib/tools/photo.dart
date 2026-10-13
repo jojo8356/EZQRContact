@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -74,12 +75,46 @@ Future<String?> compressPhotoForVCard(
 @visibleForTesting
 Future<String?> Function(String photo)? debugHostPhotoForQr;
 
+/// Test hook for [deviceHasInternet]. `true` / `false` skip the lookup.
+@visibleForTesting
+bool? debugHasInternet;
+
 final Map<int, String?> _hostCache = <int, String?>{};
 
 /// Drops the in-memory host cache (tests).
 @visibleForTesting
 void resetPhotoHostCache() {
   _hostCache.clear();
+}
+
+/// True when the device can resolve a public host (needs internet).
+///
+/// Used before uploading a vCard photo: offline, the QR is text-only.
+Future<bool> deviceHasInternet() async {
+  if (debugHasInternet != null) {
+    return debugHasInternet!;
+  }
+  // A hosted-photo test hook implies we are pretending to be online.
+  if (debugHostPhotoForQr != null) {
+    return true;
+  }
+  if (const bool.fromEnvironment('FLUTTER_TEST')) {
+    return false;
+  }
+  try {
+    final result = await InternetAddress.lookup(
+      'one.one.one.one',
+    ).timeout(const Duration(seconds: 2));
+    if (result.isEmpty) {
+      return false;
+    }
+    if (result.first.rawAddress.isEmpty) {
+      return false;
+    }
+    return true;
+  } on Object catch (_) {
+    return false;
+  }
 }
 
 /// Returns an http(s) URL for [photo] that can fit in a QR `PHOTO;VALUE=URI`

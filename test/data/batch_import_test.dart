@@ -85,6 +85,7 @@ void main() {
       debugHostPhotoForQr = (_) async => null;
       addTearDown(() {
         debugHostPhotoForQr = null;
+        debugHasInternet = null;
         resetPhotoHostCache();
       });
       final contact = _contact();

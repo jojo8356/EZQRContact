@@ -113,6 +113,7 @@ void main() {
       debugHostPhotoForQr = (_) async => null;
       addTearDown(() {
         debugHostPhotoForQr = null;
+        debugHasInternet = null;
         resetPhotoHostCache();
       });
       final huge = 'A' * 8000;
@@ -130,10 +131,33 @@ void main() {
       expect(bytes.sublist(0, 8), equals(_pngMagic));
     });
 
+    test('offline vCard with photo still encodes as text-only QR', () async {
+      debugHasInternet = false;
+      addTearDown(() {
+        debugHasInternet = null;
+        debugHostPhotoForQr = null;
+        resetPhotoHostCache();
+      });
+      final huge = 'A' * 8000;
+      final v = VCard(
+        nom: 'Doe',
+        prenom: 'Jane',
+        photo: 'data:image/jpeg;base64,$huge',
+        email: 'jane@doe.com',
+        rev: '20260101T000000Z',
+      );
+      final payload = await v.toQrPayload();
+      expect(payload, isNot(contains('PHOTO')));
+      expect(payload, contains('EMAIL;TYPE=INTERNET:jane@doe.com'));
+      final bytes = await buildQrBytes(payload);
+      expect(bytes.sublist(0, 8), equals(_pngMagic));
+    });
+
     test('vCard QR embeds hosted photo URL', () async {
       debugHostPhotoForQr = (_) async => 'https://files.example/jane.jpg';
       addTearDown(() {
         debugHostPhotoForQr = null;
+        debugHasInternet = null;
         resetPhotoHostCache();
       });
       final v = VCard(
