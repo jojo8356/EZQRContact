@@ -174,14 +174,18 @@ void main() {
       const url = 'https://cdn.example/a.jpg';
       final img = photoImageProvider(url);
       expect(img, isA<NetworkImage>());
-      expect((img as NetworkImage).url, url);
+      if (img is NetworkImage) {
+        expect(img.url, url);
+      }
     });
 
     test('http URL returns NetworkImage', () {
       const url = 'http://cdn.example/a.jpg';
       final img = photoImageProvider(url);
       expect(img, isA<NetworkImage>());
-      expect((img as NetworkImage).url, url);
+      if (img is NetworkImage) {
+        expect(img.url, url);
+      }
     });
 
     test('https without host returns null', () {

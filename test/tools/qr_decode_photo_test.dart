@@ -96,7 +96,6 @@ void main() {
         await buildQrBytes(payload),
         jpegQuality: 50,
         tiltDeg: 10,
-        blurRadius: 1,
         grainAmplitude: 12,
       );
       final text = decodeQrFromBytes(photo);
@@ -111,7 +110,6 @@ void main() {
     test('simple QR on a screen at +7° with moiré', () async {
       final photo = embedQrOnScreenPhoto(
         await buildQrBytes(_simple),
-        tiltDeg: 7,
       );
       expect(decodeQrFromBytes(photo), _simple);
     });
@@ -147,13 +145,14 @@ void main() {
     final dir = Directory('test/fixtures/screen_photos');
     final jpgs = <File>[];
     if (dir.existsSync()) {
-      jpgs.addAll(
-        dir.listSync().whereType<File>().where((f) {
-          final n = f.path.toLowerCase();
-          return n.endsWith('.jpg') || n.endsWith('.jpeg');
-        }),
-      );
-      jpgs.sort((a, b) => a.path.compareTo(b.path));
+      jpgs
+        ..addAll(
+          dir.listSync().whereType<File>().where((f) {
+            final n = f.path.toLowerCase();
+            return n.endsWith('.jpg') || n.endsWith('.jpeg');
+          }),
+        )
+        ..sort((a, b) => a.path.compareTo(b.path));
     }
     for (final jpg in jpgs) {
       final name = jpg.uri.pathSegments.last;
