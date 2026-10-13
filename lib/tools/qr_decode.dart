@@ -360,13 +360,20 @@ img.Image _centerCrop(img.Image src) {
   );
 }
 
-List<img.Image> _decodeVariants(img.Image image) {
+// Yields so a hit on an early raster skips later work (20 MP gallery
+// JPEGs otherwise pay for every scale / blur / rotation).
+Iterable<img.Image> _decodeVariants(img.Image image) sync* {
   final prepared = _prepareForDecode(image);
-  final variants = <img.Image>[prepared];
+  yield prepared;
+
+  // Phone photo of a screen: LCD mesh + keystone. Otsu after a blur
+  // gives ZXing solid modules; HybridBinarizer on the raw photo does
+  // not.
+  yield* _screenPhotoVariants(prepared);
 
   final crop = _centerCrop(prepared);
   if (crop.width >= 64 && crop.height >= 64) {
-    variants.add(crop);
+    yield crop;
   }
 
   // Average-downsample kills LCD moiré (phone photo of a screen).
@@ -375,53 +382,49 @@ List<img.Image> _decodeVariants(img.Image image) {
     if (prepared.width <= side && prepared.height <= side) {
       continue;
     }
-    variants.add(_scaleToMax(prepared, side));
+    yield _scaleToMax(prepared, side);
   }
   if (crop.width > 640) {
-    variants.add(_scaleToMax(crop, 640));
+    yield _scaleToMax(crop, 640);
   }
 
   if (prepared.width <= 1200 && prepared.height <= 1200) {
-    variants.add(
-      img.copyResize(
-        prepared,
-        width: prepared.width * 2,
-        interpolation: img.Interpolation.nearest,
-      ),
+    yield img.copyResize(
+      prepared,
+      width: prepared.width * 2,
+      interpolation: img.Interpolation.nearest,
     );
   }
   if (prepared.width <= 600 && prepared.height <= 600) {
-    variants.add(
-      img.copyResize(
-        prepared,
-        width: prepared.width * 3,
-        interpolation: img.Interpolation.nearest,
-      ),
+    yield img.copyResize(
+      prepared,
+      width: prepared.width * 3,
+      interpolation: img.Interpolation.nearest,
     );
   }
 
   final gray = img.grayscale(img.Image.from(prepared));
   img.normalize(gray, min: 0, max: 255);
-  variants.add(gray);
+  yield gray;
 
-  variants.add(_greenPlane(prepared));
+  yield _greenPlane(prepared);
   final blur2 = img.Image.from(gray);
   img.gaussianBlur(blur2, radius: 2);
-  variants.add(blur2);
+  yield blur2;
   final blur3 = img.Image.from(gray);
   img.gaussianBlur(blur3, radius: 3);
-  variants.add(blur3);
+  yield blur3;
 
   final contrast = img.Image.from(gray);
   img.adjustColor(contrast, contrast: 1.5);
-  variants.add(contrast);
+  yield contrast;
 
   final sharp = img.Image.from(gray);
   img.convolution(
     sharp,
     filter: const <num>[0, -1, 0, -1, 5, -1, 0, -1, 0],
   );
-  variants.add(sharp);
+  yield sharp;
 
   img.Image rotBase = gray;
   if (gray.width > 800 && gray.width >= gray.height) {
@@ -439,15 +442,265 @@ List<img.Image> _decodeVariants(img.Image image) {
   }
   const angles = <double>[-10, -5, 5, 10];
   for (final deg in angles) {
-    variants.add(
-      img.copyRotate(
-        rotBase,
-        angle: deg,
-        interpolation: img.Interpolation.linear,
-      ),
+    yield img.copyRotate(
+      rotBase,
+      angle: deg,
+      interpolation: img.Interpolation.linear,
     );
   }
-  return variants;
+}
+
+Iterable<img.Image> _screenPhotoVariants(img.Image prepared) sync* {
+  var work = prepared;
+  if (prepared.width > 800 || prepared.height > 800) {
+    work = _scaleToMax(prepared, 800);
+  }
+  final blurred = img.grayscale(img.Image.from(work));
+  img.gaussianBlur(blurred, radius: 2);
+  final bw = _otsuBinarize(blurred);
+  yield bw;
+
+  if (work.width > 640 || work.height > 640) {
+    final small = _scaleToMax(work, 640);
+    final smallBlur = img.grayscale(img.Image.from(small));
+    img.gaussianBlur(smallBlur, radius: 2);
+    yield _otsuBinarize(smallBlur);
+  }
+
+  final card = _cropBrightCard(bw, 128);
+  if (card == null) {
+    return;
+  }
+  yield card;
+  final square = _rectifyBrightQuad(card, 128);
+  if (square != null) {
+    yield square;
+    yield _otsuBinarize(square);
+  }
+}
+
+img.Image _otsuBinarize(img.Image src) {
+  final hist = List<int>.filled(256, 0);
+  for (var y = 0; y < src.height; y++) {
+    for (var x = 0; x < src.width; x++) {
+      final p = src.getPixel(x, y);
+      final luma =
+          (p.r.toInt() + 2 * p.g.toInt() + p.b.toInt()) ~/ 4;
+      hist[luma] += 1;
+    }
+  }
+  final total = src.width * src.height;
+  var sum = 0;
+  for (var i = 0; i < 256; i++) {
+    sum += i * hist[i];
+  }
+  var sumB = 0;
+  var wB = 0;
+  var maxVar = -1.0;
+  var thresh = 127;
+  for (var t = 0; t < 256; t++) {
+    wB += hist[t];
+    if (wB == 0) {
+      continue;
+    }
+    final wF = total - wB;
+    if (wF == 0) {
+      break;
+    }
+    sumB += t * hist[t];
+    final mB = sumB / wB;
+    final mF = (sum - sumB) / wF;
+    final diff = mB - mF;
+    final v = wB * wF * diff * diff;
+    if (v > maxVar) {
+      maxVar = v;
+      thresh = t;
+    }
+  }
+  final out = img.Image(width: src.width, height: src.height);
+  for (var y = 0; y < src.height; y++) {
+    for (var x = 0; x < src.width; x++) {
+      final p = src.getPixel(x, y);
+      final luma =
+          (p.r.toInt() + 2 * p.g.toInt() + p.b.toInt()) ~/ 4;
+      var c = 255;
+      if (luma <= thresh) {
+        c = 0;
+      }
+      out.setPixelRgb(x, y, c, c, c);
+    }
+  }
+  return out;
+}
+
+img.Image? _cropBrightCard(img.Image src, int minLum) {
+  final h = src.height;
+  final w = src.width;
+  final row = List<int>.filled(h, 0);
+  final col = List<int>.filled(w, 0);
+  var bright = 0;
+  for (var y = 0; y < h; y++) {
+    for (var x = 0; x < w; x++) {
+      final p = src.getPixel(x, y);
+      final luma =
+          (p.r.toInt() + 2 * p.g.toInt() + p.b.toInt()) ~/ 4;
+      if (luma < minLum) {
+        continue;
+      }
+      row[y] += 1;
+      col[x] += 1;
+      bright += 1;
+    }
+  }
+  if (bright < 64) {
+    return null;
+  }
+  final rowMin = (w * 15) ~/ 100;
+  final colMin = (h * 15) ~/ 100;
+  final yRun = _longestRun(row, rowMin);
+  final xRun = _longestRun(col, colMin);
+  if (yRun == null || xRun == null) {
+    return null;
+  }
+  var x1 = xRun[0];
+  var x2 = xRun[1];
+  var y1 = yRun[0];
+  var y2 = yRun[1];
+  final padX = (x2 - x1) ~/ 25;
+  final padY = (y2 - y1) ~/ 25;
+  x1 -= padX;
+  y1 -= padY;
+  x2 += padX;
+  y2 += padY;
+  if (x1 < 0) {
+    x1 = 0;
+  }
+  if (y1 < 0) {
+    y1 = 0;
+  }
+  if (x2 > w) {
+    x2 = w;
+  }
+  if (y2 > h) {
+    y2 = h;
+  }
+  final cw = x2 - x1;
+  final ch = y2 - y1;
+  if (cw < 64 || ch < 64) {
+    return null;
+  }
+  return img.copyCrop(
+    src,
+    x: x1,
+    y: y1,
+    width: cw,
+    height: ch,
+  );
+}
+
+List<int>? _longestRun(List<int> counts, int minCount) {
+  var bestLen = 0;
+  var bestA = 0;
+  var bestB = 0;
+  var i = 0;
+  final n = counts.length;
+  while (i < n) {
+    if (counts[i] < minCount) {
+      i += 1;
+      continue;
+    }
+    final start = i;
+    while (i < n && counts[i] >= minCount) {
+      i += 1;
+    }
+    final len = i - start;
+    if (len > bestLen) {
+      bestLen = len;
+      bestA = start;
+      bestB = i;
+    }
+  }
+  if (bestLen < 16) {
+    return null;
+  }
+  return <int>[bestA, bestB];
+}
+
+img.Image? _rectifyBrightQuad(img.Image src, int minLum) {
+  var found = 0;
+  var tlScore = 1 << 30;
+  var brScore = -(1 << 30);
+  var trScore = -(1 << 30);
+  var blScore = 1 << 30;
+  var tlX = 0;
+  var tlY = 0;
+  var trX = 0;
+  var trY = 0;
+  var brX = 0;
+  var brY = 0;
+  var blX = 0;
+  var blY = 0;
+  for (var y = 0; y < src.height; y++) {
+    for (var x = 0; x < src.width; x++) {
+      final p = src.getPixel(x, y);
+      final luma =
+          (p.r.toInt() + 2 * p.g.toInt() + p.b.toInt()) ~/ 4;
+      if (luma < minLum) {
+        continue;
+      }
+      found += 1;
+      final s = x + y;
+      final d = x - y;
+      if (s < tlScore) {
+        tlScore = s;
+        tlX = x;
+        tlY = y;
+      }
+      if (s > brScore) {
+        brScore = s;
+        brX = x;
+        brY = y;
+      }
+      if (d > trScore) {
+        trScore = d;
+        trX = x;
+        trY = y;
+      }
+      if (d < blScore) {
+        blScore = d;
+        blX = x;
+        blY = y;
+      }
+    }
+  }
+  if (found < 80) {
+    return null;
+  }
+  final widthTop = trX - tlX;
+  final widthBot = brX - blX;
+  final heightL = blY - tlY;
+  final heightR = brY - trY;
+  if (widthTop < 40 || widthBot < 40) {
+    return null;
+  }
+  if (heightL < 40 || heightR < 40) {
+    return null;
+  }
+  try {
+    const side = 400;
+    final dst = img.Image(width: side, height: side);
+    return img.copyRectify(
+      src,
+      topLeft: img.Point(tlX, tlY),
+      topRight: img.Point(trX, trY),
+      bottomLeft: img.Point(blX, blY),
+      bottomRight: img.Point(brX, brY),
+      interpolation: img.Interpolation.linear,
+      toImage: dst,
+    );
+  } on Object catch (_) {
+    return null;
+  }
 }
 
 img.Image _greenPlane(img.Image src) {
