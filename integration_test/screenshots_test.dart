@@ -143,6 +143,7 @@ void main() {
     await tapIcon(tester, Icons.home_outlined);
     await markShot(tester, 'home-dark');
 
+    // Host script greps this marker then runs adb screencap.
     // ignore: avoid_print
     print('[ezqr-shot-done]');
   });

@@ -66,10 +66,12 @@ class _QRCardListViewState extends State<QRCardListView> {
     }
     if (_controller.position.pixels >=
         _controller.position.maxScrollExtent - 100) {
-      setState(() {
-        _fillWindow();
-      });
+      setState(_addMore);
     }
+  }
+
+  void _addMore() {
+    _fillWindow();
   }
 
   void _fillWindow({bool initial = false}) {

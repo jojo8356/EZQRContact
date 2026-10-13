@@ -13,7 +13,7 @@ const _simple = 'https://github.com/jojo8356/EZQRContact';
 const _fixtureDir = 'test/fixtures/zxing_blackbox';
 
 class _Quality {
-  const _Quality(
+  const new(
     this.name, {
     required this.jpegQuality,
     required this.tiltDeg,

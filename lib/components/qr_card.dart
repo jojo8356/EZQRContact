@@ -45,7 +45,7 @@ class QRCard extends StatefulWidget {
   /// Callback invoked after a destructive action mutates the database.
   final Future<void> Function() onRefresh;
 
-  /// Test override for [deleteQR]. Production leaves this null.
+  /// Test override for the delete action. Production leaves this null.
   final Future<void> Function(int id)? onDelete;
 
   /// When true, the card shows a checkbox and tap toggles selection.

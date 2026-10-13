@@ -88,6 +88,10 @@ Future<String> _writeScene(String name, Uint8List png) async {
   return path;
 }
 
+void _dismissToasts() {
+  toastification.dismissAll();
+}
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -97,9 +101,7 @@ void main() {
     darkProv.forceSetDarkMode(false);
   });
 
-  tearDown(() {
-    toastification.dismissAll();
-  });
+  tearDown(_dismissToasts);
 
   testWidgets(
     'generated simple QR photo imports as SimpleQR',

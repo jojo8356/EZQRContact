@@ -35,11 +35,7 @@ class QRDatabase extends _$QRDatabase {
 
   /// Test-only constructor. Inject any [QueryExecutor] (typically
   /// `NativeDatabase.memory()` from `package:drift/native.dart`).
-  // The `matching_super_parameters` lint wants this to mirror the super
-  // ctor's `e` param name, but `executor` is the meaningful API contract
-  // for callers; keep the descriptive name.
-  // ignore: matching_super_parameters
-  new forTesting(super.executor);
+  new forTesting(super.e);
 
   new _internal()
       : super(

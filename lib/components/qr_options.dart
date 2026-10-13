@@ -37,7 +37,7 @@ class OptionsQR extends StatelessWidget {
   /// Callback invoked after a destructive action mutates the database.
   final Future<void> Function() onRefresh;
 
-  /// Test override for [deleteQR]. Production leaves this null.
+  /// Test override for the delete action. Production leaves this null.
   final Future<void> Function(int id)? onDelete;
 
   @override
@@ -192,7 +192,7 @@ int? _asId(dynamic raw) {
 }
 
 class _QrAction {
-  const _QrAction({
+  const new({
     required this.icon,
     required this.color,
     required this.semanticsKey,

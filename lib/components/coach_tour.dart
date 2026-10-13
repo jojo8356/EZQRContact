@@ -25,7 +25,7 @@ final GlobalKey coachCollectionKey = GlobalKey(
 /// One spotlight step. [target] is a [GlobalKey] on the live widget.
 class CoachStep {
   /// Creates a step.
-  const CoachStep({
+  const new({
     required this.target,
     required this.title,
     required this.body,
@@ -127,7 +127,7 @@ List<CoachStep> homeCoachSteps() {
 }
 
 class _CoachTourLayer extends StatefulWidget {
-  const _CoachTourLayer({
+  const new({
     required this.steps,
     required this.onClose,
   });
@@ -286,7 +286,7 @@ class _CoachTourLayerState extends State<_CoachTourLayer> {
 }
 
 class _SpotlightPainter extends CustomPainter {
-  _SpotlightPainter({
+  new({
     required this.hole,
     required this.scrim,
     required this.ring,
@@ -312,14 +312,15 @@ class _SpotlightPainter extends CustomPainter {
       ..fillType = PathFillType.evenOdd
       ..addRect(Offset.zero & size)
       ..addRRect(rrect);
-    canvas.drawPath(path, scrimPaint);
-    canvas.drawRRect(
-      rrect,
-      Paint()
-        ..color = ring
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2,
-    );
+    canvas
+      ..drawPath(path, scrimPaint)
+      ..drawRRect(
+        rrect,
+        Paint()
+          ..color = ring
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2,
+      );
   }
 
   @override

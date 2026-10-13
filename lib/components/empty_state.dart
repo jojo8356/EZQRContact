@@ -57,7 +57,7 @@ class EmptyState extends StatelessWidget {
 }
 
 class _EmptyBody extends StatelessWidget {
-  const _EmptyBody({
+  const new({
     required this.compact,
     required this.minHeight,
     required this.icon,
