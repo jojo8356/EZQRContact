@@ -15,6 +15,10 @@
 # populated when the first frame is captured. The Dart test inserts the
 # same rows as a fallback (iOS, or if adb seed could not run).
 #
+# Screenshots are taken with adb screencap when the test prints
+# `[ezqr-shot] <name>`. flutter drive is not used: its VM service
+# disappears on some Mali devices.
+#
 # Usage:
 #   ./scripts/capture_screenshots.sh                 # first Android/iOS device
 #   ./scripts/capture_screenshots.sh emulator-5554   # specific device
@@ -302,7 +306,7 @@ seed_android_demo() {
 
 cleanup() {
   local sig=$?
-  pkill -f "flutter_tools.snapshot drive" 2>/dev/null || true
+  pkill -f "screenshots_test.dart" 2>/dev/null || true
   if [ "$sig" -ne 0 ] && [ "$sig" -ne 130 ]; then
     echo
     echo "Capture script exited with status $sig"
@@ -322,31 +326,38 @@ if ! seed_android_demo; then
   echo
 fi
 
-DRIVE_EXIT=0
+export EZQR_DEVICE="$DEVICE"
+export EZQR_OUT="$OUT_DIR"
+START_EPOCH="$(date +%s)"
+
+echo "[step] driving UI with flutter test (adb screencap on each marker)"
+echo
+
+TEST_EXIT=0
 if command -v timeout >/dev/null 2>&1; then
-  timeout 240 flutter drive \
-    --driver=test_driver/integration_test.dart \
-    --target=integration_test/screenshots_test.dart \
+  timeout 240 flutter test \
+    integration_test/screenshots_test.dart \
     --no-pub \
-    -d "$DEVICE"
-  DRIVE_EXIT=$?
-  if [ "$DRIVE_EXIT" -eq 124 ]; then
-    echo "[error] flutter drive timed out after 240s"
+    -d "$DEVICE" 2>&1 \
+    | python3 -u "$ROOT/scripts/adb_capture_on_marker.py"
+  TEST_EXIT=${PIPESTATUS[0]}
+  if [ "$TEST_EXIT" -eq 124 ]; then
+    echo "[error] flutter test timed out after 240s"
   fi
 else
-  flutter drive \
-    --driver=test_driver/integration_test.dart \
-    --target=integration_test/screenshots_test.dart \
+  flutter test \
+    integration_test/screenshots_test.dart \
     --no-pub \
-    -d "$DEVICE"
-  DRIVE_EXIT=$?
+    -d "$DEVICE" 2>&1 \
+    | python3 -u "$ROOT/scripts/adb_capture_on_marker.py"
+  TEST_EXIT=${PIPESTATUS[0]}
 fi
 
 echo
-if [ "$DRIVE_EXIT" -eq 0 ]; then
-  echo "[done] flutter drive succeeded"
+if [ "$TEST_EXIT" -eq 0 ]; then
+  echo "[done] flutter test succeeded"
 else
-  echo "[done] flutter drive exited with code $DRIVE_EXIT"
+  echo "[done] flutter test exited with code $TEST_EXIT"
 fi
 
 echo
@@ -364,6 +375,12 @@ for name in "${EXPECTED[@]}"; do
   size="$(wc -c < "$path" | tr -d ' ')"
   if [ "$size" -lt 500 ]; then
     echo "[too small] $name ($size bytes)"
+    MISSING=1
+    continue
+  fi
+  mtime="$(stat -c %Y "$path" 2>/dev/null || stat -f %m "$path")"
+  if [ "$mtime" -lt "$START_EPOCH" ]; then
+    echo "[stale] $name (not recaptured this run)"
     MISSING=1
   fi
 done
@@ -393,10 +410,10 @@ fi
 if [ "$MISSING" -ne 0 ]; then
   echo
   echo "[error] README set is incomplete. Re-run on a device with the app building."
-  if [ "$DRIVE_EXIT" -ne 0 ]; then
-    exit "$DRIVE_EXIT"
+  if [ "$TEST_EXIT" -ne 0 ]; then
+    exit "$TEST_EXIT"
   fi
   exit 1
 fi
 
-exit "$DRIVE_EXIT"
+exit "$TEST_EXIT"
