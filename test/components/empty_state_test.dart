@@ -77,4 +77,63 @@ void main() {
     await tester.tap(find.byType(AppButton));
     expect(pressed, isTrue);
   });
+
+  testWidgets('short landscape slot does not overflow', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(640, 360));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      encreApp(
+        home: Scaffold(
+          appBar: AppBar(title: const Text('Collection')),
+          body: Column(
+            children: [
+              const Padding(
+                padding: EdgeInsets.all(12),
+                child: SizedBox(height: 48, width: double.infinity),
+              ),
+              Expanded(
+                child: EmptyState(
+                  icon: Icons.style_outlined,
+                  title: 'Aucune carte',
+                  body: 'Scannez-en une.',
+                  actionLabel: 'Scanner',
+                  onAction: () {},
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Aucune carte'), findsOneWidget);
+    expect(find.byType(AppButton), findsOneWidget);
+  });
+
+  testWidgets('140 px tall box does not overflow', (tester) async {
+    await tester.pumpWidget(
+      encreApp(
+        home: Scaffold(
+          body: Center(
+            child: SizedBox(
+              width: 400,
+              height: 140,
+              child: EmptyState(
+                icon: Icons.history_rounded,
+                title: 'Aucune carte',
+                body: 'Scannez-en une.',
+                actionLabel: 'Scanner',
+                onAction: () {},
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Aucune carte'), findsOneWidget);
+  });
 }
