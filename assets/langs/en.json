@@ -137,8 +137,8 @@
       "import_none": "No contacts on this phone",
       "import_done": "Imported %s contacts",
       "import_skip": "Already in the collection",
-      "export_none": "No cards to export",
-      "export_done": "Exported %s contacts"
+      "export_none": "No QR codes to export",
+      "export_done": "Exported %s QR codes"
     }
   },
   "VCard Input": {

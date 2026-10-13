@@ -222,19 +222,31 @@ String _photoExt(String photo) {
   return 'jpg';
 }
 
-/// Builds a zip of the whole collection: `contacts.vcf`, per-card `.vcf`,
-/// QR PNGs, inline photos, and simple-QR text + PNG.
+/// Builds a zip of the whole collection: vCards, text QRs, QR PNGs, photos.
 Future<Uint8List> buildCollectionZip({
   required List<Map<String, dynamic>> vcards,
   required List<Map<String, dynamic>> simples,
   ZipBytesReader? readBytes,
 }) async {
   final archive = Archive();
+  final index = StringBuffer()
+    ..writeln('EZQRContact export')
+    ..writeln('vCards: ${vcards.length}')
+    ..writeln('text_qrs: ${simples.length}');
+  _addZipFile(archive, 'index.txt', utf8.encode(index.toString()));
+
   if (vcards.isNotEmpty) {
     _addZipFile(
       archive,
       'contacts.vcf',
       utf8.encode(vcardsToVcf(vcards)),
+    );
+  }
+  if (simples.isNotEmpty) {
+    _addZipFile(
+      archive,
+      'texts.txt',
+      utf8.encode(simpleQrsToTexts(simples)),
     );
   }
   for (final row in vcards) {
@@ -263,7 +275,7 @@ Future<Uint8List> buildCollectionZip({
   for (final row in simples) {
     final id = row['id'] ?? 'x';
     final slug = exportFileSlug(row, fallback: 'qr');
-    final stem = 'simple/$id-$slug';
+    final stem = 'text/$id-$slug';
     final text = (row['text'] as String?) ?? '';
     _addZipFile(archive, '$stem.txt', utf8.encode(text));
     final qr = await _readPathBytes(row['path'] as String?, readBytes);
@@ -273,6 +285,18 @@ Future<Uint8List> buildCollectionZip({
   }
   final encoded = ZipEncoder().encode(archive);
   return Uint8List.fromList(encoded);
+}
+
+/// One simple-QR payload per block, separated by a blank line.
+String simpleQrsToTexts(List<Map<String, dynamic>> rows) {
+  final buffer = StringBuffer();
+  for (var i = 0; i < rows.length; i++) {
+    if (i > 0) {
+      buffer.write('\n\n');
+    }
+    buffer.write((rows[i]['text'] as String?) ?? '');
+  }
+  return buffer.toString();
 }
 
 Future<bool> _ensureContactsPermission(BuildContext context) async {

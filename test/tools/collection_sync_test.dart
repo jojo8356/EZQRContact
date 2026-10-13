@@ -155,20 +155,30 @@ void main() {
         names.add(f.name);
       }
       expect(names, contains('contacts.vcf'));
+      expect(names, contains('texts.txt'));
+      expect(names, contains('index.txt'));
       expect(names, contains('vcards/12-marie-dupont.vcf'));
       expect(names, contains('vcards/12-marie-dupont.png'));
       expect(names, contains('vcards/12-marie-dupont-photo.png'));
-      expect(names, contains('simple/3-tzst.txt'));
-      expect(names, contains('simple/3-tzst.png'));
+      expect(names, contains('text/3-tzst.txt'));
+      expect(names, contains('text/3-tzst.png'));
 
       ArchiveFile? allVcf;
+      ArchiveFile? texts;
       ArchiveFile? simple;
+      ArchiveFile? index;
       for (final f in decoded.files) {
         if (f.name == 'contacts.vcf') {
           allVcf = f;
         }
-        if (f.name == 'simple/3-tzst.txt') {
+        if (f.name == 'texts.txt') {
+          texts = f;
+        }
+        if (f.name == 'text/3-tzst.txt') {
           simple = f;
+        }
+        if (f.name == 'index.txt') {
+          index = f;
         }
       }
       expect(allVcf, isNotNull);
@@ -178,6 +188,27 @@ void main() {
       );
       expect(simple, isNotNull);
       expect(utf8.decode(simple!.content as List<int>), 'tzst');
+      expect(texts, isNotNull);
+      expect(utf8.decode(texts!.content as List<int>), 'tzst');
+      expect(index, isNotNull);
+      expect(utf8.decode(index!.content as List<int>), contains('text_qrs: 1'));
+    });
+
+    test('zip of only text QRs has no contacts.vcf', () async {
+      final zipBytes = await buildCollectionZip(
+        vcards: const [],
+        simples: [
+          {'id': 3, 'text': 'tzst'},
+        ],
+      );
+      final decoded = ZipDecoder().decodeBytes(zipBytes);
+      final names = <String>{};
+      for (final f in decoded.files) {
+        names.add(f.name);
+      }
+      expect(names, contains('texts.txt'));
+      expect(names, contains('text/3-tzst.txt'));
+      expect(names, isNot(contains('contacts.vcf')));
     });
   });
 }
