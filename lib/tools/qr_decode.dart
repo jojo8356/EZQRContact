@@ -37,6 +37,8 @@ Uint8List embedQrInNoisyPhoto(
   int jpegQuality = 72,
   int seed = 42,
   double tiltDeg = 6,
+  int blurRadius = 1,
+  int grainAmplitude = 8,
 }) {
   final qr = img.decodePng(qrPng);
   if (qr == null) {
@@ -78,8 +80,12 @@ Uint8List embedQrInNoisyPhoto(
     dstY = 24;
   }
   img.compositeImage(scene, piece, dstX: dstX, dstY: dstY);
-  _addGrain(scene, seed);
-  img.gaussianBlur(scene, radius: 1);
+  if (grainAmplitude > 0) {
+    _addGrain(scene, seed, amplitude: grainAmplitude);
+  }
+  if (blurRadius > 0) {
+    img.gaussianBlur(scene, radius: blurRadius);
+  }
   return Uint8List.fromList(
     img.encodeJpg(scene, quality: jpegQuality),
   );
@@ -184,13 +190,14 @@ void _paintClutter(img.Image scene, int seed) {
   }
 }
 
-void _addGrain(img.Image scene, int seed) {
+void _addGrain(img.Image scene, int seed, {int amplitude = 8}) {
   final rng = <int>[seed ^ 0x51ed];
   final w = scene.width;
   final h = scene.height;
+  final span = amplitude * 2 + 1;
   for (var y = 0; y < h; y++) {
     for (var x = 0; x < w; x++) {
-      final n = (_lcg(rng) % 17) - 8;
+      final n = (_lcg(rng) % span) - amplitude;
       final p = scene.getPixel(x, y);
       scene.setPixelRgb(
         x,
