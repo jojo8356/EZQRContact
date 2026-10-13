@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
@@ -150,7 +151,7 @@ class PhoneContacts {
         'suffixe': c.name?.suffix ?? '',
         'org': _orgName(c),
         'job': _orgTitle(c),
-        'photo': '',
+        'photo': _photoDataUri(c),
         'tel_work': _phoneOf(c, PhoneLabel.work),
         'tel_home': _phoneOf(c, PhoneLabel.home),
         'adr_work': _addressOf(c, AddressLabel.work),
@@ -357,5 +358,31 @@ class PhoneContacts {
   /// Returns the contact photo bytes, or null when [c] has no photo set.
   static Future<Uint8List?> getPhoto(Contact c) async {
     return c.photo?.fullSize ?? c.photo?.thumbnail;
+  }
+
+  static String _photoDataUri(Contact c) {
+    final bytes = c.photo?.fullSize ?? c.photo?.thumbnail;
+    if (bytes == null || bytes.isEmpty) {
+      return '';
+    }
+    final mime = _photoMime(bytes);
+    return 'data:$mime;base64,${base64Encode(bytes)}';
+  }
+
+  static String _photoMime(Uint8List bytes) {
+    if (bytes.length >= 8 &&
+        bytes[0] == 0x89 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x4E &&
+        bytes[3] == 0x47) {
+      return 'image/png';
+    }
+    if (bytes.length >= 3 &&
+        bytes[0] == 0xFF &&
+        bytes[1] == 0xD8 &&
+        bytes[2] == 0xFF) {
+      return 'image/jpeg';
+    }
+    return 'image/jpeg';
   }
 }
