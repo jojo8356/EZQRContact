@@ -106,6 +106,65 @@ void main() {
     });
   });
 
+  // Phone photo of a QR on a monitor: LCD moiré, RGB fringe, tilt.
+  group('screen photos (tilted, noisy)', () {
+    test('simple QR on a screen at +7° with moiré', () async {
+      final photo = embedQrOnScreenPhoto(
+        await buildQrBytes(_simple),
+        tiltDeg: 7,
+      );
+      expect(decodeQrFromBytes(photo), _simple);
+    });
+
+    test('simple QR on a screen at -9° with moiré', () async {
+      final photo = embedQrOnScreenPhoto(
+        await buildQrBytes(_simple),
+        tiltDeg: -9,
+        seed: 11,
+      );
+      expect(decodeQrFromBytes(photo), _simple);
+    });
+
+    test('vCard QR on a tilted screen', () async {
+      final payload = VCard(
+        nom: 'Dupont',
+        prenom: 'Marie',
+        telWork: '+33612345678',
+        email: 'marie.dupont@acme.fr',
+        rev: '20261012T000000Z',
+      ).toVCard();
+      final photo = embedQrOnScreenPhoto(
+        await buildQrBytes(payload),
+        tiltDeg: 6,
+      );
+      final text = decodeQrFromBytes(photo);
+      expect(text, isNotNull);
+      expect(VCard.isVCard(text!), isTrue);
+    });
+  });
+
+  group('user gallery JPEGs', () {
+    final dir = Directory('test/fixtures/screen_photos');
+    final jpgs = <File>[];
+    if (dir.existsSync()) {
+      jpgs.addAll(
+        dir.listSync().whereType<File>().where((f) {
+          final n = f.path.toLowerCase();
+          return n.endsWith('.jpg') || n.endsWith('.jpeg');
+        }),
+      );
+      jpgs.sort((a, b) => a.path.compareTo(b.path));
+    }
+    for (final jpg in jpgs) {
+      final name = jpg.uri.pathSegments.last;
+      test('decodes $name', () {
+        final got = decodeQrFromBytes(jpg.readAsBytesSync());
+        expect(got, isNotNull, reason: name);
+        expect(got!.isNotEmpty, isTrue);
+      });
+    }
+  });
+
   // Photographed / print-ad samples from ZXing's Java blackbox corpus.
   // Packed rasters (qrcode-2/1) and tiny rotated finders (qrcode-6)
   // are Java-detector cases zxing2 0.2.4 does not cover; omitted.

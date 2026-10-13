@@ -91,6 +91,68 @@ Uint8List embedQrInNoisyPhoto(
   );
 }
 
+/// Simulates a phone photo of a QR on a screen: dark UI, LCD RGB moiré,
+/// chromatic fringe, and a tilt so the code is not axis-aligned.
+Uint8List embedQrOnScreenPhoto(
+  Uint8List qrPng, {
+  int width = 960,
+  int height = 720,
+  int jpegQuality = 78,
+  double tiltDeg = 7,
+  int seed = 7,
+}) {
+  final qr = img.decodePng(qrPng);
+  if (qr == null) {
+    return qrPng;
+  }
+
+  var maxQr = width;
+  if (height < width) {
+    maxQr = height;
+  }
+  maxQr = (maxQr * 2) ~/ 3;
+  final stamp = img.copyResize(
+    qr,
+    width: maxQr,
+    interpolation: img.Interpolation.nearest,
+  );
+
+  const pad = 36;
+  final card = img.Image(
+    width: stamp.width + pad * 2,
+    height: stamp.height + pad * 2,
+  );
+  img.fill(card, color: img.ColorRgb8(248, 248, 248));
+  img.compositeImage(card, stamp, dstX: pad, dstY: pad);
+
+  final scene = img.Image(width: width, height: height);
+  img.fill(scene, color: img.ColorRgb8(22, 22, 24));
+  var dstX = (width - card.width) ~/ 2;
+  var dstY = (height - card.height) ~/ 2;
+  if (dstX < 8) {
+    dstX = 8;
+  }
+  if (dstY < 8) {
+    dstY = 8;
+  }
+  img.compositeImage(scene, card, dstX: dstX, dstY: dstY);
+  _addLcdMoiré(scene);
+  _rgbFringe(scene);
+  _addGrain(scene, seed, amplitude: 6);
+
+  img.Image shot = scene;
+  if (tiltDeg != 0) {
+    shot = img.copyRotate(
+      scene,
+      angle: tiltDeg,
+      interpolation: img.Interpolation.linear,
+    );
+  }
+  return Uint8List.fromList(
+    img.encodeJpg(shot, quality: jpegQuality),
+  );
+}
+
 /// Decodes the first QR payload in [bytes] (PNG/JPEG).
 ///
 /// Uses ZXing's detector, so the code does not have to fill the frame —
@@ -190,6 +252,53 @@ void _paintClutter(img.Image scene, int seed) {
   }
 }
 
+void _addLcdMoiré(img.Image scene) {
+  final w = scene.width;
+  final h = scene.height;
+  for (var y = 0; y < h; y++) {
+    for (var x = 0; x < w; x++) {
+      final p = scene.getPixel(x, y);
+      var r = p.r.toInt();
+      var g = p.g.toInt();
+      var b = p.b.toInt();
+      final lane = x % 3;
+      if (lane == 0) {
+        r = (r + 16).clamp(0, 255);
+      } else if (lane == 1) {
+        g = (g + 16).clamp(0, 255);
+      } else {
+        b = (b + 16).clamp(0, 255);
+      }
+      if (y.isEven) {
+        r = (r - 7).clamp(0, 255);
+        g = (g - 7).clamp(0, 255);
+        b = (b - 7).clamp(0, 255);
+      }
+      scene.setPixelRgb(x, y, r, g, b);
+    }
+  }
+}
+
+void _rgbFringe(img.Image scene) {
+  final copy = img.Image.from(scene);
+  final w = scene.width;
+  final h = scene.height;
+  for (var y = 0; y < h; y++) {
+    for (var x = 1; x < w - 1; x++) {
+      final left = copy.getPixel(x - 1, y);
+      final mid = copy.getPixel(x, y);
+      final right = copy.getPixel(x + 1, y);
+      scene.setPixelRgb(
+        x,
+        y,
+        left.r.toInt(),
+        mid.g.toInt(),
+        right.b.toInt(),
+      );
+    }
+  }
+}
+
 void _addGrain(img.Image scene, int seed, {int amplitude = 8}) {
   final rng = <int>[seed ^ 0x51ed];
   final w = scene.width;
@@ -262,6 +371,12 @@ List<img.Image> _decodeVariants(img.Image image) {
   img.normalize(gray, min: 0, max: 255);
   variants.add(gray);
 
+  // LCD photos: green plane (less RGB subpixel fringe) + blur (moiré).
+  variants.add(_greenPlane(prepared));
+  final blurred = img.Image.from(gray);
+  img.gaussianBlur(blurred, radius: 2);
+  variants.add(blurred);
+
   final contrast = img.Image.from(gray);
   img.adjustColor(contrast, contrast: 1.5);
   variants.add(contrast);
@@ -294,7 +409,44 @@ List<img.Image> _decodeVariants(img.Image image) {
     }
     variants.add(scaled);
   }
+
+  // Codes that are not axis-aligned (phone photo of a screen).
+  img.Image rotBase = gray;
+  if (gray.width > 800 && gray.width >= gray.height) {
+    rotBase = img.copyResize(
+      gray,
+      width: 800,
+      interpolation: img.Interpolation.average,
+    );
+  } else if (gray.height > 800) {
+    rotBase = img.copyResize(
+      gray,
+      height: 800,
+      interpolation: img.Interpolation.average,
+    );
+  }
+  const angles = <double>[-10, -5, 5, 10];
+  for (final deg in angles) {
+    variants.add(
+      img.copyRotate(
+        rotBase,
+        angle: deg,
+        interpolation: img.Interpolation.linear,
+      ),
+    );
+  }
   return variants;
+}
+
+img.Image _greenPlane(img.Image src) {
+  final out = img.Image(width: src.width, height: src.height);
+  for (var y = 0; y < src.height; y++) {
+    for (var x = 0; x < src.width; x++) {
+      final g = src.getPixel(x, y).g.toInt();
+      out.setPixelRgb(x, y, g, g, g);
+    }
+  }
+  return out;
 }
 
 String? _zxingDecode(img.Image image) {
