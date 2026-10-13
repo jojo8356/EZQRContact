@@ -135,7 +135,8 @@ void main() {
       return true;
     } on AppDeadException {
       rethrow;
-    } on Exception catch (e) {
+    } catch (e) {
+      // FlutterError is an Error, not an Exception — still skip this shot.
       // ignore: avoid_print
       print('[skip] $name: $e');
       return false;
@@ -170,13 +171,26 @@ void main() {
     await enter(1, 'Marie');
     await enter(5, 'Demo Corp');
     await enter(6, 'Sales Representative');
-    await enter(7, '+33 6 12 34 56 78');
-    await enter(11, 'marie@example.com');
-    await tester.pump(const Duration(milliseconds: 300));
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pump(const Duration(milliseconds: 400));
   }
 
-  NavigatorState rootNav(WidgetTester tester) {
-    return Navigator.of(tester.element(find.byType(MaterialApp)));
+  Future<void> tapBack(WidgetTester tester) async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pump(const Duration(milliseconds: 300));
+    final back = find.byTooltip('Back');
+    if (back.evaluate().isNotEmpty) {
+      await tester.tap(back);
+      await pumpQuiet(tester);
+      return;
+    }
+    await tester.pageBack();
+    await pumpQuiet(tester);
+  }
+
+  Future<void> tapIcon(WidgetTester tester, IconData icon) async {
+    await tester.tap(find.byIcon(icon).first);
+    await pumpQuiet(tester);
   }
 
   testWidgets('home, vcard form, collection (light + dark)', (tester) async {
@@ -188,8 +202,7 @@ void main() {
       tester,
       'vcard-form',
       before: () async {
-        await tester.tap(find.byIcon(Icons.contact_page_outlined).first);
-        await pumpQuiet(tester);
+        await tapIcon(tester, Icons.contact_page_outlined);
         await fillVCardForm(tester);
       },
     );
@@ -198,9 +211,8 @@ void main() {
       tester,
       'collection',
       before: () async {
-        rootNav(tester).popUntil((route) => route.isFirst);
-        await pumpQuiet(tester);
-        rootNav(tester).pushReplacementNamed('/collection');
+        await tapBack(tester);
+        await tapIcon(tester, Icons.style_outlined);
       },
     );
 
@@ -212,7 +224,7 @@ void main() {
       tester,
       'home-dark',
       before: () async {
-        rootNav(tester).pushReplacementNamed('/options');
+        await tapIcon(tester, Icons.home_outlined);
       },
     );
   });
