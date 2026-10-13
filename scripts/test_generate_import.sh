@@ -23,6 +23,17 @@ if [ -z "$DEVICE" ]; then
   exit 1
 fi
 
+SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-}}"
+if [ -n "$SDK" ] && [ -d "$SDK/platforms/android-37.0" ] \
+    && [ ! -e "$SDK/platforms/android-37" ]; then
+  echo "Gradle looks for $SDK/platforms/android-37, but sdkmanager"
+  echo "installed android-37.0. Create a symlink, then re-run:"
+  echo
+  echo "  ln -sfn android-37.0 \"$SDK/platforms/android-37\""
+  echo
+  exit 1
+fi
+
 echo "Running generate→import integration test on: $DEVICE"
 echo
 
