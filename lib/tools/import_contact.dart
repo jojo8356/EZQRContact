@@ -229,60 +229,52 @@ Future<Uint8List> buildCollectionZip({
   ZipBytesReader? readBytes,
 }) async {
   final archive = Archive();
-  final index = StringBuffer()
-    ..writeln('EZQRContact export')
-    ..writeln('vCards: ${vcards.length}')
-    ..writeln('text_qrs: ${simples.length}');
-  _addZipFile(archive, 'index.txt', utf8.encode(index.toString()));
+  final fileNames = <String>[];
+  void add(String name, List<int> bytes) {
+    fileNames.add(name);
+    _addZipFile(archive, name, bytes);
+  }
 
   if (vcards.isNotEmpty) {
-    _addZipFile(
-      archive,
-      'contacts.vcf',
-      utf8.encode(vcardsToVcf(vcards)),
-    );
+    add('contacts.vcf', utf8.encode(vcardsToVcf(vcards)));
   }
   if (simples.isNotEmpty) {
-    _addZipFile(
-      archive,
-      'texts.txt',
-      utf8.encode(simpleQrsToTexts(simples)),
-    );
+    add('texts.txt', utf8.encode(simpleQrsToTexts(simples)));
   }
   for (final row in vcards) {
     final id = row['id'] ?? 'x';
     final slug = exportFileSlug(row);
-    final stem = 'vcards/$id-$slug';
-    _addZipFile(
-      archive,
-      '$stem.vcf',
-      utf8.encode(VCard.fromMap(row).toVCard()),
-    );
+    final stem = 'vcard_${id}_$slug';
+    add('$stem.vcf', utf8.encode(VCard.fromMap(row).toVCard()));
     final qr = await _readPathBytes(row['path'] as String?, readBytes);
     if (qr != null) {
-      _addZipFile(archive, '$stem.png', qr);
+      add('$stem.png', qr);
     }
     final photo = (row['photo'] as String?) ?? '';
     final photoBytes = _photoBytes(photo);
     if (photoBytes != null) {
-      _addZipFile(
-        archive,
-        '$stem-photo.${_photoExt(photo)}',
-        photoBytes,
-      );
+      add('$stem-photo.${_photoExt(photo)}', photoBytes);
     }
   }
   for (final row in simples) {
     final id = row['id'] ?? 'x';
     final slug = exportFileSlug(row, fallback: 'qr');
-    final stem = 'text/$id-$slug';
+    final stem = 'text_${id}_$slug';
     final text = (row['text'] as String?) ?? '';
-    _addZipFile(archive, '$stem.txt', utf8.encode(text));
+    add('$stem.txt', utf8.encode(text));
     final qr = await _readPathBytes(row['path'] as String?, readBytes);
     if (qr != null) {
-      _addZipFile(archive, '$stem.png', qr);
+      add('$stem.png', qr);
     }
   }
+  final index = StringBuffer()
+    ..writeln('EZQRContact export')
+    ..writeln('vCards: ${vcards.length}')
+    ..writeln('text_qrs: ${simples.length}');
+  for (final name in fileNames) {
+    index.writeln(name);
+  }
+  _addZipFile(archive, 'index.txt', utf8.encode(index.toString()));
   final encoded = ZipEncoder().encode(archive);
   return Uint8List.fromList(encoded);
 }
@@ -490,10 +482,22 @@ Future<void> importAllDeviceContacts(BuildContext context) async {
 /// to a `.zip` via the system saver.
 Future<void> exportAllVCards(BuildContext context) async {
   final collection = LangProvider.section('pages.collection');
-  final db = QRDatabase();
-  final vcards = await db.getAllVCards();
-  final simples = await db.getAllSimpleQR();
+  final items = await QRDatabase().getAllItems();
   if (!context.mounted) return;
+
+  final vcards = <Map<String, dynamic>>[];
+  final simples = <Map<String, dynamic>>[];
+  for (final item in items) {
+    final data = item['data'];
+    if (data is! Map<String, dynamic>) {
+      continue;
+    }
+    if (item['type'] == 'simple') {
+      simples.add(data);
+    } else if (item['type'] == 'vcard') {
+      vcards.add(data);
+    }
+  }
 
   final total = vcards.length + simples.length;
   if (total == 0) {

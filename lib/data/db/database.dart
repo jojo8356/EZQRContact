@@ -241,6 +241,21 @@ class QRDatabase extends _$QRDatabase {
     return vcards.insert(_mapToVCardCompanion(clean));
   }
 
+  /// Snapshot of the Collection tab: SimpleQRs then VCards, each as
+  /// `{type: 'simple'|'vcard', data: <legacy map>}`.
+  Future<List<Map<String, dynamic>>> getAllItems() async {
+    final simpleRows = await simpleQrs.getAllActive();
+    final vcardRows = await vcards.getAllActive();
+    return [
+      ...simpleRows.map(
+        (r) => {'type': 'simple', 'data': _simpleQrToLegacyMap(r)},
+      ),
+      ...vcardRows.map(
+        (r) => {'type': 'vcard', 'data': _vcardToLegacyMap(r)},
+      ),
+    ];
+  }
+
   /// Returns all non-deleted SimpleQR rows as legacy maps.
   Future<List<Map<String, dynamic>>> getAllSimpleQR() async {
     Perf.start('db.getAllSimpleQR');

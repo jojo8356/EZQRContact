@@ -73,6 +73,35 @@ void main() {
     });
   });
 
+  group('getAllItems', () {
+    late QRDatabase db;
+
+    setUp(() {
+      db = openTestDb();
+    });
+
+    tearDown(() async {
+      await db.close();
+    });
+
+    test('includes simple text QRs and vCards, simples first', () async {
+      await db.insertSimpleQR('tzst', null);
+      await db.insertVCard({'nom': 'Dupont', 'prenom': 'Marie'});
+      final items = await db.getAllItems();
+      expect(items, hasLength(2));
+      expect(items[0]['type'], 'simple');
+      expect(
+        (items[0]['data'] as Map<String, dynamic>)['text'],
+        'tzst',
+      );
+      expect(items[1]['type'], 'vcard');
+      expect(
+        (items[1]['data'] as Map<String, dynamic>)['nom'],
+        'Dupont',
+      );
+    });
+  });
+
   group('compare2VCard', () {
     test('equal maps return true', () async {
       final a = {'nom': 'Dupont', 'prenom': 'Marie', 'email': 'a@b.com'};

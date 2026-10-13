@@ -157,11 +157,11 @@ void main() {
       expect(names, contains('contacts.vcf'));
       expect(names, contains('texts.txt'));
       expect(names, contains('index.txt'));
-      expect(names, contains('vcards/12-marie-dupont.vcf'));
-      expect(names, contains('vcards/12-marie-dupont.png'));
-      expect(names, contains('vcards/12-marie-dupont-photo.png'));
-      expect(names, contains('text/3-tzst.txt'));
-      expect(names, contains('text/3-tzst.png'));
+      expect(names, contains('vcard_12_marie-dupont.vcf'));
+      expect(names, contains('vcard_12_marie-dupont.png'));
+      expect(names, contains('vcard_12_marie-dupont-photo.png'));
+      expect(names, contains('text_3_tzst.txt'));
+      expect(names, contains('text_3_tzst.png'));
 
       ArchiveFile? allVcf;
       ArchiveFile? texts;
@@ -174,7 +174,7 @@ void main() {
         if (f.name == 'texts.txt') {
           texts = f;
         }
-        if (f.name == 'text/3-tzst.txt') {
+        if (f.name == 'text_3_tzst.txt') {
           simple = f;
         }
         if (f.name == 'index.txt') {
@@ -207,7 +207,7 @@ void main() {
         names.add(f.name);
       }
       expect(names, contains('texts.txt'));
-      expect(names, contains('text/3-tzst.txt'));
+      expect(names, contains('text_3_tzst.txt'));
       expect(names, isNot(contains('contacts.vcf')));
     });
   });
