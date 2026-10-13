@@ -10,8 +10,8 @@ L'app parle français ou anglais (Réglages). Version anglaise :
 ## Premier lancement
 
 1. Trois écrans d'accueil. Tu peux passer.
-2. Un guide court peut s'afficher une fois. Tu le rouvres dans
-   **Réglages → Lire le guide**.
+2. Sur **Accueil**, trois pastilles (créer, scanner, collection). Tu
+   peux passer. Relance depuis **Réglages → Lire le guide**.
 3. Tu arrives sur **Accueil**.
 
 ## Créer ta carte
@@ -92,7 +92,7 @@ lecture.
 - vCard 4.0
 - Proposer ma carte en retour
 - Langue
-- Lire le guide
+- Lire le guide (relance les pastilles sur Accueil)
 - Liens du projet
 
 ## Vie privée

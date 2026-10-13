@@ -14,7 +14,10 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(() async {
-    SharedPreferences.setMockInitialValues({'guideShown': 1});
+    SharedPreferences.setMockInitialValues({
+      'guideShown': 1,
+      'coach_tour_done': true,
+    });
     await LangProvider.init(lang: 'en');
   });
 

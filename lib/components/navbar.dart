@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/components/coach_tour.dart';
 import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
@@ -76,6 +77,7 @@ class Navbar extends StatelessWidget {
                         for (final item in items)
                           Expanded(
                             child: _NavItem(
+                              key: _coachKeyForRoute(item.$4),
                               icon: item.$1,
                               selectedIcon: item.$2,
                               label: item.$3,
@@ -102,6 +104,13 @@ class Navbar extends StatelessWidget {
   }
 }
 
+Key? _coachKeyForRoute(String route) {
+  if (route == '/collection') {
+    return coachCollectionKey;
+  }
+  return null;
+}
+
 class _NavItem extends StatelessWidget {
   const new({
     required this.icon,
@@ -109,6 +118,7 @@ class _NavItem extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onTap,
+    super.key,
   });
 
   final IconData icon;

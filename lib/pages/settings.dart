@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/active_event_banner.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/app_switch.dart';
+import 'package:qr_code_app/components/coach_tour.dart';
 import 'package:qr_code_app/components/navbar.dart';
 import 'package:qr_code_app/components/paper_card.dart';
 import 'package:qr_code_app/components/section_label.dart';
-import 'package:qr_code_app/modals/guide.dart';
 import 'package:qr_code_app/modals/social_networks.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
@@ -15,8 +15,8 @@ import 'package:qr_code_app/providers/vcard_settings_provider.dart';
 import 'package:qr_code_app/theme/tokens.dart';
 import 'package:qr_code_app/tools/perf.dart';
 
-/// Settings page exposing language selection, dark-mode toggle, and links
-/// to the help guide and the developer's social networks.
+/// Settings page exposing language selection, dark-mode toggle, coach
+/// tour replay, and links to the developer's social networks.
 class SettingsPage extends StatefulWidget {
   /// Creates the settings page.
   const new({super.key});
@@ -169,6 +169,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                   ),
                                 ),
                                 ListTile(
+                                  key: const Key('settings-read-guide'),
                                   leading: Icon(
                                     Icons.menu_book_outlined,
                                     color: c['navy'],
@@ -181,9 +182,13 @@ class _SettingsPageState extends State<SettingsPage> {
                                     Icons.chevron_right_rounded,
                                     color: c['text-muted'],
                                   ),
-                                  onTap: () => unawaited(
-                                    showGuidePopup(context, fromButton: true),
-                                  ),
+                                  onTap: () {
+                                    CoachTour.requestReplay();
+                                    Navigator.pushReplacementNamed(
+                                      context,
+                                      '/options',
+                                    );
+                                  },
                                 ),
                                 ListTile(
                                   leading: Icon(

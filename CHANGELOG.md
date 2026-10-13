@@ -15,7 +15,8 @@ Versioning follows [SemVer](https://semver.org/) as `pubspec.yaml` `version`.
 - Long-press (> 2 s) multi-select to delete or export checked cards
 - PDF export (1 per page or 2×2)
 - Reciprocal swap after a scan
-- Onboarding + in-app guide
+- Onboarding + interactive Home coach tour (3 steps, skippable)
+- Replay the coach tour from Settings → Read guide
 - Gallery import with ML Kit then ZXing (crop, unwarp, EXIF)
 - Offline-safe vCard QR: skip PHOTO when there is no network
 - French and English UI, light and dark mode
@@ -23,6 +24,7 @@ Versioning follows [SemVer](https://semver.org/) as `pubspec.yaml` `version`.
 
 ### Changed
 
+- First-run markdown dialog replaced by the Home coach tour
 - vCard 3.0 is the default QR payload; 4.0 is a Settings toggle
 - Photos in a QR are a hosted URL, not inline base64
 - Lint: `very_good_analysis` plus no-ternary / pure display-return tests

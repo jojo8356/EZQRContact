@@ -1,5 +1,8 @@
 # Welcome
 
+Three spotlight tips on Home after onboarding. Skip anytime. Replay
+from Settings → Read guide.
+
 ## Home
 
 1. **VCard QR code** — your business card

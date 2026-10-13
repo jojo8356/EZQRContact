@@ -213,6 +213,18 @@
     "s3_title": "Scan. Save. Export.",
     "s3_body": "Find all your contacts in one place."
   },
+  "coach": {
+    "skip": "Skip",
+    "next": "Next",
+    "done": "Got it",
+    "progress": "%s / %s",
+    "vcard_title": "Your card",
+    "vcard_body": "Encode your contact. Anyone can scan it with their camera.",
+    "scan_title": "Scan",
+    "scan_body": "Read a QR in front of you. Nothing is uploaded.",
+    "collection_title": "Collection",
+    "collection_body": "Saved cards live here. Hold one more than 2 seconds to multi-select."
+  },
   "semantics": {
     "qr_image": "QR code of your card. Double-tap to enlarge.",
     "btn_view_card": "View the contact card",

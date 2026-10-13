@@ -224,5 +224,17 @@
     "s2_body": "Personnalisez couleur, logo et layout.",
     "s3_title": "Scannez. Sauvegardez. Exportez.",
     "s3_body": "Retrouvez tous vos contacts en un seul endroit."
+  },
+  "coach": {
+    "skip": "Passer",
+    "next": "Suivant",
+    "done": "Compris",
+    "progress": "%s / %s",
+    "vcard_title": "Votre carte",
+    "vcard_body": "Encodez votre contact. N’importe qui le scanne avec son appareil photo.",
+    "scan_title": "Scanner",
+    "scan_body": "Lisez un QR devant vous. Rien n’est envoyé.",
+    "collection_title": "Collection",
+    "collection_body": "Vos cartes sont ici. Appuyez plus de 2 secondes pour en sélectionner plusieurs."
   }
 }

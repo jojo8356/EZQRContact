@@ -10,7 +10,8 @@ French version: [guide-utilisateur.md](guide-utilisateur.md).
 ## First launch
 
 1. Three onboarding screens explain the idea. Skip or finish.
-2. A short guide may appear once. You can open it later from **Settings → Read guide**.
+2. On **Home**, three spotlight tips (create, scan, collection). Skip anytime.
+   Replay from **Settings → Read guide**.
 3. You land on **Home**.
 
 ## Create your card
@@ -87,7 +88,7 @@ Navbar **History**. Soft-deleted cards. Read-mostly.
 - vCard 4.0
 - Offer my card in return
 - Language (English / Français)
-- Read guide
+- Read guide (replays the Home spotlight tour)
 - Links to the project
 
 ## Privacy

@@ -25,6 +25,7 @@ Future<void> _skipFirstRunGates() async {
   final prefs = await SharedPreferences.getInstance();
   await prefs.setBool('onboarding_done', true);
   await prefs.setInt('guideShown', 1);
+  await prefs.setBool('coach_tour_done', true);
 }
 
 Future<void> _openSettings(WidgetTester tester) async {

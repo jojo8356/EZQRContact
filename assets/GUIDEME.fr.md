@@ -1,5 +1,8 @@
 # Bienvenue
 
+Trois pastilles sur l’Accueil après l’accueil. Passer à tout moment.
+Relance : Réglages → Lire le guide.
+
 ## Accueil
 
 1. **VCard QR code** — ta carte de visite
