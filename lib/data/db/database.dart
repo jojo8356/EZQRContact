@@ -31,13 +31,19 @@ part 'database.g.dart';
 class QRDatabase extends _$QRDatabase {
 
   /// Returns the singleton [QRDatabase] instance backed by sqflite.
-  factory() => _instance;
+  // drift_dev still ships analyzer 3.12, which cannot parse `factory()`.
+  // ignore: unnecessary_type_name_in_constructor
+  factory QRDatabase() => _instance;
 
   /// Test-only constructor. Inject any [QueryExecutor] (typically
   /// `NativeDatabase.memory()` from `package:drift/native.dart`).
-  new forTesting(super.e);
+  // Same analyzer 3.12 constraint as the factory above.
+  // ignore: unnecessary_type_name_in_constructor
+  QRDatabase.forTesting(super.e);
 
-  new _internal()
+  // Same analyzer 3.12 constraint as the factory above.
+  // ignore: unnecessary_type_name_in_constructor
+  QRDatabase._internal()
       : super(
           SqfliteQueryExecutor.inDatabaseFolder(
             path: 'qr_app.db',

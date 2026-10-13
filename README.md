@@ -75,7 +75,7 @@ EZQRContact is different:
 git clone https://github.com/jojo8356/EZQRContact.git
 cd EZQRContact
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 flutter test
 flutter run
 ```

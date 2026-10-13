@@ -14,7 +14,7 @@ README for the full setup. In short:
 git clone https://github.com/jojo8356/EZQRContact.git
 cd EZQRContact
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 pnpm install        # installs commitlint + husky Git hook
 flutter test
 flutter run
@@ -121,7 +121,7 @@ Node's Corepack shim — recommended for Node 20+.
 Generate Drift (`lib/data/db/database.g.dart`) then run tests:
 
 ```bash
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 flutter pub get
 flutter test
 ```
