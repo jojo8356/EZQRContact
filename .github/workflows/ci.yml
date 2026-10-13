@@ -28,9 +28,18 @@ jobs:
 
       - name: Generate code
         run: |
-          dart run build_runner build --delete-conflicting-outputs
+          set -euo pipefail
+          flutter pub run build_runner build --delete-conflicting-outputs | tee build_runner.log
+          echo "::notice::br=$(tail -40 build_runner.log | tr '\n' ' | ')"
+          echo "::notice::cache=$(find .dart_tool -name 'database.g.dart' -o -name 'database.drift.dart' 2>/dev/null | tr '\n' ' | ')"
+          if [[ ! -f lib/data/db/database.g.dart ]]; then
+            cached="$(find .dart_tool -name 'database.g.dart' 2>/dev/null | head -1 || true)"
+            if [[ -n "${cached}" ]]; then
+              cp "${cached}" lib/data/db/database.g.dart
+              echo "::notice::copied=${cached}"
+            fi
+          fi
           echo "::notice::db dir=$(ls -la lib/data/db/ | tr '\n' ' | ')"
-          echo "::notice::g.dart=$(find . -name '*.g.dart' -not -path './.dart_tool/*' | tr '\n' ' | ')"
           test -f lib/data/db/database.g.dart
 
       - name: Analyze
