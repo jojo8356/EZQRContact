@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -9,19 +10,43 @@ import 'package:permission_handler/permission_handler.dart';
 class PhoneContacts {
   static const Set<ContactProperty> _fullProps = ContactProperties.all;
 
-  /// Vérifie et demande la permission contacts
+  /// Test seam. When set, [verifyPermission] returns this instead of
+  /// talking to the OS.
+  @visibleForTesting
+  static Future<bool> Function()? debugVerifyPermission;
+
+  /// OS create/update attempts after a granted permission check.
+  @visibleForTesting
+  static int debugOsWriteAttempts = 0;
+
+  /// Asks for contacts access when missing. Returns false on deny,
+  /// permanent deny, or restricted — never throws.
   static Future<bool> verifyPermission() async {
-    var status = await Permission.contacts.status;
-    if (!status.isGranted) {
-      status = await Permission.contacts.request();
+    final override = debugVerifyPermission;
+    if (override != null) {
+      return override();
     }
-    return status.isGranted;
+    var status = await Permission.contacts.status;
+    if (status.isGranted || status.isLimited) {
+      return true;
+    }
+    if (status.isPermanentlyDenied || status.isRestricted) {
+      return false;
+    }
+    status = await Permission.contacts.request();
+    if (status.isGranted || status.isLimited) {
+      return true;
+    }
+    return false;
   }
 
   /// Récupère tous les contacts avec propriétés
   static Future<List<Contact>> getAll() async {
-    await verifyPermission();
-    return await FlutterContacts.getAll(properties: _fullProps);
+    final granted = await verifyPermission();
+    if (!granted) {
+      return <Contact>[];
+    }
+    return FlutterContacts.getAll(properties: _fullProps);
   }
 
   /// Récupère l'ID d'un contact selon prénom et/ou nom
@@ -159,8 +184,14 @@ class PhoneContacts {
     return null;
   }
 
-  /// Ajoute un contact à l'appareil
-  static Future<void> add(Map<String, dynamic> data) async {
+  /// Ajoute un contact à l'appareil. Returns false when the OS
+  /// permission is missing — the caller must still persist the QR.
+  static Future<bool> add(Map<String, dynamic> data) async {
+    final granted = await verifyPermission();
+    if (!granted) {
+      return false;
+    }
+    debugOsWriteAttempts += 1;
     String s(String key) => (data[key] as String?) ?? '';
     bool has(String key) {
       final v = data[key];
@@ -211,11 +242,21 @@ class PhoneContacts {
       organizations: orgs,
       addresses: addresses,
     );
-    await FlutterContacts.create(newContact);
+    try {
+      await FlutterContacts.create(newContact);
+      return true;
+    } on Object catch (_) {
+      return false;
+    }
   }
 
-  /// Met à jour un contact existant
-  static Future<void> update(Map<String, dynamic> data) async {
+  /// Met à jour un contact existant. No-op (false) without permission.
+  static Future<bool> update(Map<String, dynamic> data) async {
+    final granted = await verifyPermission();
+    if (!granted) {
+      return false;
+    }
+    debugOsWriteAttempts += 1;
     final prenom = data['prenom']?.toString();
     final nom = data['nom']?.toString();
     if ((prenom == null || prenom.isEmpty) && (nom == null || nom.isEmpty)) {
@@ -229,7 +270,9 @@ class PhoneContacts {
       contactId,
       properties: _fullProps,
     );
-    if (contact == null) return;
+    if (contact == null) {
+      return false;
+    }
 
     final phones = <Phone>[];
     final telWork = data['tel_work']?.toString();
@@ -275,7 +318,12 @@ class PhoneContacts {
       phones: phones,
       addresses: addresses,
     );
-    await FlutterContacts.update(updated);
+    try {
+      await FlutterContacts.update(updated);
+      return true;
+    } on Object catch (_) {
+      return false;
+    }
   }
 
   /// Convertit une liste de contacts en liste de Map

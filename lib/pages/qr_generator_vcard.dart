@@ -163,6 +163,40 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
     setState(() => _photoDataUri = uri);
   }
 
+  Future<void> _submit() async {
+    final lang = LangProvider.section('pages.QR.generator');
+    final data = extractValues(controllers);
+    data['photo'] = _photoDataUri ?? '';
+    String? logoBase64;
+    if (_logoBytes != null) {
+      logoBase64 = base64Encode(_logoBytes!);
+    }
+    data['visual_config'] = VisualConfig(
+      primaryColor: _primaryColor,
+      logoBase64: logoBase64,
+      layout: _layout,
+    ).toJson();
+    final vcard = VCard.fromMap(data);
+    final id = await createVCard(data);
+    await saveQrCode(
+      vcard.toVCard(),
+      id,
+      color: _primaryColor,
+      logoBytes: _logoBytes,
+    );
+    await PhoneContacts.add(data);
+    if (!mounted) {
+      return;
+    }
+    showToast(
+      context: context,
+      title: lang['card_ready'] as String,
+      color: Colors.white,
+      icon: Icons.share,
+    );
+    await redirect(context, const Collection());
+  }
+
   Future<ImageSource?> _askPhotoSource() async {
     final lang = LangProvider.section('pages.QR.generator');
     return await showModalBottomSheet<ImageSource>(
@@ -391,37 +425,7 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                 AnimatedSubmitButton(
                   isDark: isDark,
                   label: lang['submit button'] as String,
-                  onPressed: () async {
-                    final data = extractValues(controllers);
-                    data['photo'] = _photoDataUri ?? '';
-                    String? logoBase64;
-                    if (_logoBytes != null) {
-                      logoBase64 = base64Encode(_logoBytes!);
-                    }
-                    data['visual_config'] = VisualConfig(
-                      primaryColor: _primaryColor,
-                      logoBase64: logoBase64,
-                      layout: _layout,
-                    ).toJson();
-                    final vcard = VCard.fromMap(data);
-                    final id = await createVCard(data);
-                    await saveQrCode(
-                      vcard.toVCard(),
-                      id,
-                      color: _primaryColor,
-                      logoBytes: _logoBytes,
-                    );
-                    await PhoneContacts.verifyPermission();
-                    await PhoneContacts.add(data);
-                    if (!context.mounted) return;
-                    showToast(
-                      context: context,
-                      title: lang['card_ready'] as String,
-                      color: Colors.white,
-                      icon: Icons.share,
-                    );
-                    await redirect(context, const Collection());
-                  },
+                  onPressed: _submit,
                 ),
               ],
             ),

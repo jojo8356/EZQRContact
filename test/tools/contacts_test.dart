@@ -170,4 +170,40 @@ void main() {
       expect(result[1]['prenom'], equals('Jean'));
     });
   });
+
+  group('PhoneContacts OS writes respect permission', () {
+    tearDown(() {
+      PhoneContacts.debugVerifyPermission = null;
+      PhoneContacts.debugOsWriteAttempts = 0;
+    });
+
+    test('add is a no-op when contacts are denied', () async {
+      PhoneContacts.debugVerifyPermission = () async => false;
+      PhoneContacts.debugOsWriteAttempts = 0;
+      final ok = await PhoneContacts.add({
+        'prenom': 'Marie',
+        'nom': 'Dupont',
+        'tel_work': '+33612345678',
+      });
+      expect(ok, isFalse);
+      expect(PhoneContacts.debugOsWriteAttempts, 0);
+    });
+
+    test('update is a no-op when contacts are denied', () async {
+      PhoneContacts.debugVerifyPermission = () async => false;
+      PhoneContacts.debugOsWriteAttempts = 0;
+      final ok = await PhoneContacts.update({
+        'prenom': 'Marie',
+        'nom': 'Dupont',
+      });
+      expect(ok, isFalse);
+      expect(PhoneContacts.debugOsWriteAttempts, 0);
+    });
+
+    test('getAll is empty when contacts are denied', () async {
+      PhoneContacts.debugVerifyPermission = () async => false;
+      final all = await PhoneContacts.getAll();
+      expect(all, isEmpty);
+    });
+  });
 }

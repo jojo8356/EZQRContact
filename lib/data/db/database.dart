@@ -573,10 +573,12 @@ Future<void> _genQrAndSave(Map<String, dynamic> data, String path) async {
   await File(path).writeAsBytes(bytes, flush: true);
 }
 
-/// Adds [vcardData] to the device contacts then persists it as a VCard row.
+/// Persists [vcardData] as a VCard row (QR image always), then tries
+/// the device address book. OS write is skipped without permission.
 Future<int> createContact(Map<String, dynamic> vcardData) async {
+  final id = await createVCard(vcardData);
   await PhoneContacts.add(vcardData);
-  return await createVCard(vcardData);
+  return id;
 }
 
 /// Returns true when two VCard maps are equal (excluding the `id` field).
