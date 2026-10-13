@@ -158,10 +158,11 @@ Uint8List embedQrOnScreenPhoto(
 /// Uses ZXing's detector, so the code does not have to fill the frame —
 /// a photo of a card or a screenshot with UI chrome still works.
 String? decodeQrFromBytes(Uint8List bytes) {
-  final image = img.decodeImage(bytes);
+  var image = img.decodeImage(bytes);
   if (image == null) {
     return null;
   }
+  image = img.bakeOrientation(image);
   for (final variant in _decodeVariants(image)) {
     final text = _zxingDecode(variant);
     if (text != null) {
@@ -326,20 +327,36 @@ int _lcg(List<int> state) {
 }
 
 img.Image _prepareForDecode(img.Image image) {
-  if (image.width <= qrDecodeMaxSide && image.height <= qrDecodeMaxSide) {
-    return image;
+  return _scaleToMax(image, qrDecodeMaxSide);
+}
+
+img.Image _scaleToMax(img.Image src, int maxSide) {
+  if (src.width <= maxSide && src.height <= maxSide) {
+    return src;
   }
-  if (image.width >= image.height) {
+  if (src.width >= src.height) {
     return img.copyResize(
-      image,
-      width: qrDecodeMaxSide,
+      src,
+      width: maxSide,
       interpolation: img.Interpolation.average,
     );
   }
   return img.copyResize(
-    image,
-    height: qrDecodeMaxSide,
+    src,
+    height: maxSide,
     interpolation: img.Interpolation.average,
+  );
+}
+
+img.Image _centerCrop(img.Image src) {
+  final x = src.width ~/ 8;
+  final y = src.height ~/ 8;
+  return img.copyCrop(
+    src,
+    x: x,
+    y: y,
+    width: src.width - x * 2,
+    height: src.height - y * 2,
   );
 }
 
@@ -347,7 +364,23 @@ List<img.Image> _decodeVariants(img.Image image) {
   final prepared = _prepareForDecode(image);
   final variants = <img.Image>[prepared];
 
-  // Tiny or rotated codes (ZXing qrcode-6) need more pixels per module.
+  final crop = _centerCrop(prepared);
+  if (crop.width >= 64 && crop.height >= 64) {
+    variants.add(crop);
+  }
+
+  // Average-downsample kills LCD moiré (phone photo of a screen).
+  const sides = <int>[1024, 768, 640, 512, 400];
+  for (final side in sides) {
+    if (prepared.width <= side && prepared.height <= side) {
+      continue;
+    }
+    variants.add(_scaleToMax(prepared, side));
+  }
+  if (crop.width > 640) {
+    variants.add(_scaleToMax(crop, 640));
+  }
+
   if (prepared.width <= 1200 && prepared.height <= 1200) {
     variants.add(
       img.copyResize(
@@ -371,11 +404,13 @@ List<img.Image> _decodeVariants(img.Image image) {
   img.normalize(gray, min: 0, max: 255);
   variants.add(gray);
 
-  // LCD photos: green plane (less RGB subpixel fringe) + blur (moiré).
   variants.add(_greenPlane(prepared));
-  final blurred = img.Image.from(gray);
-  img.gaussianBlur(blurred, radius: 2);
-  variants.add(blurred);
+  final blur2 = img.Image.from(gray);
+  img.gaussianBlur(blur2, radius: 2);
+  variants.add(blur2);
+  final blur3 = img.Image.from(gray);
+  img.gaussianBlur(blur3, radius: 3);
+  variants.add(blur3);
 
   final contrast = img.Image.from(gray);
   img.adjustColor(contrast, contrast: 1.5);
@@ -388,29 +423,6 @@ List<img.Image> _decodeVariants(img.Image image) {
   );
   variants.add(sharp);
 
-  const sides = <int>[1024, 768, 512];
-  for (final side in sides) {
-    if (prepared.width <= side && prepared.height <= side) {
-      continue;
-    }
-    img.Image scaled;
-    if (prepared.width >= prepared.height) {
-      scaled = img.copyResize(
-        prepared,
-        width: side,
-        interpolation: img.Interpolation.average,
-      );
-    } else {
-      scaled = img.copyResize(
-        prepared,
-        height: side,
-        interpolation: img.Interpolation.average,
-      );
-    }
-    variants.add(scaled);
-  }
-
-  // Codes that are not axis-aligned (phone photo of a screen).
   img.Image rotBase = gray;
   if (gray.width > 800 && gray.width >= gray.height) {
     rotBase = img.copyResize(
