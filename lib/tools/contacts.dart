@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
@@ -25,7 +24,7 @@ class PhoneContacts {
   static Future<bool> verifyPermission() async {
     final override = debugVerifyPermission;
     if (override != null) {
-      return override();
+      return await override();
     }
     var status = await Permission.contacts.status;
     if (status.isGranted || status.isLimited) {
@@ -47,7 +46,7 @@ class PhoneContacts {
     if (!granted) {
       return <Contact>[];
     }
-    return FlutterContacts.getAll(properties: _fullProps);
+    return await FlutterContacts.getAll(properties: _fullProps);
   }
 
   /// Récupère l'ID d'un contact selon prénom et/ou nom

@@ -13,7 +13,6 @@ import 'package:qr_code_app/modals/contact_options.dart';
 import 'package:qr_code_app/pages/qr_scanner.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
-import 'package:qr_code_app/theme/tokens.dart';
 import 'package:qr_code_app/tools/import_contact.dart';
 
 /// Main "collection" page. Lists every saved QR/VCard with reactive Drift

@@ -35,7 +35,16 @@ jobs:
         run: |
           set -o pipefail
           if ! flutter analyze | tee analyze.log; then
-            echo "::error::$(tail -80 analyze.log | tr '\n' ' | ')"
+            python3 - <<'PY'
+          from pathlib import Path
+          lines = Path('analyze.log').read_text(errors='replace').splitlines()
+          issues = [ln.strip() for ln in lines if ' • ' in ln]
+          print(f'::notice::{len(issues)} analyze issues')
+          chunk = 8
+          for i in range(0, len(issues), chunk):
+              blob = ' | '.join(issues[i:i+chunk]).replace('\n', ' ')
+              print(f'::error::analyze[{i//chunk}] {blob}')
+          PY
             exit 1
           fi
 

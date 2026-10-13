@@ -56,7 +56,6 @@ Future<void> showImageDialog(BuildContext context, String? path) async {
                 ),
                 child: Material(
                   color: Colors.white,
-                  elevation: 0,
                   shape: RoundedRectangleBorder(borderRadius: radius),
                   clipBehavior: Clip.antiAlias,
                   child: InteractiveViewer(

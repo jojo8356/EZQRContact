@@ -138,7 +138,7 @@ Future<bool> deviceHasInternet() async {
 /// omit PHOTO so the QR still encodes.
 Future<String?> hostPhotoForQr(String photo) async {
   if (debugHostPhotoForQr != null) {
-    return debugHostPhotoForQr!(photo);
+    return await debugHostPhotoForQr!(photo);
   }
   if (photo.startsWith('https://') || photo.startsWith('http://')) {
     return photo;

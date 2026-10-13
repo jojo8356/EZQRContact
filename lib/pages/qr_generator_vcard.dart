@@ -90,8 +90,6 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                   },
                   actionButtons: const ColorPickerActionButtons(
                     dialogActionButtons: false,
-                    okButton: false,
-                    closeButton: false,
                   ),
                 ),
               ),

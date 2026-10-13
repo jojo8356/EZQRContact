@@ -78,7 +78,7 @@ void main() {
       final decoded = img.decodePng(bytes)!;
       expect(decoded.width, decoded.height);
       // Version 1 is 21 modules; quiet zone is 4 modules per side.
-      final minSide = (21 + qrQuietModules * 2) * qrModulePx;
+      const minSide = (21 + qrQuietModules * 2) * qrModulePx;
       expect(decoded.width, greaterThanOrEqualTo(minSide));
     });
 
@@ -207,7 +207,7 @@ void main() {
       final b = img.decodePng(without)!;
       expect(a.width, b.width);
       expect(a.height, b.height);
-      final minSide = (21 + qrQuietModules * 2) * qrModulePx;
+      const minSide = (21 + qrQuietModules * 2) * qrModulePx;
       expect(a.width, greaterThanOrEqualTo(minSide));
     });
 

@@ -168,7 +168,7 @@ Future<Uint8List?> _readPathBytes(
     return null;
   }
   if (readBytes != null) {
-    return readBytes(path);
+    return await readBytes(path);
   }
   try {
     final file = File(path);
@@ -271,9 +271,7 @@ Future<Uint8List> buildCollectionZip({
     ..writeln('EZQRContact export')
     ..writeln('vCards: ${vcards.length}')
     ..writeln('text_qrs: ${simples.length}');
-  for (final name in fileNames) {
-    index.writeln(name);
-  }
+  fileNames.forEach(index.writeln);
   _addZipFile(archive, 'index.txt', utf8.encode(index.toString()));
   final encoded = ZipEncoder().encode(archive);
   return Uint8List.fromList(encoded);

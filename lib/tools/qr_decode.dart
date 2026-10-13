@@ -53,7 +53,6 @@ Uint8List embedQrInNoisyPhoto(
   final stamp = img.copyResize(
     qr,
     width: maxQr,
-    interpolation: img.Interpolation.nearest,
   );
 
   const pad = 28;
@@ -114,7 +113,6 @@ Uint8List embedQrOnScreenPhoto(
   final stamp = img.copyResize(
     qr,
     width: maxQr,
-    interpolation: img.Interpolation.nearest,
   );
 
   const pad = 36;
@@ -140,7 +138,7 @@ Uint8List embedQrOnScreenPhoto(
   _rgbFringe(scene);
   _addGrain(scene, seed, amplitude: 6);
 
-  img.Image shot = scene;
+  var shot = scene;
   if (tiltDeg != 0) {
     shot = img.copyRotate(
       scene,
@@ -174,9 +172,9 @@ String? decodeQrFromBytes(Uint8List bytes) {
 
 /// Reads [path] and decodes a QR.
 ///
-/// Tries platform ML Kit / Apple Vision first ([analyzeImage]), then
-/// falls back to [decodeQrFromBytes] when the plugin is missing or the
-/// photo is not a cropped code.
+/// Tries platform ML Kit / Apple Vision first, then falls back to
+/// [decodeQrFromBytes] when the plugin is missing or the photo is not
+/// a cropped code.
 Future<String?> decodeQrFromFile(String path) async {
   try {
     final controller = AiBarcodeScannerController(autoStart: false);
@@ -392,14 +390,12 @@ Iterable<img.Image> _decodeVariants(img.Image image) sync* {
     yield img.copyResize(
       prepared,
       width: prepared.width * 2,
-      interpolation: img.Interpolation.nearest,
     );
   }
   if (prepared.width <= 600 && prepared.height <= 600) {
     yield img.copyResize(
       prepared,
       width: prepared.width * 3,
-      interpolation: img.Interpolation.nearest,
     );
   }
 
@@ -426,7 +422,7 @@ Iterable<img.Image> _decodeVariants(img.Image image) sync* {
   );
   yield sharp;
 
-  img.Image rotBase = gray;
+  var rotBase = gray;
   if (gray.width > 800 && gray.width >= gray.height) {
     rotBase = img.copyResize(
       gray,
