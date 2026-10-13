@@ -77,6 +77,7 @@ flutter:
 
     - assets/icon/icon.png
     - assets/logo_splash.png
+    - assets/logo_splash_dark.png
     - assets/langs/
   fonts:
     - family: Outfit
@@ -91,11 +92,20 @@ flutter:
 flutter_native_splash:
   color: "#F4EFE6"
   image: assets/logo_splash.png
+  color_dark: "#141210"
+  image_dark: assets/logo_splash_dark.png
   android_12:
     color: "#F4EFE6"
     image: assets/logo_splash.png
+    color_dark: "#141210"
+    image_dark: assets/logo_splash_dark.png
+    icon_background_color: "#F4EFE6"
+    icon_background_color_dark: "#141210"
 
 flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/icon/icon.png"
+  adaptive_icon_background: "#F4EFE6"
+  adaptive_icon_foreground: "assets/icon/icon.png"
+  remove_alpha_ios: true

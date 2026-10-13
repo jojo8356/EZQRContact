@@ -21,6 +21,7 @@ Versioning follows [SemVer](https://semver.org/) as `pubspec.yaml` `version`.
 - Offline-safe vCard QR: skip PHOTO when there is no network
 - French and English UI, light and dark mode
 - User guide under `docs/help/`
+- ENCRE QR mark as app icon and splash (Cuivre → Encre on Papier)
 
 ### Changed
 
