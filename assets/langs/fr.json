@@ -129,7 +129,16 @@
     "collection": {
       "title": "Collection",
       "search_hint": "Chercher par nom…",
-      "filter_all_events": "Tous les événements"
+      "filter_all_events": "Tous les événements",
+      "import_all": "Tout importer",
+      "export_all": "Tout exporter",
+      "import_all_confirm": "Importer %s contacts du téléphone ?",
+      "import_confirm": "Importer",
+      "import_none": "Aucun contact sur ce téléphone",
+      "import_done": "%s contacts importés",
+      "import_skip": "Déjà dans la collection",
+      "export_none": "Aucune carte à exporter",
+      "export_done": "%s contacts exportés"
     }
   },
   "VCard Input": {

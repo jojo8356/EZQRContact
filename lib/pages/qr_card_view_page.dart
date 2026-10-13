@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/active_event_banner.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
+import 'package:qr_code_app/components/collection_sync_bar.dart';
 import 'package:qr_code_app/components/empty_state.dart';
 import 'package:qr_code_app/components/navbar.dart';
 import 'package:qr_code_app/components/qr_card_list.dart';
@@ -12,6 +13,7 @@ import 'package:qr_code_app/pages/qr_scanner.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/theme/tokens.dart';
+import 'package:qr_code_app/tools/import_contact.dart';
 
 /// Main "collection" page. Lists every saved QR/VCard with reactive Drift
 /// stream. Provides debounced name search and optional event filter (4-5/4-6).
@@ -71,6 +73,14 @@ class _CollectionState extends State<Collection> {
       _searchQuery = '';
       _stream = QRDatabase().watchAllItems(eventId: eventId);
     });
+  }
+
+  Future<void> _importAll() async {
+    await importAllDeviceContacts(context);
+  }
+
+  Future<void> _exportAll() async {
+    await exportAllVCards(context);
   }
 
   @override
@@ -133,6 +143,14 @@ class _CollectionState extends State<Collection> {
                     ),
                   ),
                 ),
+              ),
+              CollectionSyncBar(
+                onImport: () {
+                  unawaited(_importAll());
+                },
+                onExport: () {
+                  unawaited(_exportAll());
+                },
               ),
               if (_events.isNotEmpty)
                 SingleChildScrollView(
