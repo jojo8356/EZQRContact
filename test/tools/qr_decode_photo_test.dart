@@ -106,6 +106,9 @@ void main() {
     });
   });
 
+  // Photographed / print-ad samples from ZXing's Java blackbox corpus.
+  // Packed rasters (qrcode-2/1) and tiny rotated finders (qrcode-6)
+  // are Java-detector cases zxing2 0.2.4 does not cover; omitted.
   group('ZXing blackbox fixtures', () {
     final dir = Directory(_fixtureDir);
     final pngs = dir
