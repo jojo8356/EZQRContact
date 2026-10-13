@@ -49,4 +49,25 @@ jobs:
           fi
 
       - name: Test
-        run: flutter test --reporter=compact
+        run: |
+          set -o pipefail
+          if ! flutter test --reporter=compact 2>&1 | tee test.log; then
+            python3 - <<'PY'
+          from pathlib import Path
+          lines = Path('test.log').read_text(errors='replace').splitlines()
+          interesting = []
+          for ln in lines:
+              s = ln.strip()
+              if not s:
+                  continue
+              if any(k in s for k in ('[E]', 'FAILED', 'Failed', 'Expected:', 'Which:', 'Error:', 'Exception', 'Some tests failed')):
+                  interesting.append(s)
+          print(f'::notice::{len(interesting)} test fail lines')
+          chunk = 5
+          for i in range(0, min(len(interesting), 40), chunk):
+              blob = ' | '.join(interesting[i:i+chunk])[:3500]
+              print(f'::error::test[{i//chunk}] {blob}')
+          print('::error::tail ' + ' | '.join(lines[-25:])[:3500])
+          PY
+            exit 1
+          fi
