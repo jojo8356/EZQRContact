@@ -136,7 +136,7 @@ Uint8List embedQrOnScreenPhoto(
     dstY = 8;
   }
   img.compositeImage(scene, card, dstX: dstX, dstY: dstY);
-  _addLcdMoiré(scene);
+  _addLcdMoire(scene);
   _rgbFringe(scene);
   _addGrain(scene, seed, amplitude: 6);
 
