@@ -32,42 +32,7 @@ jobs:
           test -f lib/data/db/database.g.dart
 
       - name: Analyze
-        run: |
-          set -o pipefail
-          if ! flutter analyze | tee analyze.log; then
-            python3 - <<'PY'
-          from pathlib import Path
-          lines = Path('analyze.log').read_text(errors='replace').splitlines()
-          issues = [ln.strip() for ln in lines if ' • ' in ln]
-          print(f'::notice::{len(issues)} analyze issues')
-          chunk = 8
-          for i in range(0, len(issues), chunk):
-              blob = ' | '.join(issues[i:i+chunk]).replace('\n', ' ')
-              print(f'::error::analyze[{i//chunk}] {blob}')
-          PY
-            exit 1
-          fi
+        run: flutter analyze
 
       - name: Test
-        run: |
-          set -o pipefail
-          if ! flutter test --reporter=compact 2>&1 | tee test.log; then
-            python3 - <<'PY'
-          from pathlib import Path
-          lines = Path('test.log').read_text(errors='replace').splitlines()
-          interesting = []
-          for ln in lines:
-              s = ln.strip()
-              if not s:
-                  continue
-              if any(k in s for k in ('[E]', 'FAILED', 'Failed', 'Expected:', 'Which:', 'Error:', 'Exception', 'Some tests failed')):
-                  interesting.append(s)
-          print(f'::notice::{len(interesting)} test fail lines')
-          chunk = 5
-          for i in range(0, min(len(interesting), 40), chunk):
-              blob = ' | '.join(interesting[i:i+chunk])[:3500]
-              print(f'::error::test[{i//chunk}] {blob}')
-          print('::error::tail ' + ' | '.join(lines[-25:])[:3500])
-          PY
-            exit 1
-          fi
+        run: flutter test --reporter=compact
