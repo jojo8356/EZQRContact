@@ -238,6 +238,26 @@ List<img.Image> _decodeVariants(img.Image image) {
   final prepared = _prepareForDecode(image);
   final variants = <img.Image>[prepared];
 
+  // Tiny or rotated codes (ZXing qrcode-6) need more pixels per module.
+  if (prepared.width <= 1200 && prepared.height <= 1200) {
+    variants.add(
+      img.copyResize(
+        prepared,
+        width: prepared.width * 2,
+        interpolation: img.Interpolation.nearest,
+      ),
+    );
+  }
+  if (prepared.width <= 600 && prepared.height <= 600) {
+    variants.add(
+      img.copyResize(
+        prepared,
+        width: prepared.width * 3,
+        interpolation: img.Interpolation.nearest,
+      ),
+    );
+  }
+
   final gray = img.grayscale(img.Image.from(prepared));
   img.normalize(gray, min: 0, max: 255);
   variants.add(gray);
@@ -279,24 +299,45 @@ List<img.Image> _decodeVariants(img.Image image) {
 
 String? _zxingDecode(img.Image image) {
   try {
-    final rgba = image.convert(numChannels: 4);
-    final bytes = Uint8List.fromList(
-      rgba.getBytes(order: img.ChannelOrder.abgr),
-    );
     final source = RGBLuminanceSource(
-      rgba.width,
-      rgba.height,
-      bytes.buffer.asInt32List(),
+      image.width,
+      image.height,
+      _argbPixels(image),
     );
     final hints = DecodeHints()..put(DecodeHintType.tryHarder);
     final text = _zxingRead(source, hints);
     if (text != null) {
       return text;
     }
-    return _zxingRead(source.invert(), hints);
+    final inverted = _zxingRead(source.invert(), hints);
+    if (inverted != null) {
+      return inverted;
+    }
+    // Cropped rasters with almost no quiet zone (ZXing qrcode-2).
+    final pure = DecodeHints()
+      ..put(DecodeHintType.tryHarder)
+      ..put(DecodeHintType.pureBarcode);
+    return _zxingRead(source, pure);
   } on Object catch (_) {
     return null;
   }
+}
+
+/// Packs 0xAARRGGBB ints, matching Java ZXing's RGBLuminanceSource.
+Int32List _argbPixels(img.Image image) {
+  final rgba = image.convert(numChannels: 4);
+  final bytes = rgba.getBytes(order: img.ChannelOrder.rgba);
+  final count = rgba.width * rgba.height;
+  final pixels = Int32List(count);
+  for (var i = 0; i < count; i++) {
+    final o = i * 4;
+    final r = bytes[o];
+    final g = bytes[o + 1];
+    final b = bytes[o + 2];
+    final a = bytes[o + 3];
+    pixels[i] = (a << 24) | (r << 16) | (g << 8) | b;
+  }
+  return pixels;
 }
 
 String? _zxingRead(LuminanceSource source, DecodeHints hints) {
