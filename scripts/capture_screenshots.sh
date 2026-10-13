@@ -9,8 +9,11 @@
 #   docs/screenshots/collection.png
 #   docs/screenshots/collection-dark.png
 #
-# Driven by integration_test/screenshots_test.dart via flutter drive.
-# Prefer a clean emulator so Collection does not show personal contacts.
+# Before driving the UI, the script inserts demo rows if they are missing:
+#   Marie Dupont, Jean Martin, https://github.com/jojo8356/EZQRContact
+# On Android this is done with adb + sqlite so Collection is already
+# populated when the first frame is captured. The Dart test inserts the
+# same rows as a fallback (iOS, or if adb seed could not run).
 #
 # Usage:
 #   ./scripts/capture_screenshots.sh                 # first Android/iOS device
@@ -22,6 +25,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 OUT_DIR="$ROOT/docs/screenshots"
+PACKAGE="com.ezqrcontact.ezqrcontact"
+GITHUB_QR="https://github.com/jojo8356/EZQRContact"
 EXPECTED=(
   home.png
   home-dark.png
@@ -82,6 +87,212 @@ if [ -n "$SDK" ] && [ -d "$SDK/platforms/android-37.0" ] \
   exit 1
 fi
 
+is_android() {
+  adb -s "$DEVICE" get-state >/dev/null 2>&1
+}
+
+app_installed() {
+  adb -s "$DEVICE" shell pm path "$PACKAGE" >/dev/null 2>&1
+}
+
+db_exists() {
+  adb -s "$DEVICE" shell run-as "$PACKAGE" ls databases/qr_app.db >/dev/null 2>&1
+}
+
+ensure_app_and_db() {
+  if ! app_installed; then
+    echo "[step] installing debug app so the demo DB can be seeded"
+    flutter install --no-pub -d "$DEVICE"
+  fi
+  if db_exists; then
+    return 0
+  fi
+  echo "[step] launching the app once to create qr_app.db"
+  adb -s "$DEVICE" shell am force-stop "$PACKAGE" >/dev/null 2>&1 || true
+  adb -s "$DEVICE" shell monkey -p "$PACKAGE" \
+    -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1 || true
+  local i
+  for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
+    if db_exists; then
+      sleep 1
+      adb -s "$DEVICE" shell am force-stop "$PACKAGE" >/dev/null 2>&1 || true
+      return 0
+    fi
+    sleep 1
+  done
+  adb -s "$DEVICE" shell am force-stop "$PACKAGE" >/dev/null 2>&1 || true
+  echo "[warn] qr_app.db did not appear"
+  return 1
+}
+
+pull_db() {
+  local dest="$1"
+  adb -s "$DEVICE" exec-out run-as "$PACKAGE" cat databases/qr_app.db \
+    > "$dest"
+  adb -s "$DEVICE" exec-out run-as "$PACKAGE" cat databases/qr_app.db-wal \
+    > "${dest}-wal" 2>/dev/null || true
+  adb -s "$DEVICE" exec-out run-as "$PACKAGE" cat databases/qr_app.db-shm \
+    > "${dest}-shm" 2>/dev/null || true
+  if [ ! -s "${dest}-wal" ]; then
+    rm -f "${dest}-wal"
+  fi
+  if [ ! -s "${dest}-shm" ]; then
+    rm -f "${dest}-shm"
+  fi
+}
+
+push_db() {
+  local src="$1"
+  adb -s "$DEVICE" push "$src" /data/local/tmp/ezqr_seed.db >/dev/null
+  if adb -s "$DEVICE" shell run-as "$PACKAGE" \
+      cp /data/local/tmp/ezqr_seed.db databases/qr_app.db >/dev/null 2>&1; then
+    adb -s "$DEVICE" shell run-as "$PACKAGE" \
+      rm -f databases/qr_app.db-wal databases/qr_app.db-shm >/dev/null 2>&1 || true
+    return 0
+  fi
+  python3 - "$DEVICE" "$PACKAGE" "$src" <<'PY'
+import subprocess, sys
+
+device, package, path = sys.argv[1], sys.argv[2], sys.argv[3]
+data = open(path, "rb").read()
+cmd = [
+    "adb", "-s", device, "shell", "run-as", package,
+    "sh", "-c", "cat > databases/qr_app.db",
+]
+raise SystemExit(subprocess.run(cmd, input=data).returncode)
+PY
+}
+
+seed_sqlite() {
+  local db="$1"
+  python3 - "$db" "$GITHUB_QR" <<'PY'
+import sqlite3
+import sys
+
+path = sys.argv[1]
+github = sys.argv[2]
+raw = open(path, "rb").read(16)
+if not raw.startswith(b"SQLite format 3"):
+    print("[error] pulled file is not a SQLite database")
+    raise SystemExit(2)
+
+con = sqlite3.connect(path)
+con.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+tables = {
+    row[0]
+    for row in con.execute("SELECT name FROM sqlite_master WHERE type='table'")
+}
+if "VCard" not in tables or "SimpleQR" not in tables:
+    print("[error] VCard / SimpleQR tables missing")
+    raise SystemExit(2)
+
+added = 0
+
+def missing_vcard(prenom, nom):
+    n = con.execute(
+        "SELECT COUNT(*) FROM VCard WHERE prenom = ? AND nom = ? AND deleted = 0",
+        (prenom, nom),
+    ).fetchone()[0]
+    return n == 0
+
+if missing_vcard("Marie", "Dupont"):
+    con.execute(
+        """
+        INSERT INTO VCard (
+          nom, prenom, nom2, prefixe, suffixe, org, job, photo,
+          tel_work, tel_home, adr_work, adr_home, email, rev,
+          clone, deleted
+        ) VALUES (
+          'Dupont', 'Marie', '', '', '', 'Demo Corp',
+          'Sales Representative', '',
+          '+33 6 12 34 56 78', '', '1 rue Demo, 75001 Paris', '',
+          'marie@example.com', '20260510T194800Z',
+          0, 0
+        )
+        """
+    )
+    print("[seed] inserted Marie Dupont")
+    added += 1
+else:
+    print("[seed] Marie Dupont already present")
+
+if missing_vcard("Jean", "Martin"):
+    con.execute(
+        """
+        INSERT INTO VCard (
+          nom, prenom, nom2, prefixe, suffixe, org, job, photo,
+          tel_work, tel_home, adr_work, adr_home, email, rev,
+          clone, deleted
+        ) VALUES (
+          'Martin', 'Jean', '', '', '', 'TechCo', 'CTO', '',
+          '+33 7 98 76 54 32', '', '', '',
+          'jean.martin@example.com', '20260510T194800Z',
+          0, 0
+        )
+        """
+    )
+    print("[seed] inserted Jean Martin")
+    added += 1
+else:
+    print("[seed] Jean Martin already present")
+
+n_simple = con.execute(
+    "SELECT COUNT(*) FROM SimpleQR WHERE text = ? AND deleted = 0",
+    (github,),
+).fetchone()[0]
+if n_simple == 0:
+    con.execute(
+        "INSERT INTO SimpleQR (text, deleted) VALUES (?, 0)",
+        (github,),
+    )
+    print("[seed] inserted GitHub simple QR")
+    added += 1
+else:
+    print("[seed] GitHub simple QR already present")
+
+con.commit()
+con.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+con.close()
+print("[ok] demo seed done (%s new row(s))" % added)
+PY
+}
+
+seed_android_demo() {
+  echo "[step] seeding demo contacts on $DEVICE"
+  if ! command -v adb >/dev/null 2>&1; then
+    echo "[warn] adb not in PATH"
+    return 1
+  fi
+  if ! is_android; then
+    echo "[info] not Android; Dart test will insert demo rows"
+    return 1
+  fi
+  if ! ensure_app_and_db; then
+    return 1
+  fi
+  adb -s "$DEVICE" shell am force-stop "$PACKAGE" >/dev/null 2>&1 || true
+  local tmp
+  tmp="$(mktemp -d)"
+  local db="$tmp/qr_app.db"
+  if ! pull_db "$db"; then
+    echo "[warn] could not pull qr_app.db"
+    rm -rf "$tmp"
+    return 1
+  fi
+  if ! seed_sqlite "$db"; then
+    rm -rf "$tmp"
+    return 1
+  fi
+  if ! push_db "$db"; then
+    echo "[warn] could not push seeded qr_app.db"
+    rm -rf "$tmp"
+    return 1
+  fi
+  rm -rf "$tmp"
+  echo "[ok] device DB now has Marie Dupont, Jean Martin, GitHub QR"
+  return 0
+}
+
 cleanup() {
   local sig=$?
   pkill -f "flutter_tools.snapshot drive" 2>/dev/null || true
@@ -98,6 +309,11 @@ mkdir -p "$OUT_DIR"
 echo "Capturing README screenshots on: $DEVICE"
 echo "Output: $OUT_DIR"
 echo
+
+if ! seed_android_demo; then
+  echo "[info] adb seed skipped; integration_test will insert the demo rows"
+  echo
+fi
 
 DRIVE_EXIT=0
 if command -v timeout >/dev/null 2>&1; then
