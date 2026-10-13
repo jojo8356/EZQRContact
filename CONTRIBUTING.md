@@ -118,7 +118,7 @@ Node's Corepack shim — recommended for Node 20+.
 
 ## How to run tests
 
-Generate Drift (`lib/data/db/database.g.dart` is gitignored) then run tests:
+Generate Drift (`lib/data/db/database.g.dart`) then run tests:
 
 ```bash
 dart run build_runner build --delete-conflicting-outputs

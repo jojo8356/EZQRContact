@@ -29,6 +29,8 @@ jobs:
       - name: Generate code
         run: |
           dart run build_runner build --delete-conflicting-outputs
+          echo "::notice::db dir=$(ls -la lib/data/db/ | tr '\n' ' | ')"
+          echo "::notice::g.dart=$(find . -name '*.g.dart' -not -path './.dart_tool/*' | tr '\n' ' | ')"
           test -f lib/data/db/database.g.dart
 
       - name: Analyze

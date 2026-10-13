@@ -5,6 +5,8 @@ analyzer:
     # Do not exclude **/*.g.dart: the analyzer then treats
     # `part 'database.g.dart'` as missing (`uri_has_not_been_generated`)
     # and every Drift getter (vCards, events, …) looks undefined.
+    # Also do not gitignore that file — build_runner will not copy a
+    # gitignored combining_builder output into lib/.
     - build/**
     - android/**
     - ios/**
