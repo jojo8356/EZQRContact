@@ -1,23 +1,43 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qr_code_app/tools/contacts.dart';
 
+/// 1×1 PNG. Used as a device-contact photo in mapping tests.
+const _tinyPng = <int>[
+  0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D,
+  0x49, 0x48, 0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
+  0x08, 0x02, 0x00, 0x00, 0x00, 0x90, 0x77, 0x53, 0xDE, 0x00, 0x00, 0x00,
+  0x0C, 0x49, 0x44, 0x41, 0x54, 0x08, 0xD7, 0x63, 0xF8, 0xCF, 0xC0, 0x00,
+  0x00, 0x00, 0x03, 0x00, 0x01, 0x00, 0x05, 0xFE, 0xD4, 0xEF, 0x00, 0x00,
+  0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
+];
+
 /// Builds a fully populated [Contact] fixture used across several tests.
 Contact _buildFullContact() {
-  return Contact()
-    ..id = 'test-id'
-    ..name.first = 'Marie'
-    ..name.last = 'Dupont'
-    ..organizations = [Organization(company: 'Acme', title: 'CTO')]
-    ..phones = [
-      Phone('+33612345678', label: PhoneLabel.work),
-      Phone('+33123456789', label: PhoneLabel.home),
-    ]
-    ..emails = [Email('marie@acme.fr')]
-    ..addresses = [
-      Address('12 rue de la Paix', label: AddressLabel.work),
-      Address('5 villa des Lilas'),
-    ];
+  return const Contact(
+    id: 'test-id',
+    name: Name(first: 'Marie', last: 'Dupont'),
+    organizations: [Organization(name: 'Acme', jobTitle: 'CTO')],
+    phones: [
+      Phone(number: '+33612345678', label: Label(PhoneLabel.work)),
+      Phone(number: '+33123456789', label: Label(PhoneLabel.home)),
+    ],
+    emails: [Email(address: 'marie@acme.fr')],
+    addresses: [
+      Address(
+        street: '12 rue de la Paix',
+        formatted: '12 rue de la Paix',
+        label: Label(AddressLabel.work),
+      ),
+      Address(
+        street: '5 villa des Lilas',
+        formatted: '5 villa des Lilas',
+      ),
+    ],
+  );
 }
 
 void main() {
@@ -61,34 +81,56 @@ void main() {
     });
 
     test('contact with no phones produces empty tel_work and tel_home', () {
-      final c = Contact()
-        ..name.first = 'Test'
-        ..phones = [];
+      const c = Contact(name: Name(first: 'Test'));
       final map = PhoneContacts.contactToMap(c);
       expect(map['tel_work'], equals(''));
       expect(map['tel_home'], equals(''));
     });
 
     test('contact with no organizations produces empty org and job', () {
-      final c = Contact()
-        ..name.first = 'Test'
-        ..organizations = [];
+      const c = Contact(name: Name(first: 'Test'));
       final map = PhoneContacts.contactToMap(c);
       expect(map['org'], equals(''));
       expect(map['job'], equals(''));
     });
 
     test('contact with no emails produces empty email', () {
-      final c = Contact()
-        ..name.first = 'Test'
-        ..emails = [];
+      const c = Contact(name: Name(first: 'Test'));
       final map = PhoneContacts.contactToMap(c);
       expect(map['email'], equals(''));
     });
 
-    test('photo is always empty string', () {
+    test('photo is empty when the device contact has none', () {
       final map = PhoneContacts.contactToMap(_buildFullContact());
       expect(map['photo'], equals(''));
+    });
+
+    test('photo becomes a data URI from fullSize bytes', () {
+      final png = Uint8List.fromList(_tinyPng);
+      final contact = Contact(
+        id: 'with-photo',
+        name: const Name(first: 'Marie', last: 'Dupont'),
+        photo: Photo(fullSize: png),
+      );
+      final map = PhoneContacts.contactToMap(contact);
+      final photo = map['photo'] as String;
+      expect(photo.startsWith('data:image/png;base64,'), isTrue);
+      final b64 = photo.substring('data:image/png;base64,'.length);
+      expect(base64Decode(b64), png);
+    });
+
+    test('photo falls back to thumbnail when fullSize is missing', () {
+      final png = Uint8List.fromList(_tinyPng);
+      final contact = Contact(
+        id: 'thumb',
+        name: const Name(first: 'Marie', last: 'Dupont'),
+        photo: Photo(thumbnail: png),
+      );
+      final map = PhoneContacts.contactToMap(contact);
+      expect(
+        (map['photo'] as String).startsWith('data:image/png;base64,'),
+        isTrue,
+      );
     });
   });
 
@@ -159,14 +201,50 @@ void main() {
     });
 
     test('two contacts produces list of two maps', () {
-      final c2 = Contact()
-        ..id = 'id2'
-        ..name.first = 'Jean'
-        ..name.last = 'Martin';
+      const c2 = Contact(
+        id: 'id2',
+        name: Name(first: 'Jean', last: 'Martin'),
+      );
       final result = PhoneContacts.toMapList([_buildFullContact(), c2]);
       expect(result.length, equals(2));
       expect(result[0]['prenom'], equals('Marie'));
       expect(result[1]['prenom'], equals('Jean'));
+    });
+  });
+
+  group('PhoneContacts OS writes respect permission', () {
+    tearDown(() {
+      PhoneContacts.debugVerifyPermission = null;
+      PhoneContacts.debugOsWriteAttempts = 0;
+    });
+
+    test('add is a no-op when contacts are denied', () async {
+      PhoneContacts.debugVerifyPermission = () async => false;
+      PhoneContacts.debugOsWriteAttempts = 0;
+      final ok = await PhoneContacts.add({
+        'prenom': 'Marie',
+        'nom': 'Dupont',
+        'tel_work': '+33612345678',
+      });
+      expect(ok, isFalse);
+      expect(PhoneContacts.debugOsWriteAttempts, 0);
+    });
+
+    test('update is a no-op when contacts are denied', () async {
+      PhoneContacts.debugVerifyPermission = () async => false;
+      PhoneContacts.debugOsWriteAttempts = 0;
+      final ok = await PhoneContacts.update({
+        'prenom': 'Marie',
+        'nom': 'Dupont',
+      });
+      expect(ok, isFalse);
+      expect(PhoneContacts.debugOsWriteAttempts, 0);
+    });
+
+    test('getAll is empty when contacts are denied', () async {
+      PhoneContacts.debugVerifyPermission = () async => false;
+      final all = await PhoneContacts.getAll();
+      expect(all, isEmpty);
     });
   });
 }

@@ -22,14 +22,14 @@ In `pubspec.yaml`, update `version`:
 version: X.Y.Z+BUILD
 ```
 
-### 2. Update changelog (optional)
+### 2. Update changelog
 
-Add a `## vX.Y.Z` section to `CHANGELOG.md` if present.
+Add a `## [X.Y.Z]` section at the top of [CHANGELOG.md](CHANGELOG.md).
 
 ### 3. Commit the bump
 
 ```bash
-git add pubspec.yaml
+git add pubspec.yaml CHANGELOG.md
 git commit -m "chore(release): vX.Y.Z"
 ```
 

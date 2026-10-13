@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
+import 'package:qr_code_app/theme/app_theme.dart';
+import 'package:qr_code_app/theme/tokens.dart';
 
 /// Shows a fullscreen interactive image viewer for the file at [path].
 /// No-op when [path] is null/empty or the underlying file is missing.
@@ -22,7 +24,7 @@ Future<void> showImageDialog(BuildContext context, String? path) async {
     barrierColor: Colors.black54,
     builder: (context) => Dialog(
       backgroundColor: Colors.transparent,
-      insetPadding: const EdgeInsets.all(10),
+      insetPadding: const EdgeInsets.all(AppTokens.s5),
       child: GestureDetector(
         onTap: () => Navigator.of(context).pop(),
         child: FutureBuilder<bool>(
@@ -34,25 +36,35 @@ Future<void> showImageDialog(BuildContext context, String? path) async {
             if (snapshot.data != true) {
               return const Center(
                 child: Padding(
-                  padding: EdgeInsets.all(24),
+                  padding: EdgeInsets.all(AppTokens.s6),
                   child: Icon(Icons.broken_image, size: 64),
                 ),
               );
             }
 
-            final semLabel = LangProvider.section('semantics')['qr_image']
-                as String?;
-            return InteractiveViewer(
-              child: Semantics(
-                label: semLabel,
-                image: true,
-                child: Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: currentColors['bg'],
-                    borderRadius: BorderRadius.circular(40),
+            final semLabel =
+                LangProvider.section('semantics')['qr_image'] as String?;
+            final radius = BorderRadius.circular(AppTokens.rXl);
+            final c = currentColors;
+            return Semantics(
+              label: semLabel,
+              image: true,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: radius,
+                  boxShadow: paperShadow(c['shadow']!),
+                ),
+                child: Material(
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: radius),
+                  clipBehavior: Clip.antiAlias,
+                  child: InteractiveViewer(
+                    child: Image.file(
+                      File(path),
+                      fit: BoxFit.contain,
+                      filterQuality: FilterQuality.none,
+                    ),
                   ),
-                  child: Image.file(File(path), fit: BoxFit.contain),
                 ),
               ),
             );

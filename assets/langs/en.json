@@ -2,13 +2,26 @@
   "close": "Close",
   "title": "Easy QR Contact App",
   "QR Not Found": "No QR code found",
+  "home": {
+    "tagline": "Exchange. No cloud.",
+    "tagline_sub": "Your cards stay on this phone.",
+    "section_more": "Tools",
+    "vcard_sub": "Create your business card",
+    "scanner_sub": "Capture a contact in one scan",
+    "simple_sub": "Text, URL, identifier",
+    "import_sub": "From a screenshot",
+    "import_contact_sub": "From the phone address book",
+    "scanner_hint": "Frame the QR. Nothing is uploaded.",
+    "import_hint": "Pick a screenshot that contains a QR.",
+    "empty_collection": "Scan your first card.",
+    "empty_history": "Deleted cards will show up here."
+  },
   "menu": {
     "simple": "Simple QR code",
     "vcard": "VCard QR code",
     "scanner": "Scan a QR code",
     "import": "Import a QR code",
-    "import_contact": "Import contact",
-    "events": "Events"
+    "import_contact": "Import contact"
   },
   "options": {
     "guide": "Read guide",
@@ -80,6 +93,7 @@
         "title": "QR code Scanner",
         "invalid qr": "Invalid QR code",
         "scan": "Scan QR Code",
+        "flashed": "QR code scanned",
         "saved": "Contact saved",
         "result_title": "Scanned contact",
         "add_to_contacts": "Add to phone contacts",
@@ -112,7 +126,21 @@
     "collection": {
       "title": "Collection",
       "search_hint": "Search by name…",
-      "filter_all_events": "All events"
+      "import_all": "Import all",
+      "export_all": "Export all",
+      "import_all_confirm": "Import %s contacts from this phone?",
+      "import_confirm": "Import",
+      "import_none": "No contacts on this phone",
+      "import_done": "Imported %s contacts",
+      "import_skip": "Already in the collection",
+      "export_none": "No QR codes to export",
+      "export_done": "Exported %s QR codes",
+      "select_count": "%s selected",
+      "select_all": "Select all",
+      "select_delete": "Delete",
+      "select_export": "Export",
+      "select_delete_confirm": "Delete %s QR codes?",
+      "select_deleted": "Deleted %s QR codes"
     }
   },
   "VCard Input": {
@@ -142,35 +170,6 @@
     "contacts_denied_body": "Permission was denied. Please enable contacts access in the app Settings.",
     "open_settings": "Open Settings"
   },
-  "pdf_export": {
-    "title": "Export PDF",
-    "select_mode": "Select",
-    "cancel_select": "Cancel",
-    "selected_count": "%s selected",
-    "export_button": "Export PDF (%s)",
-    "layout_1pp": "1 per page",
-    "layout_2x2": "2×2 per page",
-    "generate": "Generate PDF",
-    "generating": "Generating…",
-    "no_selection": "Select at least one contact",
-    "no_contacts": "No contacts to export",
-    "captured_on": "Captured on %s"
-  },
-  "events": {
-    "title": "Events",
-    "new_event": "New event",
-    "name_hint": "Event name",
-    "start_date": "Start date (optional)",
-    "end_date": "End date (optional)",
-    "create": "Create",
-    "cancel": "Cancel",
-    "activate": "Activate",
-    "deactivate": "Deactivate",
-    "active_badge": "Active",
-    "no_events": "No events created",
-    "banner_prefix": "Active event:",
-    "contacts_count": "%s contact(s)"
-  },
   "onboarding": {
     "skip": "Skip",
     "create_card": "Create my card",
@@ -180,6 +179,18 @@
     "s2_body": "Customize color, logo and layout.",
     "s3_title": "Scan. Save. Export.",
     "s3_body": "Find all your contacts in one place."
+  },
+  "coach": {
+    "skip": "Skip",
+    "next": "Next",
+    "done": "Got it",
+    "progress": "%s / %s",
+    "vcard_title": "Your card",
+    "vcard_body": "Encode your contact. Anyone can scan it with their camera.",
+    "scan_title": "Scan",
+    "scan_body": "Read a QR in front of you. Nothing is uploaded.",
+    "collection_title": "Collection",
+    "collection_body": "Saved cards live here. Hold one more than 2 seconds to multi-select."
   },
   "semantics": {
     "qr_image": "QR code of your card. Double-tap to enlarge.",

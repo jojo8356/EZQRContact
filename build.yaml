@@ -1,0 +1,9 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        enabled: true
+        generate_for:
+          include:
+            - lib/data/db/database.dart
+            - lib/data/db/tables/*.dart

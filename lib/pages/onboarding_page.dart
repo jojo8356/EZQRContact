@@ -1,9 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:qr_code_app/components/app_button.dart';
+import 'package:qr_code_app/components/qr_mark.dart';
 import 'package:qr_code_app/pages/qr_generator_vcard.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
+import 'package:qr_code_app/theme/tokens.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// 3-screen horizontal onboarding shown on the very first app launch.
@@ -11,7 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// shows again.
 class OnboardingPage extends StatefulWidget {
   /// Creates the onboarding page.
-  const OnboardingPage({super.key});
+  const new({super.key});
 
   @override
   State<OnboardingPage> createState() => _OnboardingPageState();
@@ -47,20 +50,32 @@ class _OnboardingPageState extends State<OnboardingPage> {
   Widget build(BuildContext context) {
     final lang = LangProvider.getMap('onboarding');
     final isLast = _page == 2;
+    final c = currentColors;
 
     return Scaffold(
-      backgroundColor: currentColors['bg'],
+      backgroundColor: c['bg'],
       body: SafeArea(
         child: Column(
           children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: TextButton(
-                onPressed: _finish,
-                child: Text(
-                  (lang['skip'] as String?) ?? 'Passer',
-                  style: TextStyle(color: currentColors['text']),
-                ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppTokens.s5,
+                AppTokens.s2,
+                AppTokens.s2,
+                0,
+              ),
+              child: Row(
+                children: [
+                  const QrMark(size: 20),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: _finish,
+                    child: Text(
+                      (lang['skip'] as String?) ?? 'Passer',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                ],
               ),
             ),
             Expanded(
@@ -93,9 +108,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              padding: const EdgeInsets.fromLTRB(
+                AppTokens.s6,
+                AppTokens.s4,
+                AppTokens.s6,
+                AppTokens.s6,
+              ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: List.generate(
@@ -103,26 +122,31 @@ class _OnboardingPageState extends State<OnboardingPage> {
                       (i) => _Dot(active: i == _page),
                     ),
                   ),
+                  const Spacer(),
                   if (isLast)
-                    ElevatedButton(
+                    AppButton.primary(
+                      expanded: false,
+                      label: (lang['create_card'] as String?) ??
+                          'Créer ma carte',
                       onPressed: _goToCreate,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: currentColors['button-color'],
-                        foregroundColor: Colors.white,
-                      ),
-                      child: Text(
-                        (lang['create_card'] as String?) ?? 'Créer ma carte',
-                      ),
                     )
                   else
-                    IconButton(
-                      icon: Icon(
-                        Icons.arrow_forward_rounded,
-                        color: currentColors['text'],
-                      ),
-                      onPressed: () => _controller.nextPage(
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeInOut,
+                    Material(
+                      color: c['button-color'],
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => _controller.nextPage(
+                          duration: AppTokens.tPage,
+                          curve: Curves.easeInOut,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(14),
+                          child: Icon(
+                            Icons.arrow_forward_rounded,
+                            color: c['on-button'],
+                          ),
+                        ),
                       ),
                     ),
                 ],
@@ -136,7 +160,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
 }
 
 class _OnboardingScreen extends StatelessWidget {
-  const _OnboardingScreen({
+  const new({
     required this.icon,
     required this.title,
     required this.body,
@@ -148,29 +172,33 @@ class _OnboardingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = currentColors;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: const EdgeInsets.symmetric(horizontal: AppTokens.s8),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 96, color: currentColors['button-color']),
-          const SizedBox(height: 32),
+          Container(
+            width: 88,
+            height: 88,
+            decoration: BoxDecoration(
+              color: c['surface-raised'],
+              borderRadius: BorderRadius.circular(AppTokens.rLg),
+            ),
+            child: Icon(icon, size: 44, color: c['button-color']),
+          ),
+          const SizedBox(height: AppTokens.s8),
           Text(
             title,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: currentColors['text'],
-            ),
+            style: Theme.of(context).textTheme.displayLarge,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTokens.s4),
           Text(
             body,
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              color: currentColors['text-muted'],
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: c['text-muted'],
             ),
           ),
         ],
@@ -180,21 +208,26 @@ class _OnboardingScreen extends StatelessWidget {
 }
 
 class _Dot extends StatelessWidget {
-  const _Dot({required this.active});
+  const new({required this.active});
 
   final bool active;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      width: active ? 12 : 8,
-      height: 8,
+    var width = 6.0;
+    var color = currentColors['surface-raised'];
+    if (active) {
+      width = 16;
+      color = currentColors['button-color'];
+    }
+    return AnimatedContainer(
+      duration: AppTokens.tFast,
+      margin: const EdgeInsets.only(right: AppTokens.s1),
+      width: width,
+      height: 6,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4),
-        color: active
-            ? currentColors['button-color']
-            : currentColors['text-muted'],
+        borderRadius: BorderRadius.circular(3),
+        color: color,
       ),
     );
   }

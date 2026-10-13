@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:qr_code_app/providers/vcard_settings_provider.dart';
+import 'package:qr_code_app/tools/photo.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
 /// CRLF line separator imposed by RFC 2426 (vCard 3.0) and RFC 6350
@@ -18,7 +19,7 @@ class VCard {
   /// [rev] auto-generates a UTC ISO8601 revision marker if omitted.
   /// [visualConfigJson] is the raw JSON from the `visual_config` DB column;
   /// when non-null it is encoded into `X-EZQR-VISUAL` on serialisation.
-  VCard({
+  new({
     this.nom = '',
     this.prenom = '',
     this.nom2 = '',
@@ -38,7 +39,7 @@ class VCard {
 
   /// Builds a VCard from a legacy `Map<String, dynamic>` payload, where
   /// missing or null values fall back to empty strings.
-  factory VCard.fromMap(Map<String, dynamic> data) => VCard(
+  factory fromMap(Map<String, dynamic> data) => VCard(
     nom: (data['nom'] as String?) ?? '',
     prenom: (data['prenom'] as String?) ?? '',
     nom2: (data['nom2'] as String?) ?? '',
@@ -64,7 +65,7 @@ class VCard {
   /// Only the subset of properties used by EZQRContact (N, FN, ORG,
   /// TITLE, PHOTO, TEL, ADR, EMAIL, REV) is recognized; everything else
   /// is ignored.
-  factory VCard.parse(String vcard) {
+  factory parse(String vcard) {
     final data = <String, String>{
       'nom': '',
       'prenom': '',
@@ -111,11 +112,11 @@ class VCard {
 
       if (name == 'N') {
         final parts = value.split(';');
-        data['nom'] = parts.isNotEmpty ? parts[0] : '';
-        data['prenom'] = parts.length > 1 ? parts[1] : '';
-        data['nom2'] = parts.length > 2 ? parts[2] : '';
-        data['prefixe'] = parts.length > 3 ? parts[3] : '';
-        data['suffixe'] = parts.length > 4 ? parts[4] : '';
+        data['nom'] = _partAt(parts, 0);
+        data['prenom'] = _partAt(parts, 1);
+        data['nom2'] = _partAt(parts, 2);
+        data['prefixe'] = _partAt(parts, 3);
+        data['suffixe'] = _partAt(parts, 4);
       } else if (name == 'ORG') {
         // ORG components are `;`-separated (org-name;unit;unit). We keep
         // the full string — the model is single-field.
@@ -304,12 +305,48 @@ class VCard {
   ///
   /// Both versions enforce CRLF (`\r\n`) between content lines and RFC
   /// 2425/6350 line folding (75-octet limit, continuation with `\r\n `).
-  String toVCard() {
-    if (VCardSettingsProvider.useVCard4) return _toVCard4();
-    return _toVCard3();
+  ///
+  /// Inline `data:image` PHOTO is included when [includeInlinePhoto] is
+  /// true (default, for round-trip / raw view). QR encoding must pass
+  /// false — a headshot base64 blows past version 40. Prefer [toQrPayload].
+  String toVCard({bool includeInlinePhoto = true}) {
+    if (VCardSettingsProvider.useVCard4) {
+      return _toVCard4(includeInlinePhoto: includeInlinePhoto);
+    }
+    return _toVCard3(includeInlinePhoto: includeInlinePhoto);
   }
 
-  String _toVCard3() {
+  /// vCard text sized for a printable QR. Never embeds `data:image`
+  /// PHOTO. Offline, PHOTO is dropped and the QR is contact text only.
+  /// Online, an inline photo is uploaded and replaced by
+  /// `PHOTO;VALUE=URI:https://…` so a scan can download the image.
+  /// Upload failure also omits PHOTO so the QR still encodes.
+  Future<String> toQrPayload({bool hostPhoto = true}) async {
+    final original = photo;
+    try {
+      final online = await deviceHasInternet();
+      if (!online) {
+        photo = '';
+        return toVCard(includeInlinePhoto: false);
+      }
+      if (original.startsWith('data:image/')) {
+        String? url;
+        if (hostPhoto) {
+          url = await hostPhotoForQr(original);
+        }
+        if (url != null && url.isNotEmpty) {
+          photo = url;
+        } else {
+          photo = '';
+        }
+      }
+      return toVCard(includeInlinePhoto: false);
+    } finally {
+      photo = original;
+    }
+  }
+
+  String _toVCard3({bool includeInlinePhoto = true}) {
     // N and FN are REQUIRED in vCard 3.0 (RFC 2426 §3.1) — emit even
     // when fully empty; the parser side handles it.
     final n = 'N:${clean(nom)};${clean(prenom)};${clean(nom2)};'
@@ -323,7 +360,10 @@ class VCard {
 
     if (org.isNotEmpty) lines.add('ORG:${clean(org)}');
     if (job.isNotEmpty) lines.add('TITLE:${clean(job)}');
-    final photoLine = _buildPhotoLine(useV4: false);
+    final photoLine = _buildPhotoLine(
+      useV4: false,
+      includeInlinePhoto: includeInlinePhoto,
+    );
     if (photoLine != null) lines.add(photoLine);
 
     if (telWork.isNotEmpty) {
@@ -349,7 +389,7 @@ class VCard {
     return _assemble(lines);
   }
 
-  String _toVCard4() {
+  String _toVCard4({bool includeInlinePhoto = true}) {
     final n = 'N:${clean(nom)};${clean(prenom)};${clean(nom2)};'
         '${clean(prefixe)};${clean(suffixe)}';
     final lines = <String>[
@@ -361,7 +401,10 @@ class VCard {
 
     if (org.isNotEmpty) lines.add('ORG:${clean(org)}');
     if (job.isNotEmpty) lines.add('TITLE:${clean(job)}');
-    final photoLine = _buildPhotoLine(useV4: true);
+    final photoLine = _buildPhotoLine(
+      useV4: true,
+      includeInlinePhoto: includeInlinePhoto,
+    );
     if (photoLine != null) lines.add(photoLine);
 
     if (telWork.isNotEmpty) {
@@ -413,9 +456,13 @@ class VCard {
     return ';;$cleaned;;;;';
   }
 
-  String? _buildPhotoLine({required bool useV4}) {
+  String? _buildPhotoLine({
+    required bool useV4,
+    bool includeInlinePhoto = true,
+  }) {
     if (photo.isEmpty) return null;
     if (photo.startsWith('data:image/')) {
+      if (!includeInlinePhoto) return null;
       if (useV4) return 'PHOTO:$photo';
       // vCard 3.0: data: URIs aren't standard. Translate to inline base64
       // with ENCODING=b and TYPE=<mediaType>.
@@ -478,7 +525,10 @@ class VCard {
       // First physical line: 75 octets of content.
       // Continuation lines: leading space counts toward the 75-octet
       // limit (RFC 6350 §3.2), so content is capped at 74 octets.
-      var take = isFirst ? limit : limit - 1;
+      var take = limit - 1;
+      if (isFirst) {
+        take = limit;
+      }
       if (offset + take > bytes.length) take = bytes.length - offset;
 
       // Don't split a multi-byte UTF-8 sequence: back off until we land
@@ -599,6 +649,13 @@ class VCard {
     if (nom.isNotEmpty || prenom.isNotEmpty) return '$prenom$nom';
     return org;
   }
+}
+
+String _partAt(List<String> parts, int index) {
+  if (parts.length > index) {
+    return parts[index];
+  }
+  return '';
 }
 
 enum _TelKind { work, home, other }

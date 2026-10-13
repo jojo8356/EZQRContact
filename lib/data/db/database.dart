@@ -31,16 +31,18 @@ part 'database.g.dart';
 class QRDatabase extends _$QRDatabase {
 
   /// Returns the singleton [QRDatabase] instance backed by sqflite.
+  // drift_dev still ships analyzer 3.12, which cannot parse `factory()`.
+  // ignore: unnecessary_type_name_in_constructor
   factory QRDatabase() => _instance;
 
   /// Test-only constructor. Inject any [QueryExecutor] (typically
   /// `NativeDatabase.memory()` from `package:drift/native.dart`).
-  // The `matching_super_parameters` lint wants this to mirror the super
-  // ctor's `e` param name, but `executor` is the meaningful API contract
-  // for callers; keep the descriptive name.
-  // ignore: matching_super_parameters
-  QRDatabase.forTesting(super.executor);
+  // Same analyzer 3.12 constraint as the factory above.
+  // ignore: unnecessary_type_name_in_constructor
+  QRDatabase.forTesting(super.e);
 
+  // Same analyzer 3.12 constraint as the factory above.
+  // ignore: unnecessary_type_name_in_constructor
   QRDatabase._internal()
       : super(
           SqfliteQueryExecutor.inDatabaseFolder(
@@ -225,9 +227,13 @@ class QRDatabase extends _$QRDatabase {
 
   /// Inserts a new SimpleQR row and returns its generated id.
   Future<int> insertSimpleQR(String text, String? path) {
+    var pathValue = const Value<String?>.absent();
+    if (path != null) {
+      pathValue = Value(path);
+    }
     return simpleQrs.insert(SimpleQRsCompanion(
       qrText: Value(text),
-      path: path == null ? const Value.absent() : Value(path),
+      path: pathValue,
     ));
   }
 
@@ -235,6 +241,21 @@ class QRDatabase extends _$QRDatabase {
   Future<int> insertVCard(Map<String, dynamic> data) {
     final clean = Map<String, dynamic>.from(data)..remove('id');
     return vcards.insert(_mapToVCardCompanion(clean));
+  }
+
+  /// Snapshot of the Collection tab: SimpleQRs then VCards, each as
+  /// `{type: 'simple'|'vcard', data: <legacy map>}`.
+  Future<List<Map<String, dynamic>>> getAllItems() async {
+    final simpleRows = await simpleQrs.getAllActive();
+    final vcardRows = await vcards.getAllActive();
+    return [
+      ...simpleRows.map(
+        (r) => {'type': 'simple', 'data': _simpleQrToLegacyMap(r)},
+      ),
+      ...vcardRows.map(
+        (r) => {'type': 'vcard', 'data': _vcardToLegacyMap(r)},
+      ),
+    ];
   }
 
   /// Returns all non-deleted SimpleQR rows as legacy maps.
@@ -286,7 +307,10 @@ class QRDatabase extends _$QRDatabase {
   /// Returns the VCard row at [id] as a legacy map, or null if missing.
   Future<Map<String, dynamic>?> getVCardById(int id) async {
     final row = await vcards.getById(id);
-    return row == null ? null : _vcardToLegacyMap(row);
+    if (row == null) {
+      return null;
+    }
+    return _vcardToLegacyMap(row);
   }
 
   /// Looks up an existing VCard by [nom] and/or [prenom].
@@ -295,7 +319,10 @@ class QRDatabase extends _$QRDatabase {
     String? prenom,
   }) async {
     final row = await vcards.findByName(nom: nom, prenom: prenom);
-    return row == null ? null : _vcardToLegacyMap(row);
+    if (row == null) {
+      return null;
+    }
+    return _vcardToLegacyMap(row);
   }
 
   /// Merges [newContact] fields into an existing VCard row when one matches.
@@ -374,8 +401,18 @@ Map<String, dynamic> _vcardToLegacyMap(VCardRow row) => {
       'email': row.email,
       'rev': row.rev,
       'path': row.path,
-      'clone': row.clone ? 1 : 0,
-      'deleted': row.deleted ? 1 : 0,
+      'clone': () {
+        if (row.clone) {
+          return 1;
+        }
+        return 0;
+      }(),
+      'deleted': () {
+        if (row.deleted) {
+          return 1;
+        }
+        return 0;
+      }(),
       'date_deleted': row.dateDeleted,
       'visual_config': row.visualConfig,
       'event_id': row.eventId,
@@ -386,14 +423,22 @@ Map<String, dynamic> _simpleQrToLegacyMap(SimpleQRRow row) => {
       'id': row.id,
       'text': row.qrText,
       'path': row.path,
-      'deleted': row.deleted ? 1 : 0,
+      'deleted': () {
+        if (row.deleted) {
+          return 1;
+        }
+        return 0;
+      }(),
       'date_deleted': row.dateDeleted,
     };
 
 VCardsCompanion _mapToVCardCompanion(Map<String, dynamic> data) {
   Value<String> str(String key) {
     final v = data[key];
-    return v == null ? const Value.absent() : Value(v.toString());
+    if (v == null) {
+      return const Value.absent();
+    }
+    return Value(v.toString());
   }
 
   Value<bool> boolFromIntOrString(String key) {
@@ -406,6 +451,28 @@ VCardsCompanion _mapToVCardCompanion(Map<String, dynamic> data) {
       return Value(n != null && n != 0);
     }
     return const Value.absent();
+  }
+
+  var pathField = const Value<String?>.absent();
+  if (data['path'] != null) {
+    pathField = Value(data['path'].toString());
+  }
+  var dateDeletedField = const Value<String?>.absent();
+  if (data['date_deleted'] != null) {
+    dateDeletedField = Value(data['date_deleted'].toString());
+  }
+  var eventIdField = const Value<int?>.absent();
+  final eventRaw = data['event_id'];
+  if (eventRaw != null) {
+    int? n;
+    if (eventRaw is int) {
+      n = eventRaw;
+    } else {
+      n = int.tryParse(eventRaw.toString());
+    }
+    if (n != null) {
+      eventIdField = Value(n);
+    }
   }
 
   return VCardsCompanion(
@@ -423,22 +490,13 @@ VCardsCompanion _mapToVCardCompanion(Map<String, dynamic> data) {
     adrHome: str('adr_home'),
     email: str('email'),
     rev: str('rev'),
-    path: data['path'] == null
-        ? const Value.absent()
-        : Value(data['path'].toString()),
     clone: boolFromIntOrString('clone'),
     deleted: boolFromIntOrString('deleted'),
-    dateDeleted: data['date_deleted'] == null
-        ? const Value.absent()
-        : Value(data['date_deleted'].toString()),
     visualConfig: str('visual_config'),
     capturedAt: str('captured_at'),
-    eventId: () {
-      final v = data['event_id'];
-      if (v == null) return const Value<int?>.absent();
-      final n = v is int ? v : int.tryParse(v.toString());
-      return n == null ? const Value<int?>.absent() : Value(n);
-    }(),
+    path: pathField,
+    dateDeleted: dateDeletedField,
+    eventId: eventIdField,
   );
 }
 
@@ -467,13 +525,18 @@ Future<int> createSimpleQR(String txt) async {
 }
 
 /// Inserts a VCard row from [vcardData], saves the QR image, and links it.
-Future<int> createVCard(Map<String, dynamic> vcardData) async {
-  final db = QRDatabase();
+/// Inline photos stay in the DB; the QR payload uses [VCard.toQrPayload]
+/// (hosted URL or omitted PHOTO) so encoding cannot blow past version 40.
+Future<int> createVCard(
+  Map<String, dynamic> vcardData, {
+  QRDatabase? db,
+}) async {
+  final database = db ?? QRDatabase();
   vcardData['clone'] = '0';
-  final id = await db.insertVCard(vcardData);
-  final vcardStr = VCard.fromMap(vcardData).toVCard();
+  final id = await database.insertVCard(vcardData);
+  final vcardStr = await VCard.fromMap(vcardData).toQrPayload();
   final path = await saveQrCode(vcardStr, id);
-  await db.updateVCardPath(id, path);
+  await database.updateVCardPath(id, path);
   return id;
 }
 
@@ -525,14 +588,20 @@ Future<List<int>> createVCardsBatch(
 }
 
 Future<void> _genQrAndSave(Map<String, dynamic> data, String path) async {
-  final bytes = await buildQrBytes(VCard.fromMap(data).toVCard());
+  // Same payload as createVCard: host a PHOTO URL when possible, otherwise
+  // drop inline base64 so QrValidator still accepts the vCard.
+  final bytes = await buildQrBytes(
+    await VCard.fromMap(data).toQrPayload(),
+  );
   await File(path).writeAsBytes(bytes, flush: true);
 }
 
-/// Adds [vcardData] to the device contacts then persists it as a VCard row.
+/// Persists [vcardData] as a VCard row (QR image always), then tries
+/// the device address book. OS write is skipped without permission.
 Future<int> createContact(Map<String, dynamic> vcardData) async {
+  final id = await createVCard(vcardData);
   await PhoneContacts.add(vcardData);
-  return createVCard(vcardData);
+  return id;
 }
 
 /// Returns true when two VCard maps are equal (excluding the `id` field).

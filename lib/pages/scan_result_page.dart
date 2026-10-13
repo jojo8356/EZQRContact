@@ -19,7 +19,7 @@ import 'package:qr_code_app/tools/contacts.dart';
 /// button to optionally add the contact to the device address book.
 class ScanResultPage extends StatefulWidget {
   /// Creates the page from [vcardData] (legacy map) and the DB row [savedId].
-  const ScanResultPage({
+  const new({
     required this.vcardData,
     required this.savedId,
     super.key,
@@ -43,12 +43,6 @@ class _ScanResultPageState extends State<ScanResultPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      final lang = LangProvider.section('pages.QR.scanner');
-      showToast(
-        context: context,
-        title: lang['saved'] as String,
-        color: Colors.white,
-      );
       if (VCardSettingsProvider.reciprocalExchange) {
         unawaited(_showReciprocalPrompt());
       }
@@ -61,7 +55,10 @@ class _ScanResultPageState extends State<ScanResultPage> {
     final data = widget.vcardData;
     final prenom = (data['prenom'] as String?) ?? '';
     final nom = (data['nom'] as String?) ?? '';
-    final name = '$prenom $nom'.trim().isEmpty ? '?' : '$prenom $nom'.trim();
+    var name = '$prenom $nom'.trim();
+    if (name.isEmpty) {
+      name = '?';
+    }
 
     final promptTemplate = lang['reciprocal_prompt'] as String;
     final promptText = promptTemplate.replaceFirst('%s', name);
@@ -107,7 +104,7 @@ class _ScanResultPageState extends State<ScanResultPage> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: currentColors['button-color'],
-                        foregroundColor: Colors.white,
+                        foregroundColor: currentColors['on-button'],
                       ),
                       onPressed: () async {
                         Navigator.pop(ctx);
@@ -151,11 +148,16 @@ class _ScanResultPageState extends State<ScanResultPage> {
     final prenom = (data['prenom'] as String?) ?? '';
 
     final hasName = nom.isNotEmpty || prenom.isNotEmpty;
+    String? nomArg;
+    String? prenomArg;
+    if (nom.isNotEmpty) {
+      nomArg = nom;
+    }
+    if (prenom.isNotEmpty) {
+      prenomArg = prenom;
+    }
     final exists = hasName &&
-        await PhoneContacts.exists(
-          nom: nom.isEmpty ? null : nom,
-          prenom: prenom.isEmpty ? null : prenom,
-        );
+        await PhoneContacts.exists(nom: nomArg, prenom: prenomArg);
 
     if (!mounted) return;
 
@@ -271,11 +273,12 @@ class _ScanResultPageState extends State<ScanResultPage> {
                                 children: [
                                   Text(
                                     '${s("prenom")} ${s("nom")}'.trim(),
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: currentColors['text'],
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineLarge
+                                        ?.copyWith(
+                                          color: currentColors['text'],
+                                        ),
                                   ),
                                   if (s('job').isNotEmpty)
                                     Text(
@@ -358,21 +361,16 @@ class _ScanResultPageState extends State<ScanResultPage> {
                   icon: const Icon(Icons.contacts),
                   label: Text(lang['add_to_contacts'] as String),
                   onPressed: _addToPhoneContacts,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: currentColors['button-color'],
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size(double.infinity, 48),
-                  ),
                 ),
               ),
             if (_contactsAdded)
               Row(
                 children: [
-                  const Icon(Icons.check, color: Colors.green),
+                  Icon(Icons.check, color: currentColors['success']),
                   const SizedBox(width: 8),
                   Text(
                     lang['contacts_added'] as String,
-                    style: const TextStyle(color: Colors.green),
+                    style: TextStyle(color: currentColors['success']),
                   ),
                 ],
               ),

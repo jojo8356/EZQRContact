@@ -4,7 +4,7 @@ import 'package:qr_code_app/data/db/database.dart';
 /// Repository for event rows. Handles create, activate/deactivate, list.
 class EventRepository {
   /// Creates a repository backed by the given database.
-  const EventRepository(this._db);
+  const new(this._db);
 
   final QRDatabase _db;
 

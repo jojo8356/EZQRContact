@@ -1,11 +1,9 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 /// Toggle M3-like avec squish du thumb et durée d'animation configurable.
 class AppSwitch extends StatefulWidget {
   /// Creates an [AppSwitch].
-  const AppSwitch({
+  const new({
     required this.value,
     required this.onChanged,
     this.duration = const Duration(milliseconds: 300),
@@ -38,10 +36,14 @@ class _AppSwitchState extends State<AppSwitch>
   @override
   void initState() {
     super.initState();
+    var start = 0.0;
+    if (widget.value) {
+      start = 1;
+    }
     _ctrl = AnimationController(
       vsync: this,
       duration: widget.duration,
-      value: widget.value ? 1.0 : 0.0,
+      value: start,
     );
 
     _position = CurvedAnimation(
@@ -54,7 +56,11 @@ class _AppSwitchState extends State<AppSwitch>
   void didUpdateWidget(AppSwitch old) {
     super.didUpdateWidget(old);
     if (old.value != widget.value) {
-      unawaited(widget.value ? _ctrl.forward() : _ctrl.reverse());
+      if (widget.value) {
+        _ctrl.forward();
+      } else {
+        _ctrl.reverse();
+      }
     }
   }
 
@@ -67,23 +73,32 @@ class _AppSwitchState extends State<AppSwitch>
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final raised = Theme.of(context).colorScheme.surfaceContainerHigh;
 
     final trackColor = ColorTween(
-      begin: Colors.grey.shade400,
+      begin: raised,
       end: scheme.primary,
     ).animate(
       CurvedAnimation(parent: _ctrl, curve: Curves.easeInOutCubic),
     );
 
+    VoidCallback? onTap;
+    if (widget.onChanged != null) {
+      onTap = () => widget.onChanged!(!widget.value);
+    }
     return GestureDetector(
-      onTap: widget.onChanged != null
-          ? () => widget.onChanged!(!widget.value)
-          : null,
+      onTap: onTap,
       child: AnimatedBuilder(
         animation: _ctrl,
         builder: (context, _) {
           const tw = _thumbSize;
           final left = _pad + _position.value * (_trackW - tw - _pad * 2);
+          var thumbIcon = Icons.close;
+          var thumbColor = Colors.grey.shade600;
+          if (widget.value) {
+            thumbIcon = Icons.check;
+            thumbColor = scheme.primary;
+          }
 
           return SizedBox(
             width: _trackW,
@@ -112,12 +127,10 @@ class _AppSwitchState extends State<AppSwitch>
                                 widget.duration.inMilliseconds ~/ 3,
                           ),
                           child: Icon(
-                            widget.value ? Icons.check : Icons.close,
+                            thumbIcon,
                             key: ValueKey(widget.value),
                             size: 14,
-                            color: widget.value
-                                ? scheme.primary
-                                : Colors.grey.shade600,
+                            color: thumbColor,
                           ),
                         ),
                       ),

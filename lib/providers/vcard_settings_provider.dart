@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Singleton statique exposant les préférences de génération vCard.
@@ -9,9 +10,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 class VCardSettingsProvider {
 
   /// Returns the singleton instance.
-  factory VCardSettingsProvider() => _instance;
+  factory() => _instance;
 
-  VCardSettingsProvider._internal();
+  new _internal();
   static final VCardSettingsProvider _instance =
       VCardSettingsProvider._internal();
 
@@ -33,6 +34,14 @@ class VCardSettingsProvider {
     final prefs = await SharedPreferences.getInstance();
     _useVCard4 = prefs.getBool(_kPrefKey) ?? false;
     _reciprocalExchange = prefs.getBool(_kReciprocalKey) ?? false;
+  }
+
+  /// Drops in-memory flags without touching disk. Widget tests use this
+  /// to mimic a process kill; [init] then reloads SharedPreferences.
+  @visibleForTesting
+  static void debugResetMemory() {
+    _useVCard4 = false;
+    _reciprocalExchange = false;
   }
 
   /// Met à jour la pref `use_vcard4` et persiste immédiatement.

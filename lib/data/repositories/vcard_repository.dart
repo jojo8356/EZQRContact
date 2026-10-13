@@ -9,7 +9,7 @@ import 'package:qr_code_app/data/db/database.dart';
 class VCardRepository {
 
   /// Creates a repository bound to [_db].
-  VCardRepository(this._db);
+  new(this._db);
   final QRDatabase _db;
 
   /// Inserts a new VCard row. Returns the auto-generated id.
@@ -79,7 +79,7 @@ class VCardRepository {
     } else {
       query.where((t) => t.prenom.equals(prenom!));
     }
-    return query.getSingleOrNull();
+    return await query.getSingleOrNull();
   }
 
   /// Merges [newData] into an existing VCard sharing nom/prenom. Only
@@ -122,7 +122,10 @@ class VCardRepository {
     if (oldValue.isNotEmpty) return oldValue;
     if (!newValue.present) return oldValue;
     final candidate = newValue.value;
-    return candidate.isEmpty ? oldValue : candidate;
+    if (candidate.isEmpty) {
+      return oldValue;
+    }
+    return candidate;
   }
 
   /// Clones a VCard. The new row has `clone=true` and a fresh id. Returns
@@ -136,7 +139,7 @@ class VCardRepository {
           id: const Value.absent(), // let AUTOINCREMENT assign a new id
           clone: const Value(true),
         );
-    return _db.into(_db.vCards).insert(companion);
+    return await _db.into(_db.vCards).insert(companion);
   }
 
   /// Soft-deletes a VCard (sets `deleted=true` and `dateDeleted=<today>`).

@@ -4,9 +4,11 @@ import 'dart:typed_data';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/btn.animated.dart';
 import 'package:qr_code_app/components/qr_save.dart';
+import 'package:qr_code_app/components/section_label.dart';
 import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/modals/contact_options.dart';
 import 'package:qr_code_app/models/qr_layout.dart';
@@ -14,6 +16,7 @@ import 'package:qr_code_app/models/visual_config.dart';
 import 'package:qr_code_app/pages/qr_card_view_page.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
+import 'package:qr_code_app/theme/tokens.dart';
 import 'package:qr_code_app/tools/contacts.dart';
 import 'package:qr_code_app/tools/photo.dart';
 import 'package:qr_code_app/tools/tools.dart';
@@ -22,7 +25,7 @@ import 'package:qr_code_app/tools/vcard.dart';
 /// Form page that builds a vCard QR code from manually-entered fields.
 class GenerateVCardQRCode extends StatefulWidget {
   /// Creates the page.
-  const GenerateVCardQRCode({super.key});
+  const new({super.key});
 
   @override
   GenerateVCardQRCodeState createState() => GenerateVCardQRCodeState();
@@ -58,23 +61,62 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
   String? _photoDataUri;
 
   Future<void> _pickColor(BuildContext ctx, String label) async {
-    final picked = await showColorPickerDialog(
-      ctx,
-      _primaryColor,
-      title: Text(label),
-      pickersEnabled: const <ColorPickerType, bool>{
-        ColorPickerType.primary: true,
-        ColorPickerType.accent: false,
-        ColorPickerType.custom: false,
-        ColorPickerType.wheel: true,
+    var draft = _primaryColor;
+    final picked = await showDialog<Color>(
+      context: ctx,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            return AlertDialog(
+              backgroundColor: currentColors['popup-background'],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppTokens.rXl),
+              ),
+              title: Text(
+                label,
+                style: TextStyle(color: currentColors['popup-text']),
+              ),
+              content: SingleChildScrollView(
+                child: ColorPicker(
+                  color: draft,
+                  onColorChanged: (c) {
+                    setDialogState(() => draft = c);
+                  },
+                  pickersEnabled: const <ColorPickerType, bool>{
+                    ColorPickerType.primary: true,
+                    ColorPickerType.accent: false,
+                    ColorPickerType.custom: false,
+                    ColorPickerType.wheel: true,
+                  },
+                  actionButtons: const ColorPickerActionButtons(
+                    dialogActionButtons: false,
+                  ),
+                ),
+              ),
+              actionsAlignment: MainAxisAlignment.spaceEvenly,
+              actionsPadding: const EdgeInsets.fromLTRB(
+                AppTokens.s4,
+                0,
+                AppTokens.s4,
+                AppTokens.s4,
+              ),
+              actions: [
+                _DialogDisc(
+                  icon: LucideIcons.x,
+                  onTap: () => Navigator.of(dialogContext).pop(),
+                ),
+                _DialogDisc(
+                  icon: LucideIcons.check,
+                  onTap: () => Navigator.of(dialogContext).pop(draft),
+                ),
+              ],
+            );
+          },
+        );
       },
-      actionButtons: const ColorPickerActionButtons(
-        okButton: true,
-        closeButton: true,
-        dialogActionButtons: false,
-      ),
     );
     if (!mounted) return;
+    if (picked == null) return;
     setState(() => _primaryColor = picked);
   }
 
@@ -119,9 +161,43 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
     setState(() => _photoDataUri = uri);
   }
 
+  Future<void> _submit() async {
+    final lang = LangProvider.section('pages.QR.generator');
+    final data = extractValues(controllers);
+    data['photo'] = _photoDataUri ?? '';
+    String? logoBase64;
+    if (_logoBytes != null) {
+      logoBase64 = base64Encode(_logoBytes!);
+    }
+    data['visual_config'] = VisualConfig(
+      primaryColor: _primaryColor,
+      logoBase64: logoBase64,
+      layout: _layout,
+    ).toJson();
+    final vcard = VCard.fromMap(data);
+    final id = await createVCard(data);
+    await saveQrCode(
+      await vcard.toQrPayload(),
+      id,
+      color: _primaryColor,
+      logoBytes: _logoBytes,
+    );
+    await PhoneContacts.add(data);
+    if (!mounted) {
+      return;
+    }
+    showToast(
+      context: context,
+      title: lang['card_ready'] as String,
+      color: Colors.white,
+      icon: Icons.share,
+    );
+    await redirect(context, const Collection());
+  }
+
   Future<ImageSource?> _askPhotoSource() async {
     final lang = LangProvider.section('pages.QR.generator');
-    return showModalBottomSheet<ImageSource>(
+    return await showModalBottomSheet<ImageSource>(
       context: context,
       builder: (ctx) => Column(
         mainAxisSize: MainAxisSize.min,
@@ -154,6 +230,10 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
       animation: darkProv,
       builder: (context, _) {
         final isDark = darkProv.isDarkMode;
+        var hairline = Colors.black26;
+        if (isDark) {
+          hairline = Colors.white38;
+        }
 
         return Scaffold(
           backgroundColor: currentColors['bg'],
@@ -170,17 +250,8 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                // — Apparence section —————————————————————————————
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    (lang['appearance'] as String?) ?? 'Apparence',
-                    style: TextStyle(
-                      color: currentColors['text'],
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                SectionLabel(
+                  (lang['appearance'] as String?) ?? 'Apparence',
                 ),
                 const SizedBox(height: 12),
                 // Photo row
@@ -220,11 +291,7 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                           width: 36,
                           height: 36,
                           decoration: BoxDecoration(
-                            border: Border.all(
-                              color: isDark
-                                  ? Colors.white38
-                                  : Colors.black26,
-                            ),
+                            border: Border.all(color: hairline),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Icon(
@@ -257,11 +324,7 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                         height: 36,
                         decoration: BoxDecoration(
                           color: _primaryColor,
-                          border: Border.all(
-                            color: isDark
-                                ? Colors.white38
-                                : Colors.black26,
-                          ),
+                          border: Border.all(color: hairline),
                           borderRadius: BorderRadius.circular(6),
                         ),
                       ),
@@ -306,11 +369,7 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                             width: 36,
                             height: 36,
                             decoration: BoxDecoration(
-                              border: Border.all(
-                                color: isDark
-                                    ? Colors.white38
-                                    : Colors.black26,
-                              ),
+                              border: Border.all(color: hairline),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Icon(
@@ -324,17 +383,8 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                // Layout section label
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    (lang['layout'] as String?) ?? 'Layout',
-                    style: TextStyle(
-                      color: currentColors['text'],
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                SectionLabel(
+                  (lang['layout'] as String?) ?? 'Layout',
                 ),
                 const SizedBox(height: 8),
                 // Layout picker
@@ -373,36 +423,7 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
                 AnimatedSubmitButton(
                   isDark: isDark,
                   label: lang['submit button'] as String,
-                  onPressed: () async {
-                    final data = extractValues(controllers);
-                    data['photo'] = _photoDataUri ?? '';
-                    final logoBase64 = _logoBytes != null
-                        ? base64Encode(_logoBytes!)
-                        : null;
-                    data['visual_config'] = VisualConfig(
-                      primaryColor: _primaryColor,
-                      logoBase64: logoBase64,
-                      layout: _layout,
-                    ).toJson();
-                    final vcard = VCard.fromMap(data);
-                    final id = await createVCard(data);
-                    await saveQrCode(
-                      vcard.toVCard(),
-                      id,
-                      color: _primaryColor,
-                      logoBytes: _logoBytes,
-                    );
-                    await PhoneContacts.verifyPermission();
-                    await PhoneContacts.add(data);
-                    if (!context.mounted) return;
-                    showToast(
-                      context: context,
-                      title: lang['card_ready'] as String,
-                      color: Colors.white,
-                      icon: Icons.share,
-                    );
-                    await redirect(context, const Collection());
-                  },
+                  onPressed: _submit,
                 ),
               ],
             ),
@@ -413,29 +434,40 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
   }
 }
 
+/// Filled circular dialog action (10% black) for OK / close.
+class _DialogDisc extends StatelessWidget {
+  const new({required this.icon, required this.onTap});
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppTokens.appBarScrim,
+      shape: const CircleBorder(),
+      child: InkWell(
+        customBorder: const CircleBorder(),
+        onTap: onTap,
+        child: SizedBox(
+          width: AppTokens.tap,
+          height: AppTokens.tap,
+          child: Icon(icon, color: currentColors['text']),
+        ),
+      ),
+    );
+  }
+}
+
 /// Builds a single themed [TextField] from the field record [f] (a
 /// `{label, controller}` pair produced by `tools.buildFields`).
 Widget input(Map<String, dynamic> f) {
-  final isDark = darkProv.isDarkMode;
   final textColor = currentColors['text'] ?? Colors.white;
   return TextField(
     controller: f['controller'] as TextEditingController?,
     style: TextStyle(color: textColor),
     decoration: InputDecoration(
-      filled: true,
-      fillColor: currentColors['surface'],
-      border: OutlineInputBorder(
-        borderSide: BorderSide(color: textColor),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: textColor),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: textColor, width: 2),
-      ),
       labelText: f['label'] as String,
-      labelStyle:
-          TextStyle(color: isDark ? Colors.white70 : Colors.black87),
     ),
   );
 }

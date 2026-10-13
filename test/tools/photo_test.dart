@@ -93,4 +93,60 @@ void main() {
       },
     );
   });
+
+  group('hostPhotoForQr', () {
+    tearDown(() {
+      debugHostPhotoForQr = null;
+      debugHasInternet = null;
+      resetPhotoHostCache();
+    });
+
+    test('deviceHasInternet respects the debug hook', () async {
+      debugHasInternet = true;
+      expect(await deviceHasInternet(), isTrue);
+      debugHasInternet = false;
+      expect(await deviceHasInternet(), isFalse);
+    });
+
+    test('deviceHasInternet is false in tests by default', () async {
+      expect(await deviceHasInternet(), isFalse);
+    });
+
+    test('returns http(s) photo unchanged', () async {
+      expect(
+        await hostPhotoForQr('https://cdn.example/a.jpg'),
+        'https://cdn.example/a.jpg',
+      );
+      expect(
+        await hostPhotoForQr('http://cdn.example/a.jpg'),
+        'http://cdn.example/a.jpg',
+      );
+    });
+
+    test('returns null for empty or non-image values', () async {
+      expect(await hostPhotoForQr(''), isNull);
+      expect(await hostPhotoForQr('not-a-photo'), isNull);
+    });
+
+    test('does not upload data URIs during flutter test', () async {
+      expect(
+        await hostPhotoForQr('data:image/jpeg;base64,abcd'),
+        isNull,
+      );
+    });
+
+    test('debug hook hosts a data URI without the network', () async {
+      debugHostPhotoForQr = (_) async => 'https://files.example/p.jpg';
+      final url = await hostPhotoForQr('data:image/jpeg;base64,abcd');
+      expect(url, 'https://files.example/p.jpg');
+    });
+
+    test('debug hook can refuse hosting', () async {
+      debugHostPhotoForQr = (_) async => null;
+      expect(
+        await hostPhotoForQr('data:image/jpeg;base64,abcd'),
+        isNull,
+      );
+    });
+  });
 }

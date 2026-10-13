@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_saver/file_saver.dart';
@@ -5,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:qr_code_app/providers/lang_provider.dart';
+import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Returns true when the first-run guide has not yet been displayed.
@@ -41,18 +43,65 @@ Map<String, TextEditingController> mapToControllers(Map<String, dynamic> data) {
   };
 }
 
+/// Image provider for a vCard `photo` field: memory for `data:image…`,
+/// network only for `http(s)://` with a host. Anything else is null
+/// (avoids `NetworkImage` throwing "No host specified in URI").
+ImageProvider? photoImageProvider(String photo) {
+  if (photo.isEmpty) return null;
+  if (photo.startsWith('data:image')) {
+    final comma = photo.indexOf(',');
+    if (comma < 0) return null;
+    try {
+      final bytes = base64Decode(photo.substring(comma + 1));
+      return MemoryImage(bytes);
+    } on FormatException {
+      return null;
+    }
+  }
+  final uri = Uri.tryParse(photo);
+  if (uri == null) return null;
+  if (uri.host.isEmpty) return null;
+  if (uri.scheme != 'http' && uri.scheme != 'https') return null;
+  return NetworkImage(photo);
+}
+
 /// Returns the leading avatar for a list/card item: a photo for vCards
 /// (or a person icon when [photo] is empty) and a QR icon otherwise.
 Widget buildItemAvatar({required bool isVCard, required String photo}) {
-  if (isVCard) {
-    if (photo.isNotEmpty) {
-      return CircleAvatar(backgroundImage: NetworkImage(photo), radius: 25);
-    } else {
-      return const Icon(Icons.person, size: 40, color: Colors.green);
-    }
-  } else {
-    return const Icon(Icons.qr_code, size: 40, color: Colors.blue);
+  Widget well(IconData icon, Color color) {
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: currentColors['surface-raised'],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Icon(icon, size: 22, color: color),
+    );
   }
+
+  if (isVCard) {
+    final image = photoImageProvider(photo);
+    if (image != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image(
+          image: image,
+          width: 44,
+          height: 44,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return well(Icons.person_rounded, currentColors['navy']!);
+          },
+        ),
+      );
+    }
+    return well(Icons.person_rounded, currentColors['navy']!);
+  }
+  return well(
+    Icons.qr_code_2_rounded,
+    currentColors['button-color']!,
+  );
 }
 
 /// Pushes [page] on the navigator and returns the value popped back, if any.

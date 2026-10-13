@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/modals/card_view.dart';
 import 'package:qr_code_app/modals/contact_options.dart';
 import 'package:qr_code_app/modals/qr_view.dart';
 import 'package:qr_code_app/modals/save.dart';
-import 'package:qr_code_app/providers/darkmode.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
+import 'package:qr_code_app/providers/theme_globals.dart';
+import 'package:qr_code_app/theme/tokens.dart';
 
 /// Collapsible grid of action buttons attached to a QRCard: view, open
 /// the rendered QR image, delete, download, and (for vCards) sync to the
@@ -14,11 +16,12 @@ class OptionsQR extends StatelessWidget {
   /// Creates the options row for the QR/VCard described by [data].
   /// [onRefresh] is awaited after each destructive action so the parent
   /// list can re-query the database.
-  const OptionsQR({
+  const new({
     required this.isVCard,
     required this.data,
     required this.expanded,
     required this.onRefresh,
+    this.onDelete,
     super.key,
   });
 
@@ -34,111 +37,172 @@ class OptionsQR extends StatelessWidget {
   /// Callback invoked after a destructive action mutates the database.
   final Future<void> Function() onRefresh;
 
+  /// Test override for the delete action. Production leaves this null.
+  final Future<void> Function(int id)? onDelete;
+
   @override
   Widget build(BuildContext context) {
-    final darkProv = DarkModeProvider();
     final semLang = LangProvider.section('semantics');
-    final actions = [
-      {
-        'icon': Icons.remove_red_eye,
-        'color': null,
-        'semanticsKey': 'btn_view_card',
-        'onPressed': () async {
+    final c = currentColors;
+    final actions = <_QrAction>[
+      _QrAction(
+        icon: Icons.visibility_outlined,
+        color: c['navy'],
+        semanticsKey: 'btn_view_card',
+        onPressed: () async {
           await showDataDialog(context, data, isVCard: isVCard);
         },
-      },
-      {
-        'icon': Icons.data_object,
-        'color': null,
-        'semanticsKey': 'btn_view_raw',
-        'onPressed': () async {
+      ),
+      _QrAction(
+        icon: Icons.data_object,
+        color: c['text-muted'],
+        semanticsKey: 'btn_view_raw',
+        onPressed: () async {
           await showRawTextDialog(context, data, isVCard: isVCard);
         },
-      },
-      {
-        'icon': Icons.qr_code,
-        'color': null,
-        'semanticsKey': 'btn_view_qr',
-        'onPressed': () async {
+      ),
+      _QrAction(
+        icon: Icons.qr_code_2_rounded,
+        color: c['button-color'],
+        semanticsKey: 'btn_view_qr',
+        onPressed: () async {
           final path = data['path'] as String?;
           if (path != null && path.isNotEmpty) {
             await showImageDialog(context, path);
           }
         },
-      },
+      ),
       if (data['deleted'] != 1)
-        {
-          'icon': Icons.delete,
-          'color': darkProv.isDarkMode ? Colors.red : Colors.redAccent,
-          'semanticsKey': 'btn_delete',
-          'onPressed': () async {
-            await deleteQR(isVCard: isVCard, id: data['id'] as int);
+        _QrAction(
+          icon: LucideIcons.trash,
+          color: c['danger'],
+          semanticsKey: 'btn_delete',
+          buttonKey: const Key('qr-btn-delete'),
+          onPressed: () async {
+            final id = _asId(data['id']);
+            if (id == null) {
+              return;
+            }
+            final custom = onDelete;
+            if (custom != null) {
+              await custom(id);
+            } else {
+              await deleteQR(isVCard: isVCard, id: id);
+            }
             await onRefresh();
           },
-        },
-      {
-        'icon': Icons.download,
-        'color': darkProv.isDarkMode ? Colors.indigo : Colors.blue,
-        'semanticsKey': 'btn_download',
-        'onPressed': () async {
-          final path = isVCard
-              ? await QRDatabase().getPathFromVCard(data['id'] as int)
-              : await QRDatabase().getPathFromSimpleQR(data['id'] as int);
-          if (!context.mounted) return;
-          await showSaveDialog(context, path!);
+        ),
+      _QrAction(
+        icon: LucideIcons.download,
+        color: c['navy'],
+        semanticsKey: 'btn_download',
+        onPressed: () async {
+          final id = _asId(data['id']);
+          if (id == null) {
+            return;
+          }
+          late final String? path;
+          if (isVCard) {
+            path = await QRDatabase().getPathFromVCard(id);
+          } else {
+            path = await QRDatabase().getPathFromSimpleQR(id);
+          }
+          if (!context.mounted) {
+            return;
+          }
+          if (path == null || path.isEmpty) {
+            return;
+          }
+          await showSaveDialog(context, path);
           await onRefresh();
         },
-      },
+      ),
       if (isVCard && data['deleted'] != 1)
-        {
-          'icon': Icons.contact_emergency,
-          'color': darkProv.isDarkMode ? Colors.green : Colors.lightGreen,
-          'semanticsKey': 'btn_add_contact',
-          'onPressed': () async {
+        _QrAction(
+          icon: Icons.person_add_alt_1_outlined,
+          color: c['success'],
+          semanticsKey: 'btn_add_contact',
+          onPressed: () async {
             await showVCardPopup(context, data, isVCard: true);
             await onRefresh();
           },
-        },
+        ),
     ];
+    var fade = CrossFadeState.showFirst;
+    if (expanded) {
+      fade = CrossFadeState.showSecond;
+    }
     return AnimatedCrossFade(
-      firstChild: Container(),
+      firstChild: const SizedBox(width: double.infinity),
       secondChild: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: GridView.count(
-          shrinkWrap: true,
-          crossAxisCount:
-              MediaQuery.of(context).orientation == Orientation.portrait
-              ? 4
-              : 8,
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 40,
-          children: actions.map((a) {
-            final key = a['semanticsKey'] as String?;
-            final label =
-                key == null ? null : semLang[key] as String?;
-            return Semantics(
-              label: label,
-              button: true,
-              child: ElevatedButton(
-                onPressed: a['onPressed']! as VoidCallback,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: a['color'] as Color?,
-                  padding: EdgeInsets.zero,
-                  fixedSize: const Size(60, 60),
-                ),
-                child: Icon(
-                  a['icon']! as IconData,
-                  color: a['color'] != null ? Colors.white : null,
+        padding: const EdgeInsets.fromLTRB(
+          AppTokens.s4,
+          0,
+          AppTokens.s4,
+          AppTokens.s3,
+        ),
+        child: Wrap(
+          spacing: AppTokens.s2,
+          runSpacing: AppTokens.s2,
+          children: [
+            for (final action in actions)
+              Semantics(
+                label: semLang[action.semanticsKey] as String?,
+                button: true,
+                child: Material(
+                  color: c['surface-raised'],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppTokens.rSm),
+                  ),
+                  child: InkWell(
+                    key: action.buttonKey,
+                    onTap: () async {
+                      await action.onPressed();
+                    },
+                    borderRadius: BorderRadius.circular(AppTokens.rSm),
+                    child: SizedBox(
+                      width: AppTokens.tap,
+                      height: AppTokens.tap,
+                      child: Icon(
+                        action.icon,
+                        color: action.color,
+                        size: 22,
+                      ),
+                    ),
+                  ),
                 ),
               ),
-            );
-          }).toList(),
+          ],
         ),
       ),
-      crossFadeState: expanded
-          ? CrossFadeState.showSecond
-          : CrossFadeState.showFirst,
-      duration: const Duration(milliseconds: 300),
+      crossFadeState: fade,
+      duration: AppTokens.tMed,
     );
   }
+}
+
+int? _asId(dynamic raw) {
+  if (raw is int) {
+    return raw;
+  }
+  if (raw is num) {
+    return raw.toInt();
+  }
+  return int.tryParse(raw?.toString() ?? '');
+}
+
+class _QrAction {
+  const new({
+    required this.icon,
+    required this.color,
+    required this.semanticsKey,
+    required this.onPressed,
+    this.buttonKey,
+  });
+
+  final IconData icon;
+  final Color? color;
+  final String semanticsKey;
+  final Future<void> Function() onPressed;
+  final Key? buttonKey;
 }

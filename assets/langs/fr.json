@@ -2,13 +2,26 @@
   "close": "Fermer",
   "title": "Easy QR Contact App",
   "QR Not Found": "Aucun QR code trouvé",
+  "home": {
+    "tagline": "Échangez. Sans cloud.",
+    "tagline_sub": "Vos cartes restent sur ce téléphone.",
+    "section_more": "Outils",
+    "vcard_sub": "Créez votre carte de visite",
+    "scanner_sub": "Capturez un contact en un scan",
+    "simple_sub": "Texte, URL, identifiant",
+    "import_sub": "Depuis une capture d’écran",
+    "import_contact_sub": "Depuis le carnet du téléphone",
+    "scanner_hint": "Cadrez le QR. Rien n’est envoyé.",
+    "import_hint": "Choisissez une capture contenant un QR.",
+    "empty_collection": "Scannez votre première carte.",
+    "empty_history": "Les cartes supprimées apparaîtront ici."
+  },
   "menu": {
     "simple": "QR code Simple",
     "vcard": "QR code VCard",
     "scanner": "Scanner un QR code",
     "import": "Importer un QR code",
-    "import_contact": "Importer contact",
-    "events": "Événements"
+    "import_contact": "Importer contact"
   },
   "options": {
     "guide": "Lire guide",
@@ -80,6 +93,7 @@
         "title": "Scanner de QR code",
         "invalid qr": "QR code Invalide",
         "scan": "Scanner QR Code",
+        "flashed": "QR code scanné",
         "saved": "Contact enregistré",
         "result_title": "Contact scanné",
         "add_to_contacts": "Ajouter aux contacts du téléphone",
@@ -112,7 +126,21 @@
     "collection": {
       "title": "Collection",
       "search_hint": "Chercher par nom…",
-      "filter_all_events": "Tous les événements"
+      "import_all": "Tout importer",
+      "export_all": "Tout exporter",
+      "import_all_confirm": "Importer %s contacts du téléphone ?",
+      "import_confirm": "Importer",
+      "import_none": "Aucun contact sur ce téléphone",
+      "import_done": "%s contacts importés",
+      "import_skip": "Déjà dans la collection",
+      "export_none": "Aucun QR à exporter",
+      "export_done": "%s QR exportés",
+      "select_count": "%s sélectionnés",
+      "select_all": "Tout sélectionner",
+      "select_delete": "Supprimer",
+      "select_export": "Exporter",
+      "select_delete_confirm": "Supprimer %s QR ?",
+      "select_deleted": "%s QR supprimés"
     }
   },
   "VCard Input": {
@@ -154,35 +182,6 @@
     "contacts_denied_body": "La permission a été refusée. Activez l'accès aux contacts dans les Paramètres de l'application.",
     "open_settings": "Ouvrir les Paramètres"
   },
-  "pdf_export": {
-    "title": "Exporter PDF",
-    "select_mode": "Sélectionner",
-    "cancel_select": "Annuler",
-    "selected_count": "%s sélectionné(s)",
-    "export_button": "Exporter PDF (%s)",
-    "layout_1pp": "1 par page",
-    "layout_2x2": "2×2 par page",
-    "generate": "Générer le PDF",
-    "generating": "Génération en cours…",
-    "no_selection": "Sélectionner au moins un contact",
-    "no_contacts": "Aucun contact à exporter",
-    "captured_on": "Capturé le %s"
-  },
-  "events": {
-    "title": "Événements",
-    "new_event": "Nouvel événement",
-    "name_hint": "Nom de l'événement",
-    "start_date": "Début (optionnel)",
-    "end_date": "Fin (optionnel)",
-    "create": "Créer",
-    "cancel": "Annuler",
-    "activate": "Activer",
-    "deactivate": "Désactiver",
-    "active_badge": "Actif",
-    "no_events": "Aucun événement créé",
-    "banner_prefix": "Événement actif :",
-    "contacts_count": "%s contact(s)"
-  },
   "onboarding": {
     "skip": "Passer",
     "create_card": "Créer ma carte",
@@ -192,5 +191,17 @@
     "s2_body": "Personnalisez couleur, logo et layout.",
     "s3_title": "Scannez. Sauvegardez. Exportez.",
     "s3_body": "Retrouvez tous vos contacts en un seul endroit."
+  },
+  "coach": {
+    "skip": "Passer",
+    "next": "Suivant",
+    "done": "Compris",
+    "progress": "%s / %s",
+    "vcard_title": "Votre carte",
+    "vcard_body": "Encodez votre contact. N’importe qui le scanne avec son appareil photo.",
+    "scan_title": "Scanner",
+    "scan_body": "Lisez un QR devant vous. Rien n’est envoyé.",
+    "collection_title": "Collection",
+    "collection_body": "Vos cartes sont ici. Appuyez plus de 2 secondes pour en sélectionner plusieurs."
   }
 }

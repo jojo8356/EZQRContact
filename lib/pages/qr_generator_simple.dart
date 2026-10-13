@@ -11,7 +11,7 @@ import 'package:qr_code_app/tools/tools.dart';
 /// Form page that turns a single text input into a SimpleQR row + image.
 class GenerateSimpleQRCode extends StatefulWidget {
   /// Creates the page.
-  const GenerateSimpleQRCode({super.key});
+  const new({super.key});
 
   @override
   GenerateSimpleQRCodeState createState() => GenerateSimpleQRCodeState();
@@ -45,20 +45,6 @@ class GenerateSimpleQRCodeState extends State<GenerateSimpleQRCode> {
                   style: TextStyle(color: currentColors['text']),
                   decoration: InputDecoration(
                     labelText: lang['input'] as String?,
-                    labelStyle: TextStyle(
-                      color: isDark ? Colors.white70 : Colors.black54,
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: currentColors['text'] ?? Colors.white,
-                      ),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(
-                        color: currentColors['text'] ?? Colors.white,
-                        width: 2,
-                      ),
-                    ),
                   ),
                 ),
                 const SizedBox(height: 20),

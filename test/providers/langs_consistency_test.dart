@@ -66,7 +66,10 @@ Future<Map<String, dynamic>> _loadJson(String lang) async {
 Set<String> _leafPaths(Map<String, dynamic> map, [String prefix = '']) {
   final result = <String>{};
   map.forEach((key, value) {
-    final path = prefix.isEmpty ? key : '$prefix.$key';
+    var path = key;
+    if (prefix.isNotEmpty) {
+      path = '$prefix.$key';
+    }
     if (value is Map<String, dynamic>) {
       result.addAll(_leafPaths(value, path));
     } else {
@@ -82,7 +85,7 @@ Set<String> _leafPaths(Map<String, dynamic> map, [String prefix = '']) {
 enum _Kind { string, map }
 
 class _Usage {
-  _Usage(this.path, this.kind, this.location);
+  new(this.path, this.kind, this.location);
   final String path;
   final _Kind kind;
   final String location;

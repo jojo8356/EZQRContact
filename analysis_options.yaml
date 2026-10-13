@@ -2,4 +2,35 @@ include: package:very_good_analysis/analysis_options.yaml
 
 analyzer:
   exclude:
-    - "**/*.g.dart"
+    # Do not exclude **/*.g.dart: the analyzer then treats
+    # `part 'database.g.dart'` as missing (`uri_has_not_been_generated`)
+    # and every Drift getter (vCards, events, …) looks undefined.
+    # Also do not gitignore that file — build_runner will not copy a
+    # gitignored combining_builder output into lib/.
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
+
+linter:
+  rules:
+    # Prefer `if (cond) widget else widget` inside collection literals
+    # over `cond ? widget : widget`. House rule goes further: NO ternary
+    # operators (`? :`) anywhere in Dart sources. Dart has no native
+    # `no_ternary` lint (and no `unneeded_ternary` / `prefer_if_widgets`
+    # rule). Enforcement lives in `test/lint/no_ternary_test.dart`.
+    prefer_if_elements_to_conditional_expressions: true
+
+# House rules (no native Dart lint — enforced by tests):
+#
+# 1. No ternary operators (`cond ? a : b`). See
+#    `test/lint/no_ternary_test.dart`.
+#
+# 2. Display returns are pure widget trees. A `build` / builder `return`
+#    contains only widgets and components — no algorithms, no IIFE
+#    `() { ... }()`. Compute values *above* the return, or extract a
+#    component. Collection-if of widgets is allowed.
+#    See `test/lint/no_iife_in_display_test.dart`.

@@ -5,6 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 import 'package:qr_code_app/components/qr_save.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
+import 'package:qr_code_app/providers/vcard_settings_provider.dart';
+import 'package:qr_code_app/tools/photo.dart';
+import 'package:qr_code_app/tools/vcard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // PNG file signature: first 8 bytes are always 89 50 4E 47 0D 0A 1A 0A.
@@ -23,6 +26,7 @@ void main() {
   setUpAll(() async {
     SharedPreferences.setMockInitialValues({});
     await LangProvider.init(lang: 'en');
+    await VCardSettingsProvider.init();
   });
 
   // ---------------------------------------------------------------------------
@@ -52,7 +56,7 @@ void main() {
     });
 
     test('custom color produces a PNG', () async {
-      final bytes = await buildQrBytes('test', color: const Color(0xFF0EA5E9));
+      final bytes = await buildQrBytes('test', color: const Color(0xFFC45C26));
       expect(bytes.sublist(0, 8), equals(_pngMagic));
     });
 
@@ -68,9 +72,33 @@ void main() {
       expect(a, isNot(equals(b)));
     });
 
-    test('output is larger than 1 KB (non-trivial PNG content)', () async {
+    test('raster is square and includes 4-module quiet zone at 4 px/module',
+        () async {
       final bytes = await buildQrBytes('some qr content');
-      expect(bytes.length, greaterThan(1024));
+      final decoded = img.decodePng(bytes)!;
+      expect(decoded.width, decoded.height);
+      // Version 1 is 21 modules; quiet zone is 4 modules per side.
+      const minSide = (21 + qrQuietModules * 2) * qrModulePx;
+      expect(decoded.width, greaterThanOrEqualTo(minSide));
+    });
+
+    test('raster contains both dark modules and a white quiet zone', () async {
+      final bytes = await buildQrBytes('hello');
+      final decoded = img.decodePng(bytes)!;
+      var dark = 0;
+      var light = 0;
+      for (var y = 0; y < decoded.height; y += qrModulePx) {
+        for (var x = 0; x < decoded.width; x += qrModulePx) {
+          final p = decoded.getPixel(x, y);
+          if (p.r < 128) {
+            dark += 1;
+          } else {
+            light += 1;
+          }
+        }
+      }
+      expect(dark, greaterThan(0));
+      expect(light, greaterThan(0));
     });
 
     test('oversized payload throws Exception', () async {
@@ -79,6 +107,69 @@ void main() {
         () => buildQrBytes(oversized),
         throwsA(isA<Exception>()),
       );
+    });
+
+    test('vCard with inline photo still encodes after toQrPayload', () async {
+      debugHostPhotoForQr = (_) async => null;
+      addTearDown(() {
+        debugHostPhotoForQr = null;
+        debugHasInternet = null;
+        resetPhotoHostCache();
+      });
+      final huge = 'A' * 8000;
+      final v = VCard(
+        nom: 'Doe',
+        prenom: 'Jane',
+        photo: 'data:image/jpeg;base64,$huge',
+        rev: '20260101T000000Z',
+      );
+      await expectLater(
+        () => buildQrBytes(v.toVCard()),
+        throwsA(isA<Exception>()),
+      );
+      final bytes = await buildQrBytes(await v.toQrPayload());
+      expect(bytes.sublist(0, 8), equals(_pngMagic));
+    });
+
+    test('offline vCard with photo still encodes as text-only QR', () async {
+      debugHasInternet = false;
+      addTearDown(() {
+        debugHasInternet = null;
+        debugHostPhotoForQr = null;
+        resetPhotoHostCache();
+      });
+      final huge = 'A' * 8000;
+      final v = VCard(
+        nom: 'Doe',
+        prenom: 'Jane',
+        photo: 'data:image/jpeg;base64,$huge',
+        email: 'jane@doe.com',
+        rev: '20260101T000000Z',
+      );
+      final payload = await v.toQrPayload();
+      expect(payload, isNot(contains('PHOTO')));
+      expect(payload, contains('EMAIL;TYPE=INTERNET:jane@doe.com'));
+      final bytes = await buildQrBytes(payload);
+      expect(bytes.sublist(0, 8), equals(_pngMagic));
+    });
+
+    test('vCard QR embeds hosted photo URL', () async {
+      debugHostPhotoForQr = (_) async => 'https://files.example/jane.jpg';
+      addTearDown(() {
+        debugHostPhotoForQr = null;
+        debugHasInternet = null;
+        resetPhotoHostCache();
+      });
+      final v = VCard(
+        nom: 'Doe',
+        prenom: 'Jane',
+        photo: 'data:image/jpeg;base64,/9j/4AAQSkZJRg==',
+        rev: '20260101T000000Z',
+      );
+      final payload = await v.toQrPayload();
+      expect(payload, contains('https://files.example/jane.jpg'));
+      final bytes = await buildQrBytes(payload);
+      expect(bytes.sublist(0, 8), equals(_pngMagic));
     });
 
     test('oversized payload exception message contains localised text',
@@ -109,9 +200,15 @@ void main() {
       expect(bytes.sublist(0, 8), equals(_pngMagic));
     });
 
-    test('with logo output is larger than 1 KB', () async {
-      final bytes = await buildQrBytes('hello', logoBytes: logo64x64);
-      expect(bytes.length, greaterThan(1024));
+    test('with logo raster matches the no-logo canvas size', () async {
+      final withLogo = await buildQrBytes('hello', logoBytes: logo64x64);
+      final without = await buildQrBytes('hello');
+      final a = img.decodePng(withLogo)!;
+      final b = img.decodePng(without)!;
+      expect(a.width, b.width);
+      expect(a.height, b.height);
+      const minSide = (21 + qrQuietModules * 2) * qrModulePx;
+      expect(a.width, greaterThanOrEqualTo(minSide));
     });
 
     test('QR with logo differs from QR without logo', () async {

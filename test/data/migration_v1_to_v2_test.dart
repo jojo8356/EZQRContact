@@ -27,6 +27,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:qr_code_app/data/db/database.dart';
 import 'package:sqlite3/sqlite3.dart' as raw_sqlite;
 
+import '../helpers/test_db.dart';
+
 /// Creates a raw in-memory SQLite database with the exact v1 schema and
 /// `PRAGMA user_version = 1` set. Returns the open Database; the caller
 /// must wrap it in `NativeDatabase.opened(...)` before passing it to
@@ -292,7 +294,7 @@ void main() {
     late QRDatabase db;
 
     setUp(() {
-      db = QRDatabase.forTesting(NativeDatabase.memory());
+      db = openTestDb();
     });
 
     tearDown(() async {

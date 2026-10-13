@@ -12,7 +12,7 @@ import 'package:flutter/foundation.dart';
 /// Usage inline :
 ///   final result = await Perf.measure('db.getAllVCards', () => repo.getAll());
 class Perf {
-  Perf._();
+  new _();
 
   static final _watches = <String, Stopwatch>{};
   static final _nested = <String, int>{};

@@ -8,8 +8,12 @@ import 'package:qr_code_app/providers/darkmode.dart';
 final DarkModeProvider darkProv = DarkModeProvider();
 
 /// Returns the active [ThemeModeType] derived from `darkProv.isDarkMode`.
-ThemeModeType get currentTheme =>
-    darkProv.isDarkMode ? ThemeModeType.blackMode : ThemeModeType.whiteMode;
+ThemeModeType get currentTheme {
+  if (darkProv.isDarkMode) {
+    return ThemeModeType.blackMode;
+  }
+  return ThemeModeType.whiteMode;
+}
 
 /// Returns a color palette interpolated between light and dark according to
 /// [DarkModeProvider.themeT]. During the 300 ms transition every intermediate

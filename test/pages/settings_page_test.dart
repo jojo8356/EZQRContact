@@ -3,10 +3,17 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:qr_code_app/components/app_switch.dart';
+import 'package:qr_code_app/components/paper_card.dart';
+import 'package:qr_code_app/components/section_label.dart';
 import 'package:qr_code_app/pages/settings.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
+import 'package:qr_code_app/providers/vcard_settings_provider.dart';
+import 'package:qr_code_app/tools/vcard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../helpers/encre.dart';
 
 // Flutter 3.41.6+ uses AssetManifest.bin (StandardMessageCodec binary format)
 // exclusively on non-web platforms. The binary format encodes a map from asset
@@ -19,17 +26,9 @@ ByteData _buildFakeManifestBin() {
   })!;
 }
 
-/// Wraps [SettingsPage] with the routes its bottom navigation bar may push.
+/// Wraps [SettingsPage] with ENCRE theme and navbar routes.
 Widget _buildApp() {
-  return MaterialApp(
-    home: const SettingsPage(),
-    routes: {
-      '/settings': (_) => const SettingsPage(),
-      '/options': (_) => const Scaffold(),
-      '/collection': (_) => const Scaffold(),
-      '/history': (_) => const Scaffold(),
-    },
-  );
+  return encreApp(home: const SettingsPage());
 }
 
 void main() {
@@ -38,6 +37,7 @@ void main() {
   setUpAll(() async {
     SharedPreferences.setMockInitialValues({});
     await LangProvider.init(lang: 'en');
+    await VCardSettingsProvider.init();
   });
 
   setUp(() {
@@ -89,19 +89,85 @@ void main() {
       expect(find.byType(DropdownButton<String>), findsOneWidget);
     });
 
-    testWidgets('tapping dark-mode ElevatedButton flips isDarkMode to true',
+    testWidgets('tapping dark-mode switch flips isDarkMode to true',
         (tester) async {
       await pumpSettingsPage(tester);
 
-      final buttons = find.byType(ElevatedButton);
-      expect(buttons.evaluate(), isNotEmpty);
+      final toggle = find.byKey(const Key('dark-mode-switch'));
+      expect(toggle, findsOneWidget);
 
-      await tester.tap(buttons.last);
+      await tester.tap(toggle);
       // pumpAndSettle pumps 100 ms frames until no pending callbacks.
       // The Ticker records _startTime on its first tick (elapsed = 0) then
       // needs ~300 ms more, so ~4 frames of 100 ms each before it stops.
       await tester.pumpAndSettle();
       expect(darkProv.isDarkMode, isTrue);
     });
+
+    testWidgets('uses AppSwitch and PaperCard, not Material Switch pills',
+        (tester) async {
+      await pumpSettingsPage(tester);
+
+      expect(find.byType(AppSwitch), findsWidgets);
+      expect(find.byType(PaperCard), findsWidgets);
+      expect(find.byType(SectionLabel), findsWidgets);
+      expect(find.byType(Switch), findsNothing);
+      expect(find.byType(SwitchListTile), findsNothing);
+    });
+  });
+
+  // docs/manual-test.md §2.2 — Toggle ON > force-quit > relance > génère un QR
+  group('manual 2.2 — vCard 4.0 persists after kill', () {
+    tearDown(() async {
+      await VCardSettingsProvider.setUseVCard4(false);
+    });
+
+    testWidgets(
+      'toggle ON, relaunch, generated QR stays VERSION:4.0',
+      (tester) async {
+        await pumpSettingsPage(tester);
+
+        final toggle = find.byKey(const Key('vcard4-switch'));
+        await tester.ensureVisible(toggle);
+        await tester.tap(toggle);
+        await tester.pumpAndSettle();
+
+        expect(VCardSettingsProvider.useVCard4, isTrue);
+
+        // Force-quit: drop the widget tree and wipe statics (RAM). Disk
+        // (SharedPreferences mock) stays. main() then calls init().
+        await tester.pumpWidget(const SizedBox.shrink());
+        await tester.pump();
+        VCardSettingsProvider.debugResetMemory();
+        expect(
+          VCardSettingsProvider.useVCard4,
+          isFalse,
+          reason: 'RAM gone after kill',
+        );
+        await VCardSettingsProvider.init();
+
+        await pumpSettingsPage(tester);
+        await tester.ensureVisible(find.byKey(const Key('vcard4-switch')));
+        final sw = tester.widget<AppSwitch>(
+          find.byKey(const Key('vcard4-switch')),
+        );
+        expect(sw.value, isTrue, reason: 'toggle reste ON après relance');
+
+        // Same payload GenerateVCardQRCode encodes into the QR.
+        final qr = VCard(
+          nom: 'Dupont',
+          prenom: 'Marie',
+          telWork: '+33612345678',
+          email: 'marie.dupont@acme.fr',
+          rev: '20261012T000000Z',
+        ).toVCard();
+        expect(qr, contains('VERSION:4.0'));
+        expect(
+          qr,
+          contains('TEL;TYPE=work,voice;VALUE=uri:tel:+33612345678'),
+        );
+        expect(qr, contains('EMAIL:marie.dupont@acme.fr'));
+      },
+    );
   });
 }

@@ -28,26 +28,27 @@ Future<void> showGuidePopup(
       builder: (_) => AnimatedBuilder(
         animation: darkProv,
         builder: (context, _) {
+          final theme = Theme.of(context);
           return AlertDialog(
             backgroundColor: currentColors['popup-background'],
             actionsPadding: const EdgeInsets.fromLTRB(0, 0, 20, 8),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16),
             content: Markdown(
               data: data,
               shrinkWrap: true,
               styleSheet: MarkdownStyleSheet(
-                p: TextStyle(color: currentColors['popup-text']),
-                h1: TextStyle(
+                p: theme.textTheme.bodyLarge?.copyWith(
+                  color: currentColors['popup-text'],
+                ),
+                h1: theme.textTheme.headlineLarge?.copyWith(
                   color: currentColors['popup-h1'],
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
                 ),
-                h2: TextStyle(
+                h2: theme.textTheme.titleLarge?.copyWith(
                   color: currentColors['popup-h2'],
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
                 ),
-                listBullet: TextStyle(color: currentColors['popup-text']),
+                listBullet: theme.textTheme.bodyLarge?.copyWith(
+                  color: currentColors['popup-text'],
+                ),
               ),
             ),
             actions: [cancelButton(context, currentColors)],

@@ -14,7 +14,6 @@ Future<void> showSharePopup(BuildContext context) async {
     builder: (_) => AnimatedBuilder(
       animation: darkProv,
       builder: (context, _) {
-        final isDark = darkProv.isDarkMode;
         return AlertDialog(
           backgroundColor: currentColors['popup-background'],
           title: Text(
@@ -31,17 +30,14 @@ Future<void> showSharePopup(BuildContext context) async {
               _shareIcon(
                 'https://discord.gg/gz25QVbS',
                 FontAwesomeIcons.discord,
-                isDark,
               ),
               _shareIcon(
                 'https://www.instagram.com/dev_jojokes/',
                 FontAwesomeIcons.instagram,
-                isDark,
               ),
               _shareIcon(
                 'https://x.com/HazroF3',
                 FontAwesomeIcons.xTwitter,
-                isDark,
               ),
             ],
           ),
@@ -52,7 +48,7 @@ Future<void> showSharePopup(BuildContext context) async {
   ));
 }
 
-Widget _shareIcon(String url, IconData icon, bool isDark) {
+Widget _shareIcon(String url, FaIconData icon) {
   return InkWell(
     onTap: () async {
       final uri = Uri.parse(url);
@@ -62,7 +58,6 @@ Widget _shareIcon(String url, IconData icon, bool isDark) {
         return;
       }
     },
-
-    child: Icon(icon, size: 40, color: currentColors['text']),
+    child: FaIcon(icon, size: 40, color: currentColors['text']),
   );
 }

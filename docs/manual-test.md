@@ -1,5 +1,9 @@
 # Tests manuels — EZQRContact
 
+> **Plan QA complet (sévérité, smoke, catalogue, a11y, sign-off) :**
+> [`docs/qa/plan-tests-manuels.md`](qa/plan-tests-manuels.md).
+> Ce fichier garde les cas historiques détaillés (payloads vCard, import batch).
+
 Checklist device à exécuter avant chaque release ou après un merge touchant
 un flux utilisateur. Les tests unitaires couvrent la logique pure ; ce document
 couvre les interactions native (caméra, contacts, galerie, fichiers) que les

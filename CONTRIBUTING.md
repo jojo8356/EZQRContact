@@ -14,14 +14,16 @@ README for the full setup. In short:
 git clone https://github.com/jojo8356/EZQRContact.git
 cd EZQRContact
 flutter pub get
+dart run build_runner build
 pnpm install        # installs commitlint + husky Git hook
+flutter test
 flutter run
 ```
 
 Requirements:
 
-- Flutter SDK `^3.8.1`
-- Android SDK with `compileSdkVersion = 35`
+- Flutter SDK `>=3.47.0`
+- Android SDK with `compileSdk = 37`
 - Xcode 15+ for iOS builds (Mac only)
 - Node.js 18+ and [pnpm](https://pnpm.io) (only for the commit-msg
   Git hook; no application code uses Node)
@@ -116,22 +118,42 @@ Node's Corepack shim — recommended for Node 20+.
 
 ## How to run tests
 
-Run the full test suite with:
+Generate Drift (`lib/data/db/database.g.dart`) then run tests:
 
 ```bash
+dart run build_runner build
+flutter pub get
 flutter test
 ```
 
-The v1 codebase has a minimal test surface. The v2 roadmap (epics E1, E2,
-and E3) includes a major test push using `mocktail` and
-`sqflite_common_ffi`. If your PR introduces new logic, please add at least
-one unit test next to it under `test/<mirror-of-lib-path>/`.
+`test/flutter_test_config.dart` boots sqflite FFI and silences Drift's
+multi-instance warning. Data tests open an **in-memory** DB with
+`openTestDb()` from `test/helpers/test_db.dart` — never the on-device
+`qr_app.db`.
+
+Art direction (ENCRE) is locked by `test/theme/encre_da_test.dart` and the
+widget tests under `test/components/` (AppButton, AppSwitch, PaperCard,
+Navbar, …). After a visual change, run at least:
+
+```bash
+flutter test test/theme test/components
+```
+
+Pump UI under `encreApp()` from `test/helpers/encre.dart` — never the
+default Material starter theme (blue seed, pills, Roboto).
+
+If your PR introduces new logic, add at least one test next to it under
+`test/<mirror-of-lib-path>/`. Device flows (camera, contacts, gallery)
+belong in `integration_test/` plus a script under `scripts/` when they
+must run on a phone.
+
+README screenshots: `./scripts/capture_screenshots.sh` (seeds demo
+contacts, then `adb screencap`). User-facing copy: `docs/help/`.
 
 ## Code style
 
-This project currently uses [`flutter_lints`](https://pub.dev/packages/flutter_lints).
-Migration to [`very_good_analysis`](https://pub.dev/packages/very_good_analysis)
-is planned for v2 (story E1-2).
+This project uses [`very_good_analysis`](https://pub.dev/packages/very_good_analysis)
+plus two house rules enforced by tests (no ternary, pure display returns).
 
 Before opening a PR:
 
@@ -155,7 +177,74 @@ Other ways to help:
 - Suggest features via issues
 - Add a translation in `assets/langs/` (current: French, English)
 
+## No ternary operators
+
+House rule: **do not use `cond ? a : b`**. Dart has no native `no_ternary`
+lint (`unneeded_ternary` / `prefer_if_widgets` do not exist in the SDK).
+We enable `prefer_if_elements_to_conditional_expressions` and enforce the
+full ban in `test/lint/no_ternary_test.dart`.
+
+Use `if` / `else` (statements or collection-if). Null-aware `??`, `?.`,
+`?[` and nullable types (`String?`) are fine.
+
+```dart
+// Bad
+final color = selected ? copper : muted;
+child: loading ? const Spinner() : body,
+
+// Good
+late final Color color;
+if (selected) {
+  color = copper;
+} else {
+  color = muted;
+}
+
+child: Builder(
+  builder: (context) {
+    if (loading) return const Spinner();
+    return body;
+  },
+)
+
+children: [
+  if (loading) const Spinner() else body,
+]
+```
+
+## Pure display returns
+
+A `build` (or builder) **return is a widget tree**, not a place for
+algorithms. No IIFE `() { ... }()` inside the tree. Compute values
+above the `return`, or extract a component.
+
+Allowed in the tree: widgets, components, collection-if of widgets,
+event callbacks (`onPressed: () { ... }`).
+
+Enforced by `test/lint/no_iife_in_display_test.dart`.
+
+```dart
+// Bad — algorithm in the display return
+return Scaffold(
+  body: () {
+    if (loading) return const Spinner();
+    return list;
+  }(),
+);
+
+// Good — algorithm above the return
+Widget body = list;
+if (loading) {
+  body = const Spinner();
+}
+return Scaffold(body: body);
+
+// Good — algorithm inside a component
+return Scaffold(body: HistoryBody(loading: loading, items: items));
+```
+
 ## License
 
 By contributing, you agree that your contributions will be licensed under
-the [MIT License](LICENSE).
+the [MIT License](LICENSE) and that you will follow the
+[Code of Conduct](CODE_OF_CONDUCT.md).
