@@ -3,11 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/active_event_banner.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
+import 'package:qr_code_app/components/collection_select_bar.dart';
 import 'package:qr_code_app/components/collection_sync_bar.dart';
 import 'package:qr_code_app/components/empty_state.dart';
 import 'package:qr_code_app/components/navbar.dart';
+import 'package:qr_code_app/components/qr_card.dart';
 import 'package:qr_code_app/components/qr_card_list.dart';
 import 'package:qr_code_app/data/db/database.dart';
+import 'package:qr_code_app/modals/contact_options.dart';
 import 'package:qr_code_app/pages/pdf_export_page.dart';
 import 'package:qr_code_app/pages/qr_scanner.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
@@ -31,6 +34,10 @@ class _CollectionState extends State<Collection> {
   int? _selectedEventId;
   List<Event> _events = [];
   Timer? _debounce;
+  bool _selectMode = false;
+  final Set<String> _selected = <String>{};
+  final Map<String, Map<String, dynamic>> _selectedItems = {};
+  List<Map<String, dynamic>> _listedItems = const [];
 
   late Stream<List<Map<String, dynamic>>> _stream;
 
@@ -83,6 +90,154 @@ class _CollectionState extends State<Collection> {
     await exportAllVCards(context);
   }
 
+  void _exitSelect() {
+    setState(() {
+      _selectMode = false;
+      _selected.clear();
+      _selectedItems.clear();
+    });
+  }
+
+  String? _itemKey(Map<String, dynamic> item) {
+    final data = item['data'];
+    if (data is! Map<String, dynamic>) {
+      return null;
+    }
+    final id = data['id'];
+    if (id is! int) {
+      return null;
+    }
+    return collectionItemKey(
+      isVCard: item['type'] == 'vcard',
+      id: id,
+    );
+  }
+
+  void _onHoldSelect(Map<String, dynamic> item) {
+    final key = _itemKey(item);
+    if (key == null) {
+      return;
+    }
+    setState(() {
+      _selectMode = true;
+      _selected.add(key);
+      _selectedItems[key] = item;
+    });
+  }
+
+  void _onToggleSelect(Map<String, dynamic> item) {
+    final key = _itemKey(item);
+    if (key == null) {
+      return;
+    }
+    setState(() {
+      if (_selected.contains(key)) {
+        _selected.remove(key);
+        _selectedItems.remove(key);
+      } else {
+        _selected.add(key);
+        _selectedItems[key] = item;
+      }
+    });
+  }
+
+  void _selectAllListed() {
+    setState(() {
+      for (final item in _listedItems) {
+        final key = _itemKey(item);
+        if (key != null) {
+          _selected.add(key);
+          _selectedItems[key] = item;
+        }
+      }
+    });
+  }
+
+  Future<void> _exportSelected() async {
+    final vcards = <Map<String, dynamic>>[];
+    final simples = <Map<String, dynamic>>[];
+    for (final item in _selectedItems.values) {
+      final data = item['data'];
+      if (data is! Map<String, dynamic>) {
+        continue;
+      }
+      if (item['type'] == 'simple') {
+        simples.add(data);
+      } else {
+        vcards.add(data);
+      }
+    }
+    if (!mounted) {
+      return;
+    }
+    await saveCollectionZip(
+      context,
+      vcards: vcards,
+      simples: simples,
+    );
+  }
+
+  Future<void> _deleteSelected() async {
+    if (_selected.isEmpty) {
+      return;
+    }
+    final lang = LangProvider.section('pages.collection');
+    final confirm = ((lang['select_delete_confirm'] as String?) ??
+            'Supprimer %s QR ?')
+        .replaceFirst('%s', '${_selected.length}');
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: currentColors['bg'],
+          content: Text(
+            confirm,
+            style: TextStyle(color: currentColors['text']),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: Text(
+                LangProvider.getString('close'),
+                style: TextStyle(color: currentColors['text-muted']),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: Text(
+                (lang['select_delete'] as String?) ?? 'Supprimer',
+                style: TextStyle(color: currentColors['danger']),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+    if (ok != true || !mounted) {
+      return;
+    }
+    var deleted = 0;
+    for (final item in _selectedItems.values) {
+      final data = item['data'];
+      if (data is! Map<String, dynamic>) {
+        continue;
+      }
+      final id = data['id'];
+      if (id is! int) {
+        continue;
+      }
+      await deleteQR(isVCard: item['type'] == 'vcard', id: id);
+      deleted += 1;
+    }
+    if (!mounted) {
+      return;
+    }
+    _exitSelect();
+    final done = ((lang['select_deleted'] as String?) ?? '%s QR supprimés')
+        .replaceFirst('%s', '$deleted');
+    showToast(context: context, title: done, color: Colors.white);
+  }
+
   @override
   Widget build(BuildContext context) {
     final lang = LangProvider.section('pages.collection');
@@ -103,17 +258,31 @@ class _CollectionState extends State<Collection> {
             },
           );
         }
-        return Scaffold(
-          backgroundColor: currentColors['bg'],
-          appBar: AppBarCustom(lang['title'] as String),
-          floatingActionButton: FloatingActionButton(
+        Widget? fab;
+        if (!_selectMode) {
+          fab = FloatingActionButton(
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute<void>(builder: (_) => const PdfExportPage()),
             ),
             tooltip: 'Export PDF',
             child: const Icon(Icons.picture_as_pdf_outlined),
-          ),
+          );
+        }
+        return PopScope(
+          canPop: !_selectMode,
+          onPopInvokedWithResult: (didPop, result) {
+            if (didPop) {
+              return;
+            }
+            if (_selectMode) {
+              _exitSelect();
+            }
+          },
+          child: Scaffold(
+          backgroundColor: currentColors['bg'],
+          appBar: AppBarCustom(lang['title'] as String),
+          floatingActionButton: fab,
           body: Column(
             children: [
               const ActiveEventBanner(),
@@ -144,14 +313,15 @@ class _CollectionState extends State<Collection> {
                   ),
                 ),
               ),
-              CollectionSyncBar(
-                onImport: () {
-                  unawaited(_importAll());
-                },
-                onExport: () {
-                  unawaited(_exportAll());
-                },
-              ),
+              if (!_selectMode)
+                CollectionSyncBar(
+                  onImport: () {
+                    unawaited(_importAll());
+                  },
+                  onExport: () {
+                    unawaited(_exportAll());
+                  },
+                ),
               if (_events.isNotEmpty)
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
@@ -182,7 +352,18 @@ class _CollectionState extends State<Collection> {
                       return const Center(child: CircularProgressIndicator());
                     }
                     final items = snapshot.data ?? [];
+                    _listedItems = items;
                     if (items.isEmpty) {
+                      if (_selectMode) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (!mounted) {
+                            return;
+                          }
+                          if (_selectMode) {
+                            _exitSelect();
+                          }
+                        });
+                      }
                       final home = LangProvider.getMap('home');
                       return EmptyState(
                         icon: Icons.style_outlined,
@@ -199,9 +380,31 @@ class _CollectionState extends State<Collection> {
                         ),
                       );
                     }
-                    return QRCardListView(
-                      allItems: items,
-                      refreshData: () async {},
+                    return Column(
+                      children: [
+                        Expanded(
+                          child: QRCardListView(
+                            allItems: items,
+                            refreshData: () async {},
+                            selectMode: _selectMode,
+                            selectedKeys: _selected,
+                            onHoldSelect: _onHoldSelect,
+                            onToggleSelect: _onToggleSelect,
+                          ),
+                        ),
+                        if (_selectMode)
+                          CollectionSelectBar(
+                            count: _selected.length,
+                            onCancel: _exitSelect,
+                            onSelectAll: _selectAllListed,
+                            onDelete: () {
+                              unawaited(_deleteSelected());
+                            },
+                            onExport: () {
+                              unawaited(_exportSelected());
+                            },
+                          ),
+                      ],
                     );
                   },
                 ),
@@ -209,6 +412,7 @@ class _CollectionState extends State<Collection> {
             ],
           ),
           bottomNavigationBar: const Navbar(currentRoute: '/collection'),
+        ),
         );
       },
     );

@@ -10,6 +10,10 @@ class QRCardListView extends StatefulWidget {
   const new({
     required this.allItems,
     required this.refreshData,
+    this.selectMode = false,
+    this.selectedKeys = const <String>{},
+    this.onHoldSelect,
+    this.onToggleSelect,
     super.key,
   });
 
@@ -18,6 +22,18 @@ class QRCardListView extends StatefulWidget {
 
   /// Callback re-running the DB query that produced [allItems].
   final Future<void> Function() refreshData;
+
+  /// When true, every card shows a checkbox and the window is unbounded.
+  final bool selectMode;
+
+  /// Keys of currently checked cards (`vcard:id` / `simple:id`).
+  final Set<String> selectedKeys;
+
+  /// Fired after a 2-second hold on a card.
+  final void Function(Map<String, dynamic> item)? onHoldSelect;
+
+  /// Fired when a card is tapped in select mode.
+  final void Function(Map<String, dynamic> item)? onToggleSelect;
 
   @override
   State<QRCardListView> createState() => _QRCardListViewState();
@@ -45,6 +61,9 @@ class _QRCardListViewState extends State<QRCardListView> {
   }
 
   void _onScroll() {
+    if (widget.selectMode) {
+      return;
+    }
     if (_controller.position.pixels >=
         _controller.position.maxScrollExtent - 100) {
       setState(() {
@@ -82,18 +101,34 @@ class _QRCardListViewState extends State<QRCardListView> {
 
   @override
   Widget build(BuildContext context) {
+    var rows = _activeItems;
+    if (widget.selectMode) {
+      rows = widget.allItems;
+    }
     return ListView.builder(
       controller: _controller,
-      itemCount: _activeItems.length,
+      itemCount: rows.length,
       itemBuilder: (context, index) {
-        final item = _activeItems[index];
+        final item = rows[index];
         final data = item['data'] as Map<String, dynamic>;
         final isVCard = item['type'] == 'vcard';
+        final id = data['id'];
+        var cardKey = 'idx:$index';
+        var selected = false;
+        if (id is int) {
+          cardKey = collectionItemKey(isVCard: isVCard, id: id);
+          selected = widget.selectedKeys.contains(cardKey);
+        }
 
         return QRCard(
+          key: ValueKey(cardKey),
           data: data,
           isVCard: isVCard,
           onRefresh: widget.refreshData,
+          selectMode: widget.selectMode,
+          selected: selected,
+          onHoldSelect: () => widget.onHoldSelect?.call(item),
+          onToggleSelect: () => widget.onToggleSelect?.call(item),
         );
       },
     );

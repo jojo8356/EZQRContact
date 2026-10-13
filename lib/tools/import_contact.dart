@@ -481,7 +481,6 @@ Future<void> importAllDeviceContacts(BuildContext context) async {
 /// Writes the whole collection (vCards, simple QRs, QR PNGs, photos)
 /// to a `.zip` via the system saver.
 Future<void> exportAllVCards(BuildContext context) async {
-  final collection = LangProvider.section('pages.collection');
   final items = await QRDatabase().getAllItems();
   if (!context.mounted) return;
 
@@ -499,12 +498,26 @@ Future<void> exportAllVCards(BuildContext context) async {
     }
   }
 
+  await saveCollectionZip(
+    context,
+    vcards: vcards,
+    simples: simples,
+  );
+}
+
+/// Saves a zip of [vcards] and [simples]. No-op toast when both are empty.
+Future<void> saveCollectionZip(
+  BuildContext context, {
+  required List<Map<String, dynamic>> vcards,
+  required List<Map<String, dynamic>> simples,
+}) async {
+  final collection = LangProvider.section('pages.collection');
   final total = vcards.length + simples.length;
   if (total == 0) {
     showToast(
       context: context,
       title: (collection['export_none'] as String?) ??
-          'Aucune carte à exporter',
+          'Aucun QR à exporter',
       color: Colors.white,
     );
     return;
@@ -522,7 +535,7 @@ Future<void> exportAllVCards(BuildContext context) async {
   );
   if (!context.mounted) return;
   final doneTemplate =
-      (collection['export_done'] as String?) ?? '%s contacts exportés';
+      (collection['export_done'] as String?) ?? '%s QR exportés';
   showToast(
     context: context,
     title: doneTemplate.replaceFirst('%s', '$total'),

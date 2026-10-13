@@ -138,7 +138,13 @@
       "import_done": "Imported %s contacts",
       "import_skip": "Already in the collection",
       "export_none": "No QR codes to export",
-      "export_done": "Exported %s QR codes"
+      "export_done": "Exported %s QR codes",
+      "select_count": "%s selected",
+      "select_all": "Select all",
+      "select_delete": "Delete",
+      "select_export": "Export",
+      "select_delete_confirm": "Delete %s QR codes?",
+      "select_deleted": "Deleted %s QR codes"
     }
   },
   "VCard Input": {
