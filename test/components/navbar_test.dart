@@ -84,11 +84,13 @@ void main() {
   testWidgets('outgoing and incoming bars both keep four tabs', (tester) async {
     await tester.pumpWidget(
       encreApp(
-        home: const Column(
-          children: [
-            Navbar(currentRoute: '/options'),
-            Navbar(currentRoute: '/collection'),
-          ],
+        home: const Scaffold(
+          body: Column(
+            children: [
+              Navbar(currentRoute: '/options'),
+              Navbar(currentRoute: '/collection'),
+            ],
+          ),
         ),
       ),
     );

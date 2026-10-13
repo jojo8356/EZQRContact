@@ -55,7 +55,7 @@ void main() {
     expect(find.byKey(const Key('coach-next')), findsOneWidget);
 
     // Live UI stays underneath (not a slideshow of every control).
-    expect(find.byType(ActionTile), findsNWidgets(6));
+    expect(find.byType(ActionTile), findsNWidgets(5));
     expect(find.byType(Navbar), findsOneWidget);
   });
 
