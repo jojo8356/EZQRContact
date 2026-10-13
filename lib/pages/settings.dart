@@ -243,6 +243,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                 style: theme.textTheme.titleMedium,
                               ),
                               trailing: AppSwitch(
+                                key: const Key('reciprocal-switch'),
                                 value: _reciprocalExchange,
                                 onChanged: (value) async {
                                   await VCardSettingsProvider

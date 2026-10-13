@@ -86,4 +86,31 @@ void main() {
       },
     );
   });
+
+  group('VCardSettingsProvider — reciprocal exchange', () {
+    test('defaults reciprocalExchange to false', () {
+      expect(VCardSettingsProvider.reciprocalExchange, isFalse);
+    });
+
+    test('setReciprocalExchange(true) persists and reads back', () async {
+      await VCardSettingsProvider.setReciprocalExchange(true);
+      expect(VCardSettingsProvider.reciprocalExchange, isTrue);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool('reciprocal_exchange'), isTrue);
+    });
+
+    test('survives force-quit via SharedPrefs', () async {
+      await VCardSettingsProvider.setReciprocalExchange(true);
+      final prefs = await SharedPreferences.getInstance();
+      final snapshot = <String, Object>{
+        'reciprocal_exchange': prefs.getBool('reciprocal_exchange')!,
+      };
+      SharedPreferences.setMockInitialValues({});
+      await VCardSettingsProvider.init();
+      expect(VCardSettingsProvider.reciprocalExchange, isFalse);
+      SharedPreferences.setMockInitialValues(snapshot);
+      await VCardSettingsProvider.init();
+      expect(VCardSettingsProvider.reciprocalExchange, isTrue);
+    });
+  });
 }
