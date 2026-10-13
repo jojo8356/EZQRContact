@@ -14,6 +14,28 @@ import 'package:qr_code_app/theme/tokens.dart';
 import 'package:qr_code_app/tools/tools.dart';
 import 'package:qr_code_app/tools/vcard.dart';
 
+/// Chrome for [AiBarcodeScanner]. Defaults are white icons on a light
+/// overlay — unreadable on papier. Copper discs, ivoire glyphs.
+ScannerTheme encreScannerTheme() {
+  final c = currentColors;
+  return ScannerTheme(
+    overlayColor: c['bg'],
+    reticleColor: c['button-color'],
+    controlBackgroundColor: c['button-color'],
+    controlForegroundColor: c['on-button'],
+    controlActiveBackgroundColor: c['text'],
+    controlActiveForegroundColor: c['bg'],
+    controlSize: AppTokens.compactWell,
+    hintBackgroundColor: c['surface'],
+    hintTextStyle: TextStyle(
+      color: c['text'],
+      fontWeight: FontWeight.w600,
+    ),
+    surfaceColor: c['surface'],
+    onSurfaceColor: c['text'],
+  );
+}
+
 /// Page launching the camera-based QR scanner. On vCard detection navigates
 /// to [ScanResultPage]; other payloads are saved as SimpleQR rows.
 class QRScannerPage extends StatefulWidget {
@@ -42,6 +64,7 @@ class _QRScannerPageState extends State<QRScannerPage> {
             ScannerAction.torch,
             ScannerAction.close,
           },
+          theme: encreScannerTheme(),
           overlayConfig: overlay,
           onDetect: (capture) async {
             if (_scanned) return;
