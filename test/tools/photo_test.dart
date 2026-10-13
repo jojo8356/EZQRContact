@@ -108,7 +108,7 @@ void main() {
       expect(await deviceHasInternet(), isFalse);
     });
 
-    test('deviceHasInternet is false during flutter test by default', () async {
+    test('deviceHasInternet is false in tests by default', () async {
       expect(await deviceHasInternet(), isFalse);
     });
 

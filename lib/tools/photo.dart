@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -87,6 +88,19 @@ void resetPhotoHostCache() {
   _hostCache.clear();
 }
 
+/// True inside `flutter test` / `dart test` (the test package zone, or
+/// the `FLUTTER_TEST` dart-define). Used so we never DNS/upload in tests
+/// unless a debug hook opts in.
+bool _inTest() {
+  if (const bool.fromEnvironment('FLUTTER_TEST')) {
+    return true;
+  }
+  if (Zone.current[#test.declarer] != null) {
+    return true;
+  }
+  return false;
+}
+
 /// True when the device can resolve a public host (needs internet).
 ///
 /// Used before uploading a vCard photo: offline, the QR is text-only.
@@ -98,7 +112,7 @@ Future<bool> deviceHasInternet() async {
   if (debugHostPhotoForQr != null) {
     return true;
   }
-  if (const bool.fromEnvironment('FLUTTER_TEST')) {
+  if (_inTest()) {
     return false;
   }
   try {
@@ -134,7 +148,7 @@ Future<String?> hostPhotoForQr(String photo) async {
   }
   // Unit/widget tests must not hit the network. Inject [debugHostPhotoForQr]
   // to simulate a hosted URL.
-  if (const bool.fromEnvironment('FLUTTER_TEST')) {
+  if (_inTest()) {
     return null;
   }
   final cacheKey = Object.hash(photo.length, photo.hashCode);
