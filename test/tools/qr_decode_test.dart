@@ -66,11 +66,30 @@ void main() {
     expect(decodeQrFromBytes(jpeg), _simple);
   });
 
-  test('decodeQrFromFile falls back to ZXing on a photo file', () async {
-    final png = embedQrInScene(await buildQrBytes(_simple));
+  test('decodes a noisy full-frame JPEG of a simple QR', () async {
+    final png = await buildQrBytes(_simple);
+    final photo = embedQrInNoisyPhoto(png);
+    final scene = img.decodeImage(photo);
+    expect(scene, isNotNull);
+    expect(scene!.width, 960);
+    expect(scene.height, 720);
+    expect(decodeQrFromBytes(photo), _simple);
+  });
+
+  test('decodes a noisy full-frame JPEG of a vCard QR', () async {
+    final payload = _marie().toVCard();
+    final photo = embedQrInNoisyPhoto(await buildQrBytes(payload));
+    final text = decodeQrFromBytes(photo);
+    expect(text, isNotNull);
+    expect(VCard.isVCard(text!), isTrue);
+    expect(text, contains('Marie Dupont'));
+  });
+
+  test('decodeQrFromFile reads a noisy desk photo', () async {
+    final photo = embedQrInNoisyPhoto(await buildQrBytes(_simple));
     final dir = await Directory.systemTemp.createTemp('ezqr-decode');
-    final path = '${dir.path}/photo.png';
-    await File(path).writeAsBytes(png);
+    final path = '${dir.path}/desk.jpg';
+    await File(path).writeAsBytes(photo);
     addTearDown(() async {
       if (dir.existsSync()) {
         await dir.delete(recursive: true);

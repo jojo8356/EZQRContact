@@ -1,6 +1,6 @@
 // Live generate→import: raster a SimpleQR and a vCard QR, wrap each in a
-// photo-like scene, then run the production gallery decoder (ML Kit then
-// ZXing) through QrFromImagePage. Does not inject analyzeImage.
+// noisy full-frame desk JPEG, then run the production gallery decoder
+// (ML Kit then ZXing) through QrFromImagePage. Does not inject analyzeImage.
 //
 //   flutter test integration_test/generate_and_import_test.dart
 //   ./scripts/test_generate_import.sh
@@ -104,8 +104,8 @@ void main() {
   testWidgets(
     'generated simple QR photo imports as SimpleQR',
     (tester) async {
-      final png = embedQrInScene(await buildQrBytes(_simple));
-      final path = await _writeScene('simple-photo.png', png);
+      final photo = embedQrInNoisyPhoto(await buildQrBytes(_simple));
+      final path = await _writeScene('simple-desk.jpg', photo);
       addTearDown(() => File(path).parent.delete(recursive: true));
 
       final saved = <String>[];
@@ -138,8 +138,8 @@ void main() {
         email: 'marie.dupont@acme.fr',
         rev: '20261012T000000Z',
       ).toVCard();
-      final png = embedQrInScene(await buildQrBytes(payload));
-      final path = await _writeScene('vcard-photo.png', png);
+      final photo = embedQrInNoisyPhoto(await buildQrBytes(payload));
+      final path = await _writeScene('vcard-desk.jpg', photo);
       addTearDown(() => File(path).parent.delete(recursive: true));
 
       Map<String, dynamic>? saved;

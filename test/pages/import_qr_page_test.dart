@@ -204,18 +204,18 @@ void main() {
     );
   });
 
-  // Generate a real PNG (and a photo-like scene), decode with ZXing, import.
+  // Generate a noisy full-frame JPEG (desk, grain, tilt), decode, import.
   group('generate then import', () {
     testWidgets(
-      'simple QR photo is decoded and saved as SimpleQR',
+      'noisy simple QR photo is decoded and saved as SimpleQR',
       (tester) async {
-        final png = embedQrInScene(await buildQrBytes(_simpleQr));
+        final photo = embedQrInNoisyPhoto(await buildQrBytes(_simpleQr));
         final saved = <String>[];
         await _openImport(
           tester,
           import: QrFromImagePage(
-            pickImage: () async => XFile('simple-photo.png'),
-            analyzeImage: (_) async => decodeQrFromBytes(png),
+            pickImage: () async => XFile('simple-desk.jpg'),
+            analyzeImage: (_) async => decodeQrFromBytes(photo),
             saveSimpleQr: (text) async {
               saved.add(text);
               return 1;
@@ -231,7 +231,7 @@ void main() {
     );
 
     testWidgets(
-      'vCard QR photo is decoded, parsed, and opened',
+      'noisy vCard QR photo is decoded, parsed, and opened',
       (tester) async {
         final payload = VCard(
           nom: 'Dupont',
@@ -240,13 +240,13 @@ void main() {
           email: 'marie.dupont@acme.fr',
           rev: '20261012T000000Z',
         ).toVCard();
-        final png = embedQrInScene(await buildQrBytes(payload));
+        final photo = embedQrInNoisyPhoto(await buildQrBytes(payload));
         Map<String, dynamic>? saved;
         await _openImport(
           tester,
           import: QrFromImagePage(
-            pickImage: () async => XFile('vcard-photo.png'),
-            analyzeImage: (_) async => decodeQrFromBytes(png),
+            pickImage: () async => XFile('vcard-desk.jpg'),
+            analyzeImage: (_) async => decodeQrFromBytes(photo),
             saveVCard: (data) async {
               saved = data;
               return 7;
