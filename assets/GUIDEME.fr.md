@@ -13,7 +13,7 @@ Relance : Réglages → Lire le guide.
 
 ## Collection
 
-Cartes enregistrées. Recherche, tout importer, zip, PDF.
+Cartes enregistrées. Recherche, tout importer, zip.
 
 Reste appuyé **plus de 2 secondes** pour sélectionner, puis supprimer ou exporter.
 

@@ -10,7 +10,7 @@ are responsible for your own policy.
 
 | Data | Where | Why |
 |---|---|---|
-| vCards and simple QRs | SQLite `qr_app.db` | Collection, History, PDF, zip export |
+| vCards and simple QRs | SQLite `qr_app.db` | Collection, History, zip export |
 | Language, onboarding, dark mode, vCard 4, reciprocal swap | SharedPreferences | Settings |
 | Rendered QR PNGs | app documents directory | Share / export |
 
@@ -27,7 +27,7 @@ phone to “make up for” a denied permission.
 ## Network
 
 Most flows work offline (create, scan, import from gallery, Collection,
-PDF, zip).
+zip).
 
 The **only** automatic network use is optional **photo hosting** when
 you attach a portrait to a vCard **and** the device has internet:
@@ -44,7 +44,7 @@ If the phone is offline, PHOTO is omitted and the QR is text-only.
 Those hosts are third parties with their own terms. Do not put a photo
 in a vCard if you cannot accept that.
 
-Scan, gallery import, and zip/PDF export do **not** upload.
+Scan, gallery import, and zip export do **not** upload.
 
 ## What we do not collect
 

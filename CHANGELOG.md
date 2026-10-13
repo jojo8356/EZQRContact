@@ -13,7 +13,6 @@ Versioning follows [SemVer](https://semver.org/) as `pubspec.yaml` `version`.
 - Drift schema for vCards and simple QRs (`qr_app.db`)
 - Collection: search, import all device contacts, export a flat zip
 - Long-press (> 2 s) multi-select to delete or export checked cards
-- PDF export (1 per page or 2×2)
 - Reciprocal swap after a scan
 - Onboarding + interactive Home coach tour (3 steps, skippable)
 - Replay the coach tour from Settings → Read guide
@@ -26,6 +25,7 @@ Versioning follows [SemVer](https://semver.org/) as `pubspec.yaml` `version`.
 ### Removed
 
 - Events (create / activate / filter / banner). Cards are a flat list.
+- PDF export (1 per page or 2×2). Zip export stays.
 
 ### Changed
 

@@ -52,7 +52,6 @@ EZQRContact is different:
 - Reciprocal swap: offer your card back after you scan someone
 - Collection: search, import all phone contacts (skip name dupes), export a flat zip (`contacts.vcf` + text QRs)
 - Long-press a card **more than 2 seconds** to multi-select, then delete or export the checked ones
-- PDF export (1 per page or 2×2)
 - French and English UI, light and dark mode
 - Contacts permission is optional: the in-app card is always saved; the OS address book is updated only if access is granted
 
@@ -63,7 +62,7 @@ EZQRContact is different:
 | App | Flutter `>=3.47`, Dart 3.13, Android API 24+, iOS 12+ |
 | Data | [Drift](https://pub.dev/packages/drift) on sqflite (`qr_app.db`), SharedPreferences |
 | QR | [qr_flutter](https://pub.dev/packages/qr_flutter), [ai_barcode_scanner](https://pub.dev/packages/ai_barcode_scanner), [zxing2](https://pub.dev/packages/zxing2) |
-| Files | [archive](https://pub.dev/packages/archive), [pdf](https://pub.dev/packages/pdf) / [printing](https://pub.dev/packages/printing), [file_saver](https://pub.dev/packages/file_saver) |
+| Files | [archive](https://pub.dev/packages/archive), [file_saver](https://pub.dev/packages/file_saver) |
 | Contacts | [flutter_contacts](https://pub.dev/packages/flutter_contacts), [permission_handler](https://pub.dev/packages/permission_handler) |
 | UI | ENCRE tokens (`lib/theme`), Outfit + Fraunces, [lucide_flutter](https://pub.dev/packages/lucide_flutter) |
 | Lint | [very_good_analysis](https://pub.dev/packages/very_good_analysis) plus house rules (no ternary, pure `build` returns) |

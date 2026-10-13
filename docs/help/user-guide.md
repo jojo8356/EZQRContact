@@ -70,8 +70,6 @@ same zip as Export all. Back or the close icon leaves select mode.
 - `text_<id>_<slug>.txt` and `.png` for simple QRs
 - `index.txt`
 
-**PDF** (orange FAB): pick cards, 1 per page or 2×2.
-
 ## History
 
 Navbar **History**. Soft-deleted cards. Read-mostly.
@@ -111,7 +109,7 @@ Scan. Screen photos of a laptop work better after a straight-on shot.
 allowed. Generate again, or open the card and use the save action.
 
 **Export zip missing text QRs.** Use Collection **Export all** (or
-multi-select export), not the PDF FAB. PDF is layout only.
+multi-select export).
 
 ## Get the app
 

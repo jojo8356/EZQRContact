@@ -13,7 +13,7 @@ from Settings → Read guide.
 
 ## Collection
 
-Saved cards. Search, import all, export a zip, PDF.
+Saved cards. Search, import all, export a zip.
 
 Hold a card **more than 2 seconds** to select several, then delete or export.
 

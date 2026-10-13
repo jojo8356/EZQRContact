@@ -74,8 +74,6 @@ mode.
 - `text_<id>_<slug>.txt` et `.png` pour les QR texte
 - `index.txt`
 
-**PDF** (bouton orange) : 1 par page ou 2×2.
-
 ## Historique
 
 Barre du bas **Historique**. Cartes supprimées (soft delete). Surtout
@@ -117,7 +115,7 @@ d'écran : vise de face.
 ou ouvre la carte et enregistre.
 
 **Le zip n'a pas les QR texte.** Utilise **Tout exporter** (ou l'export de
-sélection), pas le FAB PDF.
+sélection).
 
 ## Installer
 

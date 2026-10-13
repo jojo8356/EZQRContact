@@ -10,7 +10,6 @@ import 'package:qr_code_app/components/qr_card.dart';
 import 'package:qr_code_app/components/qr_card_list.dart';
 import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/modals/contact_options.dart';
-import 'package:qr_code_app/pages/pdf_export_page.dart';
 import 'package:qr_code_app/pages/qr_scanner.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
@@ -238,17 +237,6 @@ class _CollectionState extends State<Collection> {
             },
           );
         }
-        Widget? fab;
-        if (!_selectMode) {
-          fab = FloatingActionButton(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute<void>(builder: (_) => const PdfExportPage()),
-            ),
-            tooltip: 'Export PDF',
-            child: const Icon(Icons.picture_as_pdf_outlined),
-          );
-        }
         return PopScope(
           canPop: !_selectMode,
           onPopInvokedWithResult: (didPop, result) {
@@ -262,7 +250,6 @@ class _CollectionState extends State<Collection> {
           child: Scaffold(
           backgroundColor: currentColors['bg'],
           appBar: AppBarCustom(lang['title'] as String),
-          floatingActionButton: fab,
           body: Column(
             children: [
               Padding(
