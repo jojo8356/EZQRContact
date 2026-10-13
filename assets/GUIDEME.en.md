@@ -10,7 +10,6 @@ from Settings → Read guide.
 3. **Simple QR** — any text or URL
 4. **Import a QR** — from a screenshot
 5. **Import contact** — from the phone book
-6. **Events** — tag scans by fair or meetup
 
 ## Collection
 

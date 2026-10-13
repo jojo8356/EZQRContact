@@ -38,7 +38,7 @@ void main() {
 
     expect(find.text('Tools'), findsOneWidget);
     expect(find.text('Also'), findsNothing);
-    expect(find.byType(ActionTile), findsNWidgets(6));
+    expect(find.byType(ActionTile), findsNWidgets(5));
     expect(find.byIcon(Icons.contact_page_outlined), findsOneWidget);
     expect(find.byIcon(Icons.qr_code_scanner_rounded), findsOneWidget);
 

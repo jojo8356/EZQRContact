@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:qr_code_app/components/active_event_banner.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/empty_state.dart';
 import 'package:qr_code_app/components/navbar.dart';
@@ -72,12 +71,7 @@ class _HistoryPageState extends State<HistoryPage> {
     return Scaffold(
       backgroundColor: currentColors['bg'],
       appBar: AppBarCustom(lang['title'] as String),
-      body: Column(
-        children: [
-          const ActiveEventBanner(),
-          Expanded(child: body),
-        ],
-      ),
+      body: body,
       bottomNavigationBar: const Navbar(currentRoute: '/history'),
     );
   }

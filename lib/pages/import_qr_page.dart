@@ -6,7 +6,6 @@ import 'package:qr_code_app/components/paper_card.dart';
 import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/modals/contact_options.dart';
 import 'package:qr_code_app/pages/scan_result_page.dart';
-import 'package:qr_code_app/providers/event_provider.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
 import 'package:qr_code_app/providers/theme_globals.dart';
 import 'package:qr_code_app/theme/tokens.dart';
@@ -84,12 +83,8 @@ class _QrFromImagePageState extends State<QrFromImagePage> {
       final isVCard = VCard.isVCard(rawValue);
       if (isVCard) {
         final vcard = VCard.parse(rawValue);
-        final activeEvent = EventProvider().activeEvent;
         final map = await vcard.toMap()
           ..['captured_at'] = DateTime.now().toIso8601String();
-        if (activeEvent != null) {
-          map['event_id'] = activeEvent.id.toString();
-        }
         final saveV = widget.saveVCard;
         late final int id;
         if (saveV != null) {

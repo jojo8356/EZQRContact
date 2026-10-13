@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:qr_code_app/components/active_event_banner.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/navbar.dart';
 import 'package:qr_code_app/data/db/database.dart';
@@ -352,7 +351,6 @@ class _PdfExportPageState extends State<PdfExportPage> {
       appBar: AppBarCustom(lang['title'] as String),
       body: Column(
         children: [
-          const ActiveEventBanner(),
           // toolbar
           Container(
             color: currentColors['surface'],

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:qr_code_app/components/active_event_banner.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/app_switch.dart';
 import 'package:qr_code_app/components/coach_tour.dart';
@@ -269,12 +268,7 @@ class _SettingsPageState extends State<SettingsPage> {
         return Scaffold(
           appBar: AppBarCustom((lang['mode'] as String?) ?? 'Options'),
           backgroundColor: c['bg'],
-          body: Column(
-            children: [
-              const ActiveEventBanner(),
-              Expanded(child: settingsBody),
-            ],
-          ),
+          body: settingsBody,
           bottomNavigationBar: const Navbar(currentRoute: '/settings'),
         );
       },

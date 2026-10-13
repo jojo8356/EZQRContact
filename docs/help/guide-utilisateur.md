@@ -60,8 +60,8 @@ une carte **dans l'app**. Le carnet OS n'est pas obligatoire.
 
 ## Collection
 
-Barre du bas **Collection**. Recherche, filtre par événement, ouvrir une
-carte pour partager ou supprimer.
+Barre du bas **Collection**. Recherche, ouvrir une carte pour partager
+ou supprimer.
 
 **Multi-sélection :** reste appuyé **plus de deux secondes**. Des cases
 apparaissent. Tout sélectionner, supprimer (confirmation) ou exporter la
@@ -75,11 +75,6 @@ mode.
 - `index.txt`
 
 **PDF** (bouton orange) : 1 par page ou 2×2.
-
-## Événements
-
-Accueil → **Événements**. Crée un salon, active-le, les scans suivants
-sont tagués. Filtre Collection sur cet événement.
 
 ## Historique
 
@@ -99,7 +94,7 @@ lecture.
 
 | Donnée | Où |
 |---|---|
-| Cartes, événements, historique | SQLite `qr_app.db` sur l'appareil |
+| Cartes, historique | SQLite `qr_app.db` sur l'appareil |
 | Langue, onboarding, interrupteurs | SharedPreferences |
 | Contacts OS | Écrits **seulement** si tu autorises Contacts. Refus : le QR in-app existe quand même |
 | Hébergement photo | Seulement si tu ajoutes une photo **et** que le téléphone est en ligne |

@@ -77,15 +77,17 @@ class Navbar extends StatelessWidget {
                         for (final item in items)
                           Expanded(
                             child: _NavItem(
-                              key: _coachKeyForRoute(item.$4),
+                              key: _coachKeyForRoute(
+                                item.$4,
+                                currentRoute,
+                              ),
                               icon: item.$1,
                               selectedIcon: item.$2,
                               label: item.$3,
                               selected: currentRoute == item.$4,
                               onTap: () {
                                 if (item.$4 == currentRoute) return;
-                                Navigator.pushReplacementNamed(
-                                  context,
+                                Navigator.of(context).pushReplacementNamed(
                                   item.$4,
                                 );
                               },
@@ -104,7 +106,13 @@ class Navbar extends StatelessWidget {
   }
 }
 
-Key? _coachKeyForRoute(String route) {
+Key? _coachKeyForRoute(String route, String currentRoute) {
+  // The GlobalKey can live on only one Navbar. During a tab switch both
+  // the outgoing and incoming bars are on screen; attaching the key on
+  // every page made Collection vanish (3 items) then reappear (4).
+  if (currentRoute != '/options') {
+    return null;
+  }
   if (route == '/collection') {
     return coachCollectionKey;
   }

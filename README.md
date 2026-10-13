@@ -50,7 +50,7 @@ EZQRContact is different:
 - Profile photo: resized, hosted as a URL when online so the QR stays scannable; skipped when offline
 - Visual identity: copper/ink theme, primary color, optional logo, layout templates
 - Reciprocal swap: offer your card back after you scan someone
-- Collection: search, events, import all phone contacts (skip name dupes), export a flat zip (`contacts.vcf` + text QRs)
+- Collection: search, import all phone contacts (skip name dupes), export a flat zip (`contacts.vcf` + text QRs)
 - Long-press a card **more than 2 seconds** to multi-select, then delete or export the checked ones
 - PDF export (1 per page or 2×2)
 - French and English UI, light and dark mode
@@ -95,7 +95,7 @@ lib/
   theme/             # ENCRE tokens, typography, ThemeData
   pages/             # Home, Collection, History, Settings, scanners, generators
   components/        # Cards, navbar, buttons, select bar
-  data/db/           # Drift schema (VCard, SimpleQR, events)
+  data/db/           # Drift schema (VCard, SimpleQR)
   providers/         # Theme, language, vCard 4 / reciprocal flags
   tools/             # vCard, contacts, import/export zip, QR decode
 docs/

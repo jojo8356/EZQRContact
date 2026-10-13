@@ -11,20 +11,17 @@
     "simple_sub": "Texte, URL, identifiant",
     "import_sub": "Depuis une capture d’écran",
     "import_contact_sub": "Depuis le carnet du téléphone",
-    "events_sub": "Regroupez par salon ou RDV",
     "scanner_hint": "Cadrez le QR. Rien n’est envoyé.",
     "import_hint": "Choisissez une capture contenant un QR.",
     "empty_collection": "Scannez votre première carte.",
-    "empty_history": "Les cartes supprimées apparaîtront ici.",
-    "empty_events": "Créez un événement pour grouper vos scans."
+    "empty_history": "Les cartes supprimées apparaîtront ici."
   },
   "menu": {
     "simple": "QR code Simple",
     "vcard": "QR code VCard",
     "scanner": "Scanner un QR code",
     "import": "Importer un QR code",
-    "import_contact": "Importer contact",
-    "events": "Événements"
+    "import_contact": "Importer contact"
   },
   "options": {
     "guide": "Lire guide",
@@ -129,7 +126,6 @@
     "collection": {
       "title": "Collection",
       "search_hint": "Chercher par nom…",
-      "filter_all_events": "Tous les événements",
       "import_all": "Tout importer",
       "export_all": "Tout exporter",
       "import_all_confirm": "Importer %s contacts du téléphone ?",
@@ -199,21 +195,6 @@
     "no_selection": "Sélectionner au moins un contact",
     "no_contacts": "Aucun contact à exporter",
     "captured_on": "Capturé le %s"
-  },
-  "events": {
-    "title": "Événements",
-    "new_event": "Nouvel événement",
-    "name_hint": "Nom de l'événement",
-    "start_date": "Début (optionnel)",
-    "end_date": "Fin (optionnel)",
-    "create": "Créer",
-    "cancel": "Annuler",
-    "activate": "Activer",
-    "deactivate": "Désactiver",
-    "active_badge": "Actif",
-    "no_events": "Aucun événement créé",
-    "banner_prefix": "Événement actif :",
-    "contacts_count": "%s contact(s)"
   },
   "onboarding": {
     "skip": "Passer",

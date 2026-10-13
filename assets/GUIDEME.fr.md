@@ -10,7 +10,6 @@ Relance : Réglages → Lire le guide.
 3. **QR simple** — texte ou URL
 4. **Importer un QR** — depuis une capture
 5. **Importer un contact** — carnet du téléphone
-6. **Événements** — taguer les scans par salon
 
 ## Collection
 

@@ -2,13 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:qr_code_app/components/action_tile.dart';
-import 'package:qr_code_app/components/active_event_banner.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/coach_tour.dart';
 import 'package:qr_code_app/components/navbar.dart';
 import 'package:qr_code_app/components/qr_mark.dart';
 import 'package:qr_code_app/components/section_label.dart';
-import 'package:qr_code_app/pages/events_page.dart';
 import 'package:qr_code_app/pages/import_qr_page.dart';
 import 'package:qr_code_app/pages/qr_generator_simple.dart';
 import 'package:qr_code_app/pages/qr_generator_vcard.dart';
@@ -70,11 +68,7 @@ class _OptionsListPageState extends State<OptionsListPage> {
       child: Scaffold(
         backgroundColor: currentColors['bg'],
         appBar: const AppBarCustom('', titleWidget: EzqrWordmark()),
-        body: Column(
-          children: [
-            const ActiveEventBanner(),
-            Expanded(
-              child: ListView(
+        body: ListView(
                 padding: const EdgeInsets.fromLTRB(
                   AppTokens.s5,
                   AppTokens.s6,
@@ -165,23 +159,9 @@ class _OptionsListPageState extends State<OptionsListPage> {
                           await importContacts(context);
                         },
                       ),
-                      ActionTile(
-                        icon: Icons.event_outlined,
-                        title: lang['events'] as String? ?? 'Événements',
-                        subtitle: home['events_sub'] as String?,
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute<void>(
-                            builder: (_) => const EventsPage(),
-                          ),
-                        ),
-                      ),
                     ],
                   ),
                 ],
-              ),
-            ),
-          ],
         ),
         bottomNavigationBar: const Navbar(currentRoute: '/options'),
       ),

@@ -11,20 +11,17 @@
     "simple_sub": "Text, URL, identifier",
     "import_sub": "From a screenshot",
     "import_contact_sub": "From the phone address book",
-    "events_sub": "Group by fair or meeting",
     "scanner_hint": "Frame the QR. Nothing is uploaded.",
     "import_hint": "Pick a screenshot that contains a QR.",
     "empty_collection": "Scan your first card.",
-    "empty_history": "Deleted cards will show up here.",
-    "empty_events": "Create an event to group your scans."
+    "empty_history": "Deleted cards will show up here."
   },
   "menu": {
     "simple": "Simple QR code",
     "vcard": "VCard QR code",
     "scanner": "Scan a QR code",
     "import": "Import a QR code",
-    "import_contact": "Import contact",
-    "events": "Events"
+    "import_contact": "Import contact"
   },
   "options": {
     "guide": "Read guide",
@@ -129,7 +126,6 @@
     "collection": {
       "title": "Collection",
       "search_hint": "Search by name…",
-      "filter_all_events": "All events",
       "import_all": "Import all",
       "export_all": "Export all",
       "import_all_confirm": "Import %s contacts from this phone?",
@@ -187,21 +183,6 @@
     "no_selection": "Select at least one contact",
     "no_contacts": "No contacts to export",
     "captured_on": "Captured on %s"
-  },
-  "events": {
-    "title": "Events",
-    "new_event": "New event",
-    "name_hint": "Event name",
-    "start_date": "Start date (optional)",
-    "end_date": "End date (optional)",
-    "create": "Create",
-    "cancel": "Cancel",
-    "activate": "Activate",
-    "deactivate": "Deactivate",
-    "active_badge": "Active",
-    "no_events": "No events created",
-    "banner_prefix": "Active event:",
-    "contacts_count": "%s contact(s)"
   },
   "onboarding": {
     "skip": "Skip",

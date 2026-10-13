@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:qr_code_app/components/active_event_banner.dart';
 import 'package:qr_code_app/components/app_bar_custom.dart';
 import 'package:qr_code_app/components/collection_select_bar.dart';
 import 'package:qr_code_app/components/collection_sync_bar.dart';
@@ -19,7 +18,7 @@ import 'package:qr_code_app/theme/tokens.dart';
 import 'package:qr_code_app/tools/import_contact.dart';
 
 /// Main "collection" page. Lists every saved QR/VCard with reactive Drift
-/// stream. Provides debounced name search and optional event filter (4-5/4-6).
+/// stream. Provides debounced name search.
 class Collection extends StatefulWidget {
   /// Creates the collection page.
   const new({super.key});
@@ -31,8 +30,6 @@ class Collection extends StatefulWidget {
 class _CollectionState extends State<Collection> {
   final _searchCtrl = TextEditingController();
   String _searchQuery = '';
-  int? _selectedEventId;
-  List<Event> _events = [];
   Timer? _debounce;
   bool _selectMode = false;
   final Set<String> _selected = <String>{};
@@ -45,7 +42,6 @@ class _CollectionState extends State<Collection> {
   void initState() {
     super.initState();
     _stream = QRDatabase().watchAllItems();
-    unawaited(_loadEvents());
   }
 
   @override
@@ -55,30 +51,14 @@ class _CollectionState extends State<Collection> {
     super.dispose();
   }
 
-  Future<void> _loadEvents() async {
-    final db = QRDatabase();
-    final rows = await db.select(db.events).get();
-    if (mounted) setState(() => _events = rows);
-  }
-
   void _onSearchChanged(String query) {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
       if (!mounted) return;
       setState(() {
         _searchQuery = query;
-        _selectedEventId = null;
         _stream = QRDatabase().watchAllItems(search: query);
       });
-    });
-  }
-
-  void _onEventSelected(int? eventId) {
-    _searchCtrl.clear();
-    setState(() {
-      _selectedEventId = eventId;
-      _searchQuery = '';
-      _stream = QRDatabase().watchAllItems(eventId: eventId);
     });
   }
 
@@ -285,7 +265,6 @@ class _CollectionState extends State<Collection> {
           floatingActionButton: fab,
           body: Column(
             children: [
-              const ActiveEventBanner(),
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
                 child: TextField(
@@ -321,27 +300,6 @@ class _CollectionState extends State<Collection> {
                   onExport: () {
                     unawaited(_exportAll());
                   },
-                ),
-              if (_events.isNotEmpty)
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-                  child: Row(
-                    children: [
-                      _EventChip(
-                        label: lang['filter_all_events'] as String,
-                        selected: _selectedEventId == null,
-                        onSelected: () => _onEventSelected(null),
-                      ),
-                      ..._events.map(
-                        (e) => _EventChip(
-                          label: e.name,
-                          selected: _selectedEventId == e.id,
-                          onSelected: () => _onEventSelected(e.id),
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               Expanded(
                 child: StreamBuilder<List<Map<String, dynamic>>>(
@@ -415,46 +373,6 @@ class _CollectionState extends State<Collection> {
         ),
         );
       },
-    );
-  }
-}
-
-class _EventChip extends StatelessWidget {
-  const new({
-    required this.label,
-    required this.selected,
-    required this.onSelected,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    var labelColor = currentColors['text'];
-    if (selected) {
-      labelColor = currentColors['on-button'];
-    }
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: FilterChip(
-        label: Text(label),
-        selected: selected,
-        onSelected: (_) => onSelected(),
-        backgroundColor: currentColors['surface-raised'],
-        selectedColor: currentColors['button-color'],
-        labelStyle: TextStyle(
-          color: labelColor,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
-        checkmarkColor: currentColors['on-button'],
-        side: BorderSide(color: currentColors['border']!),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppTokens.rXs),
-        ),
-      ),
     );
   }
 }

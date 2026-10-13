@@ -58,8 +58,7 @@ becomes an in-app card. The OS address book is **not** required for that.
 
 ## Collection
 
-Navbar **Collection**. Search, filter by event, open a card to share or
-delete it.
+Navbar **Collection**. Search, open a card to share or delete it.
 
 **Multi-select:** hold a card **more than two seconds**. Checkboxes appear.
 You can select all, delete (confirm), or export the checked cards as the
@@ -72,11 +71,6 @@ same zip as Export all. Back or the close icon leaves select mode.
 - `index.txt`
 
 **PDF** (orange FAB): pick cards, 1 per page or 2×2.
-
-## Events
-
-Home → **Events**. Create a fair or meetup, set it active, and new scans
-are tagged. Filter Collection by that event.
 
 ## History
 
@@ -95,7 +89,7 @@ Navbar **History**. Soft-deleted cards. Read-mostly.
 
 | Data | Where |
 |---|---|
-| Cards, events, history | SQLite `qr_app.db` on the device |
+| Cards, history | SQLite `qr_app.db` on the device |
 | Language, onboarding, toggles | SharedPreferences |
 | OS contacts | Written **only** if you grant Contacts. Deny it: the in-app QR still exists |
 | Photo host | Used only when you add a photo **and** the phone is online |

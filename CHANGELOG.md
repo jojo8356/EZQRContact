@@ -10,8 +10,8 @@ Versioning follows [SemVer](https://semver.org/) as `pubspec.yaml` `version`.
 ### Added
 
 - ENCRE visual system (tokens, Outfit / Fraunces, copper + paper)
-- Drift schema for vCards, simple QRs, and events (`qr_app.db`)
-- Collection: search, event filter, import all device contacts, export a flat zip
+- Drift schema for vCards and simple QRs (`qr_app.db`)
+- Collection: search, import all device contacts, export a flat zip
 - Long-press (> 2 s) multi-select to delete or export checked cards
 - PDF export (1 per page or 2×2)
 - Reciprocal swap after a scan
@@ -22,6 +22,10 @@ Versioning follows [SemVer](https://semver.org/) as `pubspec.yaml` `version`.
 - French and English UI, light and dark mode
 - User guide under `docs/help/`
 - ENCRE QR mark as app icon and splash (Cuivre → Encre on Papier)
+
+### Removed
+
+- Events (create / activate / filter / banner). Cards are a flat list.
 
 ### Changed
 

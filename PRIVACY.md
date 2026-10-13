@@ -11,7 +11,6 @@ are responsible for your own policy.
 | Data | Where | Why |
 |---|---|---|
 | vCards and simple QRs | SQLite `qr_app.db` | Collection, History, PDF, zip export |
-| Events | same database | Tag scans by fair or meetup |
 | Language, onboarding, dark mode, vCard 4, reciprocal swap | SharedPreferences | Settings |
 | Rendered QR PNGs | app documents directory | Share / export |
 

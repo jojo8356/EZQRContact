@@ -80,4 +80,22 @@ void main() {
     expect(find.byIcon(Icons.history_outlined), findsOneWidget);
     expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
   });
+
+  testWidgets('outgoing and incoming bars both keep four tabs', (tester) async {
+    await tester.pumpWidget(
+      encreApp(
+        home: const Column(
+          children: [
+            Navbar(currentRoute: '/options'),
+            Navbar(currentRoute: '/collection'),
+          ],
+        ),
+      ),
+    );
+
+    expect(find.text('Home'), findsNWidgets(2));
+    expect(find.text('Collection'), findsNWidgets(2));
+    expect(find.text('History'), findsNWidgets(2));
+    expect(find.text('Settings'), findsNWidgets(2));
+  });
 }
