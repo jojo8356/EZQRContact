@@ -1,72 +1,94 @@
-// Capture des screenshots automatiques des pages ENCRE d'EZQRContact.
+// Captures the six README screenshots into docs/screenshots/.
 //
-// Lancer avec :
 //   ./scripts/capture_screenshots.sh
+//   ./scripts/capture_screenshots.sh <device-id>
 //
-// Les images PNG sont écrites dans docs/screenshots/ par le driver.
+// Filenames must match README.md:
+//   home.png, home-dark.png, vcard-form.png, scanner.png,
+//   collection.png, collection-dark.png
 //
-// Stratégie : chaque action est wrappée dans tryShoot() qui :
-//   1. Vérifie que l'app est toujours vivante (find.byType(MaterialApp))
-//   2. Si l'app est morte → throw AppDeadException → abort le test entier
-//   3. Si l'action timeout (3s par défaut) → log et continue avec la suivante
-// Comme ça, dès que l'app crash, le test s'arrête au lieu de bloquer 10 min.
+// Demo contacts only (Marie Dupont, Jean Martin). No personal data.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/main.dart' as app;
-import 'package:qr_code_app/providers/darkmode.dart';
+import 'package:qr_code_app/providers/theme_globals.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// Insert sample QR/VCard rows so the Collection page is not empty when
-// captured. Uses raw insert (no saveQrCode) to avoid the file system
-// dependency of createVCard/createSimpleQR.
+const _github = 'https://github.com/jojo8356/EZQRContact';
+
+Future<void> _skipFirstRunGates() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setBool('onboarding_done', true);
+  await prefs.setInt('guideShown', 1);
+  await prefs.setString('lang_override', 'en');
+}
+
 Future<void> seedSampleData() async {
   final db = QRDatabase();
 
-  final existing = await db.getAllVCards();
-  if (existing.isNotEmpty) return; // already seeded
+  final vcards = await db.getAllVCards();
+  var hasMarie = false;
+  var hasJean = false;
+  for (final row in vcards) {
+    if (row['prenom'] == 'Marie' && row['nom'] == 'Dupont') {
+      hasMarie = true;
+    }
+    if (row['prenom'] == 'Jean' && row['nom'] == 'Martin') {
+      hasJean = true;
+    }
+  }
+  if (!hasMarie) {
+    await db.insertVCard({
+      'nom': 'Dupont',
+      'prenom': 'Marie',
+      'nom2': '',
+      'prefixe': '',
+      'suffixe': '',
+      'org': 'Demo Corp',
+      'job': 'Sales Representative',
+      'photo': '',
+      'tel_work': '+33 6 12 34 56 78',
+      'tel_home': '',
+      'adr_work': '1 rue Demo, 75001 Paris',
+      'adr_home': '',
+      'email': 'marie@example.com',
+      'rev': '20260510T194800Z',
+      'clone': 0,
+    });
+  }
+  if (!hasJean) {
+    await db.insertVCard({
+      'nom': 'Martin',
+      'prenom': 'Jean',
+      'nom2': '',
+      'prefixe': '',
+      'suffixe': '',
+      'org': 'TechCo',
+      'job': 'CTO',
+      'photo': '',
+      'tel_work': '+33 7 98 76 54 32',
+      'tel_home': '',
+      'adr_work': '',
+      'adr_home': '',
+      'email': 'jean.martin@example.com',
+      'rev': '20260510T194800Z',
+      'clone': 0,
+    });
+  }
 
-  await db.insertSimpleQR(
-    'https://github.com/jojo8356/EZQRContact',
-    null,
-  );
-
-  await db.insertVCard({
-    'nom': 'Dupont',
-    'prenom': 'Marie',
-    'nom2': '',
-    'prefixe': '',
-    'suffixe': '',
-    'org': 'Demo Corp',
-    'job': 'Sales Representative',
-    'photo': '',
-    'tel_work': '+33 6 12 34 56 78',
-    'tel_home': '',
-    'adr_work': '1 rue Demo, 75001 Paris',
-    'adr_home': '',
-    'email': 'marie@example.com',
-    'rev': '20260510T194800Z',
-    'clone': 0,
-  });
-
-  await db.insertVCard({
-    'nom': 'Martin',
-    'prenom': 'Jean',
-    'nom2': '',
-    'prefixe': '',
-    'suffixe': '',
-    'org': 'TechCo',
-    'job': 'CTO',
-    'photo': '',
-    'tel_work': '+33 7 98 76 54 32',
-    'tel_home': '',
-    'adr_work': '',
-    'adr_home': '',
-    'email': 'jean.martin@example.com',
-    'rev': '20260510T194800Z',
-    'clone': 0,
-  });
+  final simples = await db.getAllSimpleQR();
+  var hasGithub = false;
+  for (final row in simples) {
+    if (row['text'] == _github) {
+      hasGithub = true;
+    }
+  }
+  if (!hasGithub) {
+    await db.insertSimpleQR(_github, null);
+  }
 }
 
 class AppDeadException implements Exception {
@@ -74,9 +96,14 @@ class AppDeadException implements Exception {
   String toString() => 'App is no longer running, aborting test.';
 }
 
+Future<void> pumpQuiet(WidgetTester tester, {int frames = 20}) async {
+  for (var i = 0; i < frames; i++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+}
+
 void main() {
-  final binding =
-      IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   bool isAppAlive(WidgetTester tester) {
     return find.byType(MaterialApp).evaluate().isNotEmpty;
@@ -84,121 +111,115 @@ void main() {
 
   void abortIfDead(WidgetTester tester) {
     if (!isAppAlive(tester)) {
-      // Test-only diagnostic output, must reach the screenshot driver log.
       // ignore: avoid_print
       print('[abort] app is dead, stopping test');
       throw AppDeadException();
     }
   }
 
-  // Captures a screenshot of whatever is currently on screen.
-  // - Aborts the whole test (throws AppDeadException) if app is dead.
-  // - Catches any other exception to log it but does not propagate, so the
-  //   next tryShoot can still run.
   Future<bool> tryShoot(
     WidgetTester tester,
     String name, {
     Future<void> Function()? before,
-    Duration timeout = const Duration(seconds: 3),
   }) async {
     abortIfDead(tester);
     try {
       if (before != null) {
-        await before().timeout(timeout * 2);
+        await before();
       }
       abortIfDead(tester);
-      await tester.pumpAndSettle(timeout);
+      await pumpQuiet(tester);
       await binding.takeScreenshot(name);
-      // Test-only diagnostic output, must reach the screenshot driver log.
       // ignore: avoid_print
       print('[ok] captured $name');
       return true;
     } on AppDeadException {
       rethrow;
     } on Exception catch (e) {
-      // Test-only diagnostic output, must reach the screenshot driver log.
       // ignore: avoid_print
       print('[skip] $name: $e');
       return false;
     }
   }
 
-  // Skipped intentionally:
-  // - SettingsPage: crashes on AssetManifest.json (LangProvider.getAll
-  //   reads assets/langs/ via rootBundle, not available in
-  //   integration_test context).
-  // - Scanner is in its own test because mobile_scanner triggers a
-  //   camera permission dialog that can freeze or kill the engine.
-
-  testWidgets('home, vcard form, collection (light)', (
-    tester,
-  ) async {
-    DarkModeProvider().setDarkMode(false);
-
+  Future<void> launchApp(WidgetTester tester, {required bool dark}) async {
+    await _skipFirstRunGates();
+    darkProv.forceSetDarkMode(dark);
     app.main();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
+    await pumpQuiet(tester, frames: 30);
     await seedSampleData();
     await binding.convertFlutterSurfaceToImage();
+    await pumpQuiet(tester, frames: 5);
+  }
 
-    // 1. Home (already on the initial route).
+  Future<void> fillVCardForm(WidgetTester tester) async {
+    final fields = find.byType(TextField);
+    final count = fields.evaluate().length;
+    Future<void> enter(int index, String value) async {
+      if (index >= count) {
+        return;
+      }
+      final target = fields.at(index);
+      await tester.ensureVisible(target);
+      await tester.pump(const Duration(milliseconds: 200));
+      await tester.enterText(target, value);
+    }
+
+    // Order matches GenerateVCardQRCode.fieldKeys (photo is not a TextField).
+    await enter(0, 'Dupont');
+    await enter(1, 'Marie');
+    await enter(5, 'Demo Corp');
+    await enter(6, 'Sales Representative');
+    await enter(7, '+33 6 12 34 56 78');
+    await enter(11, 'marie@example.com');
+    await tester.pump(const Duration(milliseconds: 300));
+  }
+
+  NavigatorState rootNav(WidgetTester tester) {
+    return Navigator.of(tester.element(find.byType(MaterialApp)));
+  }
+
+  testWidgets('home, vcard form, collection (light + dark)', (tester) async {
+    await launchApp(tester, dark: false);
+
     await tryShoot(tester, 'home');
 
-    // 2. VCard form (push from home).
     await tryShoot(
       tester,
       'vcard-form',
       before: () async {
         await tester.tap(find.byIcon(Icons.contact_page_outlined).first);
+        await pumpQuiet(tester);
+        await fillVCardForm(tester);
       },
     );
 
-    // 3. Collection. Use Navigator.pushNamed so we do not depend on a
-    // back button being available on the VCard form.
     await tryShoot(
       tester,
       'collection',
       before: () async {
-        final ctx = tester.element(find.byType(Navigator).first);
-        Navigator.of(ctx).pushNamed('/collection');
+        rootNav(tester).popUntil((route) => route.isFirst);
+        await pumpQuiet(tester);
+        rootNav(tester).pushReplacementNamed('/collection');
       },
     );
-  });
 
-  testWidgets('home and collection in dark mode', (
-    tester,
-  ) async {
-    DarkModeProvider().setDarkMode(true);
+    darkProv.forceSetDarkMode(true);
+    await pumpQuiet(tester, frames: 8);
+    await tryShoot(tester, 'collection-dark');
 
-    app.main();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
-    await seedSampleData();
-    await binding.convertFlutterSurfaceToImage();
-
-    // 4. Home dark.
-    await tryShoot(tester, 'home-dark');
-
-    // 5. Collection dark.
     await tryShoot(
       tester,
-      'collection-dark',
+      'home-dark',
       before: () async {
-        final ctx = tester.element(find.byType(Navigator).first);
-        Navigator.of(ctx).pushNamed('/collection');
+        rootNav(tester).pushReplacementNamed('/options');
       },
     );
   });
 
-  // Isolated test: if the camera permission dialog kills the engine, only
-  // this test fails and the screenshots from the other tests are kept.
-  testWidgets('scanner (may fail without camera permission)', (
-    tester,
-  ) async {
-    DarkModeProvider().setDarkMode(false);
-
-    app.main();
-    await tester.pumpAndSettle(const Duration(seconds: 2));
-    await seedSampleData();
-    await binding.convertFlutterSurfaceToImage();
+  // Isolated: camera permission must not kill the other shots.
+  testWidgets('scanner landing (no camera)', (tester) async {
+    await launchApp(tester, dark: false);
 
     await tryShoot(
       tester,
