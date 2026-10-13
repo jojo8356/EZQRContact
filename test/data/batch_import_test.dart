@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:qr_code_app/components/qr_save.dart';
 import 'package:qr_code_app/data/db/database.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
+import 'package:qr_code_app/tools/photo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../helpers/test_db.dart';
@@ -78,6 +79,30 @@ void main() {
         baseDir: tempDir.path,
       );
       expect(ids.length, 1);
+    });
+
+    test('inline photo is kept in DB and QR PNG still writes', () async {
+      debugHostPhotoForQr = (_) async => null;
+      addTearDown(() {
+        debugHostPhotoForQr = null;
+        resetPhotoHostCache();
+      });
+      final contact = _contact();
+      contact['photo'] = 'data:image/jpeg;base64,${'A' * 8000}';
+      final ids = await createVCardsBatch(
+        [contact],
+        db: db,
+        baseDir: tempDir.path,
+      );
+      expect(ids, hasLength(1));
+      final stored = await db.getVCardById(ids.first);
+      expect(
+        (stored!['photo'] as String).startsWith('data:image/jpeg;base64,'),
+        isTrue,
+      );
+      final png = File('${tempDir.path}/${ids.first}.png');
+      expect(png.existsSync(), isTrue);
+      expect(png.readAsBytesSync().sublist(0, 8), _pngMagic);
     });
 
     test('inserts the contact into the DB', () async {

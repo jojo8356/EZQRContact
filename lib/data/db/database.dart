@@ -508,6 +508,8 @@ Future<int> createSimpleQR(String txt) async {
 }
 
 /// Inserts a VCard row from [vcardData], saves the QR image, and links it.
+/// Inline photos stay in the DB; the QR payload uses [VCard.toQrPayload]
+/// (hosted URL or omitted PHOTO) so encoding cannot blow past version 40.
 Future<int> createVCard(
   Map<String, dynamic> vcardData, {
   QRDatabase? db,
@@ -515,7 +517,7 @@ Future<int> createVCard(
   final database = db ?? QRDatabase();
   vcardData['clone'] = '0';
   final id = await database.insertVCard(vcardData);
-  final vcardStr = VCard.fromMap(vcardData).toVCard();
+  final vcardStr = await VCard.fromMap(vcardData).toQrPayload();
   final path = await saveQrCode(vcardStr, id);
   await database.updateVCardPath(id, path);
   return id;
@@ -569,7 +571,11 @@ Future<List<int>> createVCardsBatch(
 }
 
 Future<void> _genQrAndSave(Map<String, dynamic> data, String path) async {
-  final bytes = await buildQrBytes(VCard.fromMap(data).toVCard());
+  // Same payload as createVCard: host a PHOTO URL when possible, otherwise
+  // drop inline base64 so QrValidator still accepts the vCard.
+  final bytes = await buildQrBytes(
+    await VCard.fromMap(data).toQrPayload(),
+  );
   await File(path).writeAsBytes(bytes, flush: true);
 }
 

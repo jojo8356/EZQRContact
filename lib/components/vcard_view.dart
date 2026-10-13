@@ -17,7 +17,8 @@ class VCardView extends StatelessWidget {
     final bgColor = currentColors['surface']!;
     final textColor = currentColors['text']!;
     final secondaryTextColor = currentColors['text-muted']!;
-    final photo = photoImageProvider(controllers['photo']?.text ?? '');
+    final photoValue = controllers['photo']?.text ?? '';
+    final photo = photoImageProvider(photoValue);
     Widget avatar = Icon(
       Icons.person_rounded,
       size: 80,
@@ -38,6 +39,47 @@ class VCardView extends StatelessWidget {
               color: currentColors['navy'],
             );
           },
+        ),
+      );
+    }
+
+    final photoController = controllers['photo'];
+    final detailRows = <Widget>[];
+    for (final f in fields) {
+      final controller = f['controller'] as TextEditingController?;
+      final value = controller?.text ?? '';
+      if (value.isEmpty) {
+        continue;
+      }
+      if (identical(controller, photoController) &&
+          value.startsWith('data:image')) {
+        continue;
+      }
+      detailRows.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 130,
+                child: Text(
+                  f['label'] as String? ?? '',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: textColor),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -93,36 +135,7 @@ class VCardView extends StatelessWidget {
               height: 30,
               color: secondaryTextColor, // divider adaptatif
             ),
-            // Infos détaillées
-            Column(
-              children: fields.map((f) {
-                final controller = f['controller'] as TextEditingController?;
-                final value = controller?.text ?? '';
-                if (value.isEmpty || f['label'] == 'Photo URL') {
-                  return Container();
-                }
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 130,
-                        child: Text(
-                          f['label'] as String? ?? '',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: textColor,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(value, style: TextStyle(color: textColor)),
-                      ),
-                    ],
-                  ),
-                );
-              }).toList(),
-            ),
+            Column(children: detailRows),
           ],
         ),
       ),

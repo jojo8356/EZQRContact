@@ -179,7 +179,7 @@ class GenerateVCardQRCodeState extends State<GenerateVCardQRCode> {
     final vcard = VCard.fromMap(data);
     final id = await createVCard(data);
     await saveQrCode(
-      vcard.toVCard(),
+      await vcard.toQrPayload(),
       id,
       color: _primaryColor,
       logoBytes: _logoBytes,

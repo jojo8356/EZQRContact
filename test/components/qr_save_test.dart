@@ -5,6 +5,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 import 'package:qr_code_app/components/qr_save.dart';
 import 'package:qr_code_app/providers/lang_provider.dart';
+import 'package:qr_code_app/providers/vcard_settings_provider.dart';
+import 'package:qr_code_app/tools/photo.dart';
+import 'package:qr_code_app/tools/vcard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // PNG file signature: first 8 bytes are always 89 50 4E 47 0D 0A 1A 0A.
@@ -23,6 +26,7 @@ void main() {
   setUpAll(() async {
     SharedPreferences.setMockInitialValues({});
     await LangProvider.init(lang: 'en');
+    await VCardSettingsProvider.init();
   });
 
   // ---------------------------------------------------------------------------
@@ -103,6 +107,45 @@ void main() {
         () => buildQrBytes(oversized),
         throwsA(isA<Exception>()),
       );
+    });
+
+    test('vCard with inline photo still encodes after toQrPayload', () async {
+      debugHostPhotoForQr = (_) async => null;
+      addTearDown(() {
+        debugHostPhotoForQr = null;
+        resetPhotoHostCache();
+      });
+      final huge = 'A' * 8000;
+      final v = VCard(
+        nom: 'Doe',
+        prenom: 'Jane',
+        photo: 'data:image/jpeg;base64,$huge',
+        rev: '20260101T000000Z',
+      );
+      await expectLater(
+        () => buildQrBytes(v.toVCard()),
+        throwsA(isA<Exception>()),
+      );
+      final bytes = await buildQrBytes(await v.toQrPayload());
+      expect(bytes.sublist(0, 8), equals(_pngMagic));
+    });
+
+    test('vCard QR embeds hosted photo URL', () async {
+      debugHostPhotoForQr = (_) async => 'https://files.example/jane.jpg';
+      addTearDown(() {
+        debugHostPhotoForQr = null;
+        resetPhotoHostCache();
+      });
+      final v = VCard(
+        nom: 'Doe',
+        prenom: 'Jane',
+        photo: 'data:image/jpeg;base64,/9j/4AAQSkZJRg==',
+        rev: '20260101T000000Z',
+      );
+      final payload = await v.toQrPayload();
+      expect(payload, contains('https://files.example/jane.jpg'));
+      final bytes = await buildQrBytes(payload);
+      expect(bytes.sublist(0, 8), equals(_pngMagic));
     });
 
     test('oversized payload exception message contains localised text',

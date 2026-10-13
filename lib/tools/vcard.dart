@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:qr_code_app/providers/vcard_settings_provider.dart';
+import 'package:qr_code_app/tools/photo.dart';
 import 'package:qr_code_app/tools/tools.dart';
 
 /// CRLF line separator imposed by RFC 2426 (vCard 3.0) and RFC 6350
@@ -304,12 +305,43 @@ class VCard {
   ///
   /// Both versions enforce CRLF (`\r\n`) between content lines and RFC
   /// 2425/6350 line folding (75-octet limit, continuation with `\r\n `).
-  String toVCard() {
-    if (VCardSettingsProvider.useVCard4) return _toVCard4();
-    return _toVCard3();
+  ///
+  /// Inline `data:image` PHOTO is included when [includeInlinePhoto] is
+  /// true (default, for round-trip / raw view). QR encoding must pass
+  /// false — a headshot base64 blows past version 40. Prefer [toQrPayload].
+  String toVCard({bool includeInlinePhoto = true}) {
+    if (VCardSettingsProvider.useVCard4) {
+      return _toVCard4(includeInlinePhoto: includeInlinePhoto);
+    }
+    return _toVCard3(includeInlinePhoto: includeInlinePhoto);
   }
 
-  String _toVCard3() {
+  /// vCard text sized for a printable QR. Never embeds `data:image`
+  /// PHOTO. When [hostPhoto] is true, an inline photo is uploaded and
+  /// replaced by `PHOTO;VALUE=URI:https://…` so a scan can download the
+  /// image (needs internet at generate time). Upload failure omits PHOTO
+  /// so the QR still encodes. http(s) photo URLs are kept.
+  Future<String> toQrPayload({bool hostPhoto = true}) async {
+    final original = photo;
+    if (original.startsWith('data:image/')) {
+      String? url;
+      if (hostPhoto) {
+        url = await hostPhotoForQr(original);
+      }
+      if (url != null && url.isNotEmpty) {
+        photo = url;
+      } else {
+        photo = '';
+      }
+    }
+    try {
+      return toVCard(includeInlinePhoto: false);
+    } finally {
+      photo = original;
+    }
+  }
+
+  String _toVCard3({bool includeInlinePhoto = true}) {
     // N and FN are REQUIRED in vCard 3.0 (RFC 2426 §3.1) — emit even
     // when fully empty; the parser side handles it.
     final n = 'N:${clean(nom)};${clean(prenom)};${clean(nom2)};'
@@ -323,7 +355,10 @@ class VCard {
 
     if (org.isNotEmpty) lines.add('ORG:${clean(org)}');
     if (job.isNotEmpty) lines.add('TITLE:${clean(job)}');
-    final photoLine = _buildPhotoLine(useV4: false);
+    final photoLine = _buildPhotoLine(
+      useV4: false,
+      includeInlinePhoto: includeInlinePhoto,
+    );
     if (photoLine != null) lines.add(photoLine);
 
     if (telWork.isNotEmpty) {
@@ -349,7 +384,7 @@ class VCard {
     return _assemble(lines);
   }
 
-  String _toVCard4() {
+  String _toVCard4({bool includeInlinePhoto = true}) {
     final n = 'N:${clean(nom)};${clean(prenom)};${clean(nom2)};'
         '${clean(prefixe)};${clean(suffixe)}';
     final lines = <String>[
@@ -361,7 +396,10 @@ class VCard {
 
     if (org.isNotEmpty) lines.add('ORG:${clean(org)}');
     if (job.isNotEmpty) lines.add('TITLE:${clean(job)}');
-    final photoLine = _buildPhotoLine(useV4: true);
+    final photoLine = _buildPhotoLine(
+      useV4: true,
+      includeInlinePhoto: includeInlinePhoto,
+    );
     if (photoLine != null) lines.add(photoLine);
 
     if (telWork.isNotEmpty) {
@@ -413,9 +451,13 @@ class VCard {
     return ';;$cleaned;;;;';
   }
 
-  String? _buildPhotoLine({required bool useV4}) {
+  String? _buildPhotoLine({
+    required bool useV4,
+    bool includeInlinePhoto = true,
+  }) {
     if (photo.isEmpty) return null;
     if (photo.startsWith('data:image/')) {
+      if (!includeInlinePhoto) return null;
       if (useV4) return 'PHOTO:$photo';
       // vCard 3.0: data: URIs aren't standard. Translate to inline base64
       // with ENCODING=b and TYPE=<mediaType>.

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qr_code_app/providers/vcard_settings_provider.dart';
+import 'package:qr_code_app/tools/photo.dart';
 import 'package:qr_code_app/tools/vcard.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -80,6 +81,19 @@ void main() {
       );
       final out = v.toVCard();
       expect(out, contains('PHOTO;VALUE=URI:https://example.com/jane.jpg'));
+    });
+
+    test('includeInlinePhoto false omits data:image PHOTO', () {
+      final v = VCard(
+        nom: 'Doe',
+        prenom: 'Jane',
+        photo: 'data:image/jpeg;base64,/9j/4AAQSkZJRg==',
+        rev: '20260101T000000Z',
+      );
+      final out = v.toVCard(includeInlinePhoto: false);
+      expect(out, isNot(contains('ENCODING=b')));
+      expect(out, isNot(contains('data:image')));
+      expect(out, isNot(contains('PHOTO')));
     });
 
     test('vCard 3.0 uses TEL;TYPE=WORK,VOICE: not TEL;VALUE=uri:tel:', () {
@@ -656,6 +670,81 @@ void main() {
       expect(() => VCard.parse(broken), returnsNormally);
       final parsed = VCard.parse(broken);
       expect(parsed.visualConfigJson, isNull);
+    });
+  });
+
+  group('VCard.toQrPayload() — hosted PHOTO URI, never inline base64', () {
+    tearDown(() {
+      debugHostPhotoForQr = null;
+      resetPhotoHostCache();
+    });
+
+    test('omits data:image PHOTO when hosting fails', () async {
+      debugHostPhotoForQr = (_) async => null;
+      final b64 = base64Encode(List<int>.filled(4000, 0x41));
+      final v = VCard(
+        nom: 'Doe',
+        prenom: 'Jane',
+        photo: 'data:image/jpeg;base64,$b64',
+        rev: '20260101T000000Z',
+      );
+      final out = await v.toQrPayload();
+      expect(out, isNot(contains('ENCODING=b')));
+      expect(out, isNot(contains('data:image')));
+      expect(out, isNot(contains('PHOTO')));
+      expect(out.length, lessThan(400));
+      expect(v.photo, startsWith('data:image/jpeg;base64,'));
+    });
+
+    test('embeds hosted http PHOTO URI on upload success', () async {
+      debugHostPhotoForQr = (_) async => 'https://files.example/jane.jpg';
+      final v = VCard(
+        nom: 'Doe',
+        prenom: 'Jane',
+        photo: 'data:image/jpeg;base64,/9j/4AAQSkZJRg==',
+        rev: '20260101T000000Z',
+      );
+      final out = await v.toQrPayload();
+      expect(
+        out,
+        contains('PHOTO;VALUE=URI:https://files.example/jane.jpg'),
+      );
+      expect(out, isNot(contains('ENCODING=b')));
+      expect(v.photo, 'data:image/jpeg;base64,/9j/4AAQSkZJRg==');
+    });
+
+    test('keeps an existing http PHOTO URL without hosting', () async {
+      var hosted = false;
+      debugHostPhotoForQr = (_) async {
+        hosted = true;
+        return 'https://should-not-run.example/x.jpg';
+      };
+      final v = VCard(
+        nom: 'Doe',
+        prenom: 'Jane',
+        photo: 'https://cdn.example/jane.jpg',
+        rev: '20260101T000000Z',
+      );
+      final out = await v.toQrPayload();
+      expect(hosted, isFalse);
+      expect(out, contains('PHOTO;VALUE=URI:https://cdn.example/jane.jpg'));
+    });
+
+    test('batch path (hostPhoto: false) never embeds inline PHOTO', () async {
+      var hosted = false;
+      debugHostPhotoForQr = (_) async {
+        hosted = true;
+        return 'https://files.example/x.jpg';
+      };
+      final v = VCard(
+        nom: 'Doe',
+        prenom: 'Jane',
+        photo: 'data:image/jpeg;base64,/9j/4AAQSkZJRg==',
+        rev: '20260101T000000Z',
+      );
+      final out = await v.toQrPayload(hostPhoto: false);
+      expect(hosted, isFalse);
+      expect(out, isNot(contains('PHOTO')));
     });
   });
 }
