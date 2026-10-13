@@ -1,0 +1,38 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Search existing issues first. Security bugs go to polsinelli@gmx.com, not here.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      placeholder: Steps, then what you expected vs what you got.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Scan / camera
+        - Import from image
+        - vCard generate
+        - Collection / export
+        - Contacts permission
+        - Settings
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and OS
+      placeholder: e.g. WP32 Pro, Android 13
+  - type: input
+    id: version
+    attributes:
+      label: App version or commit
+      placeholder: e.g. 1.1.0+3

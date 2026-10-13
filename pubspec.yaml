@@ -1,5 +1,5 @@
 name: qr_code_app
-description: "A new Flutter project."
+description: Local-first Flutter app to exchange professional contacts via QR-encoded vCards. No cloud, no account.
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: "none" # Remove this line if you wish to publish to pub.dev

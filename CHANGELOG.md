@@ -1,0 +1,35 @@
+# Changelog
+
+All notable changes to EZQRContact are recorded here.
+
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+Versioning follows [SemVer](https://semver.org/) as `pubspec.yaml` `version`.
+
+## [1.1.0] — 2026-10
+
+### Added
+
+- ENCRE visual system (tokens, Outfit / Fraunces, copper + paper)
+- Drift schema for vCards, simple QRs, and events (`qr_app.db`)
+- Collection: search, event filter, import all device contacts, export a flat zip
+- Long-press (> 2 s) multi-select to delete or export checked cards
+- PDF export (1 per page or 2×2)
+- Reciprocal swap after a scan
+- Onboarding + in-app guide
+- Gallery import with ML Kit then ZXing (crop, unwarp, EXIF)
+- Offline-safe vCard QR: skip PHOTO when there is no network
+- French and English UI, light and dark mode
+- User guide under `docs/help/`
+
+### Changed
+
+- vCard 3.0 is the default QR payload; 4.0 is a Settings toggle
+- Photos in a QR are a hosted URL, not inline base64
+- Lint: `very_good_analysis` plus no-ternary / pure display-return tests
+
+### Security
+
+- Creating a card always writes the in-app QR. The OS address book is
+  updated only after Contacts permission is granted.
+
+[1.1.0]: https://github.com/jojo8356/EZQRContact/releases/tag/v1.1.0

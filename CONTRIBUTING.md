@@ -142,15 +142,18 @@ flutter test test/theme test/components
 Pump UI under `encreApp()` from `test/helpers/encre.dart` — never the
 default Material starter theme (blue seed, pills, Roboto).
 
-The v2 roadmap (epics E1, E2, and E3) still includes a broader test push
-using `mocktail` and `sqflite_common_ffi`. If your PR introduces new logic,
-add at least one unit test next to it under `test/<mirror-of-lib-path>/`.
+If your PR introduces new logic, add at least one test next to it under
+`test/<mirror-of-lib-path>/`. Device flows (camera, contacts, gallery)
+belong in `integration_test/` plus a script under `scripts/` when they
+must run on a phone.
+
+README screenshots: `./scripts/capture_screenshots.sh` (seeds demo
+contacts, then `adb screencap`). User-facing copy: `docs/help/`.
 
 ## Code style
 
-This project currently uses [`flutter_lints`](https://pub.dev/packages/flutter_lints).
-Migration to [`very_good_analysis`](https://pub.dev/packages/very_good_analysis)
-is planned for v2 (story E1-2).
+This project uses [`very_good_analysis`](https://pub.dev/packages/very_good_analysis)
+plus two house rules enforced by tests (no ternary, pure display returns).
 
 Before opening a PR:
 
